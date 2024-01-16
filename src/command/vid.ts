@@ -78,10 +78,11 @@ export const cmd_vid = new Command('vid', 'V身份')
 
 .subCommand('intro', '设定介绍', subcmd => {
     subcmd.execute(async (i, options) => {
+        const vid = await VId.fetch(i.user.id);
         i.showModal(
             new Modal('V-ID Card Edit', `vid_intro_modal@${i.user.id}`)
             .actionRow(row => {
-                row.paragraph('Intro', 'intro')
+                row.paragraph('Intro', 'intro', {value: vid.intro, required: false})
             })
             .data
         )

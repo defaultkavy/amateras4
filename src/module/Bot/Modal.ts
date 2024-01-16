@@ -12,9 +12,9 @@ export class Modal {
     }
 
     actionRow(callback: (actionRow: ModalActionRow) => void) {
-        const actionRow = new ModalActionRow()
+        const actionRow = new ModalActionRow();
         callback(actionRow);
-        this.data.components.push(actionRow.data)
+        this.data.components.push(actionRow.data);
         return this;
     }
 
