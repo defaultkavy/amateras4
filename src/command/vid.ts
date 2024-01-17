@@ -54,7 +54,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             autocomplete: async (focused, _, i) => {
                 const vid = await VId.fetch(i.user.id);
                 return vid.links.filter(link => link.name.includes(focused.value)).map(link => ({
-                    name: `${link.name} (${link.url})`,
+                    name: `${link.name} (${link.url.substring(0, 50)}${link.url.length > 50 ? '...' : ''})`,
                     value: link.id
                 }))
             }
@@ -93,7 +93,7 @@ export const cmd_vid = new Command('vid', 'V身份')
     group
     .subCommand('set', '设定链接', subcmd => {
         subcmd
-        .string('name', '链接名称', {required: true,
+        .string('name', '链接名称', {required: true, max_length: 10,
             autocomplete: (focused, i) => {
                 const link_list = ['跳图', '立绘', '封面立绘']
                 return link_list.filter(link => link.toLowerCase().includes(focused.value.toLowerCase())).map(link => ({
@@ -116,7 +116,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             autocomplete: async (focused, _, i) => {
                 const vid = await VId.fetch(i.user.id);
                 return vid.assets.filter(link => link.name.includes(focused.value)).map(link => ({
-                    name: `${link.name} (${link.url})`,
+                    name: `${link.name} (${link.url.substring(0, 50)}${link.url.length > 50 ? '...' : ''})`,
                     value: link.id
                 }))
             }
