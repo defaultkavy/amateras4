@@ -235,7 +235,7 @@ export class Lobby extends InGuildData {
         if (!asset_channel) return;
         const vid = await VId.safeFetch(userId)
         if (!vid) return;
-        const message = await (await vid.infoMessage()).send(asset_channel)
+        const message = await (await vid.infoMessage({asset: true})).send(asset_channel)
         const data = {userId: userId, messageId: message.id};
         this.assetMessageList.push(data);
         await Lobby.collection.updateOne({id: this.id}, {$push: {assetMessageList: data}})

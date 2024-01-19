@@ -57,7 +57,8 @@ export class VId extends Data {
         await VId.collection.deleteOne({id: this.id})
     }
 
-    async infoMessage(ephemeral = false) {
+    async infoMessage(options?: {asset?: boolean, ephemeral?: boolean}) {
+        const {asset, ephemeral} = options ?? {};
         const user = await this.user();
         const links_text = this.links.map(link => `[${link.name}](${link.url})`).toString().replaceAll(',', ' · ')
         const asset_text = this.assets.map(link => `[${link.name}](${link.url})`).toString().replaceAll(',', ' · ')
@@ -67,13 +68,13 @@ export class VId extends Data {
                 .author('V-ID Card')
                 .thumbnail(user.displayAvatarURL())
                 .description(`## ${this.name} \n${this.intro.length ? `${this.intro}\n` : ''}${this.links.length ? `\n${links_text}` : ''}`)
-                if (this.assets.length) embed.field('素材', asset_text)
+                if (asset && this.assets.length) embed.field('素材', asset_text)
                 embed
                 .field('用户名', `<@${this.userId}>`, true)
                 .field('更新时间', `<t:${getUTCTimestamp()}:R>`, true)
             })
             .actionRow(row => {
-                row.button('更新资讯', `vid_info_update@${this.userId}`);
+                row.button('更新资讯', `vid_info_update${asset ? '?asset' : ''}@${this.userId}`);
             })
     }
 
@@ -83,7 +84,7 @@ export class VId extends Data {
         cursur.close();
         lobbyData_list.forEach(async data => {
             const lobby = new Lobby(data);
-            lobby.updateAssetMessage(this.userId, await this.infoMessage());
+            lobby.updateAssetMessage(this.userId, await this.infoMessage({asset: true}));
         })
     }
 
@@ -133,9 +134,10 @@ export class VId extends Data {
 addInteractionListener('vid_info_update', async i => {
     if (!i.isButton()) return;
     const userId = i.customId.split('@')[1];
+    const assetEnabled = i.customId.includes('?asset');
     if (!userId) throw new ErrLog('VId: user id missing');
     const vid = await VId.fetch(userId);
-    const infoMessageBuilder = await vid.infoMessage();
+    const infoMessageBuilder = await vid.infoMessage({asset: assetEnabled});
     await i.update(infoMessageBuilder.data);
 })
 

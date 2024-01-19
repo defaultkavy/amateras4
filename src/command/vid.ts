@@ -23,7 +23,7 @@ export const cmd_vid = new Command('vid', 'V身份')
     subcmd
     .execute(async (i, options) => {
         const vid = await VId.fetch(i.user.id);
-        return await vid.infoMessage(true);
+        return await vid.infoMessage({asset: i.user.id === vid.userId});
     })
 })
 
