@@ -23,7 +23,7 @@ const cmd_list = [
 ]
 
 cmd_manager.add(cmd_list);
-if (config.debug) await deploy_command();
+if (!config.debug) await deploy_command();
 cmd_manager.listen();
 
 async function deploy_command() {
