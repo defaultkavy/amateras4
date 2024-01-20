@@ -1,3 +1,4 @@
+import { config } from "./bot_config";
 import { cmdx_info } from "./src/command/context/info";
 import { cmd_lobby } from "./src/command/lobby";
 import { cmd_mod } from "./src/command/mod/mod";
@@ -22,7 +23,7 @@ const cmd_list = [
 ]
 
 cmd_manager.add(cmd_list);
-// await deploy_command();
+if (config.debug) await deploy_command();
 cmd_manager.listen();
 
 async function deploy_command() {
