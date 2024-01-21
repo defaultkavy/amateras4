@@ -9,3 +9,5 @@ export abstract class Data {
         Object.assign(this, options);
     }
 }
+
+export type DataCreateOptions<T> = Omit<T, 'id' | 'timestamp'>;

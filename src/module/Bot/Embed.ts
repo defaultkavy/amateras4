@@ -25,6 +25,11 @@ export class Embed {
         return this
     }
 
+    emptyField(inline?: boolean) {
+        this.field(' ', ' ', inline);
+        return this
+    }
+
     image(url: string | undefined) {
         if (!url) return this;
         this.data.image = {

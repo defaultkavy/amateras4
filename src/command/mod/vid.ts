@@ -17,7 +17,7 @@ export function mod_vid() {
         group
         .subCommand('create', '创建新的V身份', subcmd => {
             subcmd
-            .userInput('user', '选择用户', {required: true})
+            .user('user', '选择用户', {required: true})
             .execute(async (i, options) => {
                 if (await VId.safeFetch(options.user.id)) throw '用户已注册';
 

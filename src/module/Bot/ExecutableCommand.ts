@@ -2,6 +2,7 @@ import { InteractionResponse, ChatInputCommandInteraction, CommandInteractionOpt
 import { CommandOption } from "./Command";
 import { Reply } from "./Reply";
 import { MessageBuilder } from "./MessageBuilder";
+import { OptionMap } from "./CommandManager";
 
 export interface CommandExecuteInteraction {
     /** Same as method defferReply(), but is ephemeral */
@@ -91,14 +92,14 @@ export abstract class ExecutableCommand {
     }
     
     string = this.setInput(ApplicationCommandOptionType.String);
-    booleanInput = this.setInput(ApplicationCommandOptionType.Boolean);
-    userInput = this.setInput(ApplicationCommandOptionType.User);
+    boolean = this.setInput(ApplicationCommandOptionType.Boolean);
+    user = this.setInput(ApplicationCommandOptionType.User);
     attachment = this.setInput(ApplicationCommandOptionType.Attachment);
     channel = this.setInput(ApplicationCommandOptionType.Channel);
-    mentionableInput = this.setInput(ApplicationCommandOptionType.Mentionable);
-    roleInput = this.setInput(ApplicationCommandOptionType.Role);
-    integerInput = this.setInput(ApplicationCommandOptionType.Integer);
-    numberInput = this.setInput(ApplicationCommandOptionType.Number);
+    mentionable = this.setInput(ApplicationCommandOptionType.Mentionable);
+    role = this.setInput(ApplicationCommandOptionType.Role);
+    integer = this.setInput(ApplicationCommandOptionType.Integer);
+    number = this.setInput(ApplicationCommandOptionType.Number);
 
     setInputs<Options extends this['_options'], O>(callback: (execmd: ExecutableCommand) => ExecutableCommand & {_options: O}) {
         return callback(this) as unknown as this & {_options: Options & O}
@@ -146,7 +147,7 @@ export type ApplicationCommandFilteredOptionData<T extends CommandOptionValueTyp
     : ApplicationCommandStringOptionData
 
 type ApplicationCommandAutocompleteRestructure<T extends {autocomplete: true}> = Omit<T, 'autocomplete'> & {autocomplete: AutocompleteFn}
-export type AutocompleteFn = (focused: AutocompleteFocusedOption, options: AutocompleteOptionMap, i: AutocompleteInteraction<'cached'>) => Promise<ApplicationCommandOptionChoiceData[]> | ApplicationCommandOptionChoiceData[]
+export type AutocompleteFn = (focused: AutocompleteFocusedOption, options: OptionMap, i: AutocompleteInteraction<'cached'>) => Promise<ApplicationCommandOptionChoiceData[]> | ApplicationCommandOptionChoiceData[]
 export type AutocompleteOptionMap = Map<string, CommandInteractionOption<CacheType>>
 
 type CommandOptionValueTypes = Exclude<ApplicationCommandOptionType, 1 | 2>;

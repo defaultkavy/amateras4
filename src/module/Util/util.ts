@@ -76,3 +76,11 @@ export function getUserIdFromText(content: string) {
 export function getUTCTimestamp(timestamp = Date.now()) {
     return `${timestamp}`.slice(0, -3);
 }
+
+export function substringWith(content: string, start: number, end: number, replace?: string) {
+    return `${content.substring(start, end)}${content.length > end ? replace : ''}`
+}
+
+export function codeBlock(content: string) {
+    return `\`\`\`${content}\`\`\``
+}

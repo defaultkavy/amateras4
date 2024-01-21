@@ -2,6 +2,7 @@ import { config } from "./bot_config";
 import { cmdx_info } from "./src/command/context/info";
 import { cmd_lobby } from "./src/command/lobby";
 import { cmd_mod } from "./src/command/mod/mod";
+import { cmd_poll } from "./src/command/poll";
 import { cmd_vid } from "./src/command/vid";
 import { client } from "./src/method/client";
 import { CommandManager } from "./src/module/Bot/CommandManager";
@@ -19,6 +20,7 @@ const cmd_list = [
     cmd_lobby,
     cmd_mod,
     cmd_vid,
+    cmd_poll,
     cmdx_info
 ]
 

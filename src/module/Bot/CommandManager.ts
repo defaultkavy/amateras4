@@ -64,9 +64,12 @@ export class CommandManager {
                     options.splice(options.indexOf(focused));
                     const focused_option = subcmd.options.get(focused.name);
                     if (!focused_option) throw 'focused option not found';
-                    const optionMap = new Map()
-                    options.forEach(option => optionMap.set(option.name, option));
-                    if (focused_option.autocompleteFn) return focused_option.autocompleteFn(focused as AutocompleteFocusedOption, optionMap, i as AutocompleteInteraction<'cached'>)
+                    const optionMap = new OptionMap(options)
+                    try {
+                        if (focused_option.autocompleteFn) return focused_option.autocompleteFn(focused as AutocompleteFocusedOption, optionMap, i as AutocompleteInteraction<'cached'>)
+                    } catch(err) {
+                        return []
+                    }
                     return []
                 }
             }
@@ -109,4 +112,33 @@ export enum CommandTypes {
     ChatInput = 1,
     User = 2,
     Message = 3
+}
+
+export class OptionMap {
+    private cache = new Map<string, string | boolean | number | undefined>
+    constructor(options: CommandInteractionOption[]) {
+        options.forEach(option => this.cache.set(option.name, option.value));
+    }
+
+    get(name: string) {
+        return this.cache.get(name);
+    }
+
+    getString(name: string) {
+        const result = this.cache.get(name);
+        if (typeof result !== 'string') throw `Command option value type is ${typeof result}, required string`
+        return result
+    }
+
+    getNumber(name: string) {
+        const result = this.cache.get(name);
+        if (typeof result !== 'number') throw `Command option value type is ${typeof result}, required number`
+        return result
+    }
+
+    getBoolean(name: string) {
+        const result = this.cache.get(name);
+        if (typeof result !== 'boolean') throw `Command option value type is ${typeof result}, required boolean`
+        return result
+    }
 }

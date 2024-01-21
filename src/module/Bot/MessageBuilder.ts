@@ -1,4 +1,4 @@
-import { APIEmbed, ActionRowData, MessageComponentInteraction, MessageType, RepliableInteraction, TextBasedChannel } from "discord.js";
+import { APIEmbed, ActionRowData, MessageComponentInteraction, MessageType, RepliableInteraction, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
 import { MessageActionRow } from "./ActionRow";
 import { Embed } from "./Embed";
 import { multipleResolver } from "../Util/util";
@@ -61,6 +61,11 @@ export class MessageBuilder {
             this.actionRowList.push(resolved)
             this.data.components ? this.data.components.push(resolved.toJSON()) : this.data.components = [resolved.toJSON()]
         }
+        return this;
+    }
+
+    ephemeral(enable: boolean) {
+        this.data.ephemeral = enable;
         return this;
     }
 

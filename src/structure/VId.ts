@@ -16,8 +16,8 @@ export interface VIdOptions extends DataOptions {
     intro: string;
 }
 export interface VIdDB extends VIdOptions {
-    links: Link[];
-    assets: Link[];
+    links: LinkDB[];
+    assets: LinkDB[];
 }
 export interface VId extends VIdDB {}
 export class VId extends Data {
@@ -141,7 +141,7 @@ addInteractionListener('vid_info_update', async i => {
     await i.update(infoMessageBuilder.data);
 })
 
-export interface Link {
+export interface LinkDB {
     id: string; 
     timestamp: number; 
     name: string; 

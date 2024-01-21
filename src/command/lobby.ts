@@ -75,7 +75,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 
 .subCommand('transfer', '移交房主权限', subcmd => {
     lobbySelect(subcmd)
-    .userInput('user', '输入用户@名字', {required: true})
+    .user('user', '输入用户@名字', {required: true})
     .execute(async (i, options) => {
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
