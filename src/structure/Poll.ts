@@ -73,7 +73,7 @@ export class Poll extends Data {
                 const resultMap = this.resultMap;
                 const optionText = this.options.map((option, i) => {
                     const percentage = resultMap.get(option.id)
-                    return `${i+1}. ${option.label}(**${Intl.NumberFormat('default', {style: 'percent'}).format(percentage ?? 0)}**)`
+                    return `${i+1}. ${option.label} (**${Intl.NumberFormat('default', {style: 'percent'}).format(percentage ?? 0)}**)`
                 }).toString();
                 embed
                 .color(this.closed ? 'Blue' : this.startTimestamp ? 'Green' : 'Grey')
