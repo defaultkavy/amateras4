@@ -2,8 +2,10 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../module/Bot/Command";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Reply } from "../module/Bot/Reply";
-import { codeBlock, substringWith } from "../module/Util/util";
+import { addInteractionListener, codeBlock, substringWith } from "../module/Util/util";
 import { Poll } from "../structure/Poll";
+import { MessageActionRow } from "../module/Bot/ActionRow";
+import { textContent } from "../method/embed";
 
 export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('create', '建立投票', subcmd => {
@@ -138,6 +140,15 @@ export const cmd_poll = new Command('poll', '投票指令')
     })
 })
 
+.subCommand('help', '功能指南', subcmd => {
+    subcmd
+    .execute(async i => {
+        return textContent('./help/poll.md', [
+            new MessageActionRow().button('进阶指南', 'poll_help_advanced')
+        ])
+    })
+})
+
 export function pollSelector(subcmd: ExecutableCommand, started: boolean | undefined = undefined, closed = false) {
     return subcmd.string('poll', '选择指定投票', {required: true,
         autocomplete: async (focused, _, i) => {
@@ -169,3 +180,16 @@ async function pollOwnerFetch(i: ChatInputCommandInteraction<'cached'>, pollId: 
     if (poll.ownerUserId !== i.user.id) throw '你不是投票创建者';
     return poll
 }
+
+addInteractionListener('poll_help_advanced', async i => {
+    if (!i.isButton()) return;
+    textContent('./help/poll_advanced.md', [
+        new MessageActionRow().button('功能指南', 'poll_help_intro')
+    ], i);
+})
+addInteractionListener('poll_help_intro', async i => {
+    if (!i.isButton()) return;
+    textContent('./help/poll.md', [
+        new MessageActionRow().button('进阶指南', 'poll_help_advanced')
+    ], i);
+})
