@@ -126,15 +126,18 @@ export class Poll extends Data {
         })
     }
 
-    async setOption(options: DataCreateOptions<PollOptionOptions>) {
-        const snowflake = Poll.pollOptionSnowflake.generate(true);
-        const data: PollOptionDB = {
-            ...options,
-            ...snowflake,
-            memberIdList: []
+    async setOption(options: Multiple<DataCreateOptions<PollOptionOptions>>) {
+        if (!(options instanceof Array)) options = [options]
+        for (const option of options) {
+            const snowflake = Poll.pollOptionSnowflake.generate(true);
+            const data: PollOptionDB = {
+                ...option,
+                ...snowflake,
+                memberIdList: []
+            }
+            await Poll.collection.updateOne({id: this.id}, {$push: {options: data}})
+            this.options.push(data);
         }
-        await Poll.collection.updateOne({id: this.id}, {$push: {options: data}})
-        this.options.push(data);
         this.pollMessageUpdate()
     }
 

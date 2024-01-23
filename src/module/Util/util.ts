@@ -1,4 +1,4 @@
-import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction } from "discord.js";
+import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction, Client } from "discord.js";
 import { client } from "../../method/client";
 import { CommandExecuteInteraction } from "../Bot/ExecutableCommand";
 import { Reply, ReplyError } from "../Bot/Reply";
@@ -14,6 +14,15 @@ export function addListener<E extends keyof ClientEvents>(event: E, callback: (.
         Object.assign(listeners, {[event]: new Set().add(callback)});
         client.on(event, (...args) => {
             listeners[event]!.forEach(fn => fn(...args))
+        })
+    }
+}
+
+export function startListen(client: Client<true>) {
+    for (const [event, fnSet] of Object.entries(listeners)) {
+        client.on(event, (...args) => {
+            //@ts-ignore
+            fnSet.forEach(fn => fn(...args))
         })
     }
 }

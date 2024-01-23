@@ -33,11 +33,7 @@ export const cmd_poll = new Command('poll', '投票指令')
             const labelList = options.label.split(/[;；]/)
             const OPTION_OVERSIZE = poll.options.length + labelList.length > 25;
             if (OPTION_OVERSIZE) throw '超出选项上限，最多只能存在25个选项'
-            await Promise.all(labelList.map(label => {
-                return poll.setOption({
-                    label: label
-                })
-            }))
+            await poll.setOption(labelList.map(label => ({label: label})))
             return new Reply(`已添加选项\n${codeBlock(labelList.toString().replaceAll(',', '\n'))}`)
         })
     })
