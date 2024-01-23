@@ -8,7 +8,7 @@ import { Poll } from "../structure/Poll";
 export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('create', '建立投票', subcmd => {
     subcmd
-    .string('title', '投票标题', {required: true})
+    .string('title', '投票标题', {required: true, max_length: 100})
     .execute(async (i, options) => {
         await i.deferSlient();
         const poll = await Poll.create({
@@ -91,7 +91,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 
 .subCommand('title', '修改投票标题', subcmd => {
     pollSelector(subcmd)
-    .string('title', '标题', {required: true})
+    .string('title', '标题', {required: true, max_length: 100})
     .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll)
         await poll.setTitle(options.title);
