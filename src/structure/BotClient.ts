@@ -10,6 +10,7 @@ import { cmd_list } from "../../index";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
+    ownerUserId: string;
 }
 export interface BotClientDB extends BotClientOptions {}
 export interface BotClient extends BotClientDB {}

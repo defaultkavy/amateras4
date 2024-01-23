@@ -26,6 +26,7 @@ const bot = new BotClient({
     id: client.user.id,
     timestamp: Date.now(),
     token: client.token,
+    ownerUserId: ''
 }, client)
 BotClient.manager.set(bot.id, bot);
 await bot.init()
