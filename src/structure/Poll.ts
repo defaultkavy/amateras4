@@ -7,6 +7,7 @@ import { Snowflake } from "../module/Snowflake";
 import { addInteractionListener, getUTCTimestamp } from "../module/Util/util";
 import { client } from "../method/client";
 import { ErrLog } from "../module/Log/Log";
+import { BotClient } from "./BotClient";
 
 export interface PollOptions extends DataOptions {
     ownerUserId: string;
@@ -14,7 +15,7 @@ export interface PollOptions extends DataOptions {
 }
 export interface PollDB extends PollOptions {
     options: PollOptionDB[];
-    messages: {messageId: string, guildId: string, channelId: string}[];
+    messages: {messageId: string, guildId: string, channelId: string, clientId: string}[];
     closed: boolean;
     thumbnailUrl?: string;
     minVotes: number;
@@ -110,14 +111,15 @@ export class Poll extends Data {
     async sendPollMessage(i: ChatInputCommandInteraction<'cached'>) {
         await i.reply(this.panelMessage().data);
         const message = await i.fetchReply();
-        const data = {messageId: message.id, channelId: i.channelId, guildId: i.guildId};
+        const data = {messageId: message.id, channelId: i.channelId, guildId: i.guildId, clientId: i.client.user.id};
         await Poll.collection.updateOne({id: this.id}, {$push: {messages: data}});
         this.messages.push(data);
     }
 
     async pollMessageUpdate() {
         this.messages.forEach(detail => {
-            const channel = client.guilds.cache.get(detail.guildId)
+            const bot = BotClient.get(detail.clientId);
+            const channel = bot.client.guilds.cache.get(detail.guildId)
             ?.channels.cache.get(detail.channelId)
             if (channel?.isTextBased()) channel.messages.edit(detail.messageId, this.panelMessage().data).catch(err => {
                 Poll.collection.updateOne({id: this.id}, {$pull: {messages: {messageId: detail.messageId}}})

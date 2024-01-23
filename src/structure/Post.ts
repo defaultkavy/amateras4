@@ -59,6 +59,7 @@ addListener('messageCreate', async message => {
     if (!message.inGuild()) return;
     const postChannel = PostMode.manager.get(message.channelId);
     if (!postChannel) return;
+    if (message.client.user.id !== postChannel.clientId) return;
     message.react('❤️')
     message.react('🥰')
     message.react('🤣')
@@ -74,5 +75,5 @@ addListener('messageCreate', async message => {
 })
 
 addListener('guildDelete', async guild => {
-    PostMode.collection.deleteMany({guildId: guild.id})
+    PostMode.collection.deleteMany({guildId: guild.id, clientId: guild.client.user.id})
 })

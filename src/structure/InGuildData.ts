@@ -1,9 +1,9 @@
-import { Guild } from "discord.js";
 import { Data, DataOptions } from "../module/DB/Data";
-import { client } from "../method/client";
+import { BotClient } from "./BotClient";
 
 export interface InGuildDataOptions extends DataOptions {
     guildId: string;
+    clientId: string;
 }
 export interface InGuildData extends InGuildDataOptions {}
 export class InGuildData extends Data {
@@ -11,5 +11,13 @@ export class InGuildData extends Data {
         super(options);
     }
 
-    get guild(): Guild { return client.guilds.cache.get(this.guildId) as Guild }
+    get guild() {
+        const guild = this.bot.client.guilds.cache.get(this.guildId);
+        if (!guild) throw 'guild missing';
+        return guild
+    }
+
+    get bot() {
+        return BotClient.get(this.clientId);
+    }
 }

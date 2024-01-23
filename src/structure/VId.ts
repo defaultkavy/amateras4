@@ -1,9 +1,7 @@
+import { ButtonStyle, Client, Interaction } from "discord.js";
 import { config } from "../../bot_config";
-import { client } from "../method/client";
 import { db } from "../method/db";
-import { Embed } from "../module/Bot/Embed";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
-import { Reply } from "../module/Bot/Reply";
 import { Data, DataOptions } from "../module/DB/Data";
 import { ErrLog } from "../module/Log/Log";
 import { Snowflake } from "../module/Snowflake";
@@ -55,13 +53,20 @@ export class VId extends Data {
 
     async delete() {
         await VId.collection.deleteOne({id: this.id})
+        const cursur = Lobby.collection.find({memberIdList: this.userId})
+        const lobbyData_list = await cursur.toArray();
+        cursur.close();
+        lobbyData_list.forEach(async data => {
+            const lobby = new Lobby(data);
+            lobby.deleteAssetMessage(this.userId);
+        })
     }
 
-    async infoMessage(options?: {asset?: boolean, ephemeral?: boolean}) {
-        const {asset, ephemeral} = options ?? {};
-        const user = await this.user();
+    async infoMessage(client: Client<true>, options?: {asset?: boolean, ephemeral?: boolean, lobby?: boolean}) {
+        const {asset, ephemeral, lobby} = options ?? {};
         const links_text = this.links.map(link => `[${link.name}](${link.url})`).toString().replaceAll(',', ' · ')
         const asset_text = this.assets.map(link => `[${link.name}](${link.url})`).toString().replaceAll(',', ' · ')
+        const user = await client.users.fetch(this.userId);
         return new MessageBuilder({ephemeral}).embed(embed => {
                 embed
                 .max()
@@ -75,16 +80,17 @@ export class VId extends Data {
             })
             .actionRow(row => {
                 row.button('更新资讯', `vid_info_update${asset ? '?asset' : ''}@${this.userId}`);
+                if (!ephemeral || !lobby) row.button('撤回讯息', `vid_info_delete@${this.userId}`, {style: ButtonStyle.Danger});
             })
     }
 
-    async updateInfo() {
+    async updateInfo(client: Client<true>) {
         const cursur = Lobby.collection.find({memberIdList: this.userId})
         const lobbyData_list = await cursur.toArray();
         cursur.close();
         lobbyData_list.forEach(async data => {
             const lobby = new Lobby(data);
-            lobby.updateAssetMessage(this.userId, await this.infoMessage({asset: true}));
+            lobby.updateAssetMessage(this.userId, await this.infoMessage(client, {asset: true}));
         })
     }
 
@@ -93,14 +99,12 @@ export class VId extends Data {
         const snowflake = VId.link_snowflake.generate(true);
         this.links.push({name, url, ...snowflake})
         await VId.collection.updateOne({id: this.id}, {$push: {links: {name, url, ...snowflake}}})
-        this.updateInfo();
     }
 
     async removeLink(id: string) {
         const link = this.links.filter(link => link.id === id)[0];
         this.links = this.links.filter(link => link.id !== id);
         await VId.collection.updateOne({id: this.id}, {$pull: {links: {id: id}}})
-        this.updateInfo();
         return link;
     }
 
@@ -109,25 +113,23 @@ export class VId extends Data {
         const snowflake = VId.link_snowflake.generate(true);
         this.assets.push({name, url, ...snowflake})
         await VId.collection.updateOne({id: this.id}, {$push: {assets: {name, url, ...snowflake}}})
-        this.updateInfo();
     }
 
     async removeAsset(id: string) {
         const link = this.assets.filter(link => link.id === id)[0];
         this.assets = this.assets.filter(link => link.id !== id);
         await VId.collection.updateOne({id: this.id}, {$pull: {assets: {id: id}}})
-        this.updateInfo();
         return link;
     }
 
     async setIntro(content: string) {
         this.intro = content;
         await VId.collection.updateOne({id: this.id}, {$set: {intro: content}})
-        this.updateInfo();
     }
 
-    async user() {
-        return await client.users.fetch(this.userId);
+    async rename(name: string) {
+        await VId.collection.updateOne({id: this.id}, {$set: {name: name}})
+        this.name = name;
     }
 }
 
@@ -137,7 +139,7 @@ addInteractionListener('vid_info_update', async i => {
     const assetEnabled = i.customId.includes('?asset');
     if (!userId) throw new ErrLog('VId: user id missing');
     const vid = await VId.fetch(userId);
-    const infoMessageBuilder = await vid.infoMessage({asset: assetEnabled});
+    const infoMessageBuilder = await vid.infoMessage(i.client, {asset: assetEnabled});
     await i.update(infoMessageBuilder.data);
 })
 

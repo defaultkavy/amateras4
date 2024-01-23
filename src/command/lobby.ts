@@ -11,10 +11,11 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
     .string('name', '房间名字', {required: true})
     .execute(async (i, options) => {
         await i.deferSlient();
-        const lobby = await Lobby.create({
+        const lobby = await Lobby.create(i.guild, {
             guildId: i.guildId,
             name: options.name,
-            ownerUserId: i.user.id
+            ownerUserId: i.user.id,
+            clientId: i.client.user.id
         })
         return new Reply(`房间已创建: ${lobby.name} > ${i.guild.channels.cache.get(lobby.infoChannelId)}`)
     })

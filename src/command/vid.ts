@@ -21,9 +21,10 @@ export const cmd_vid = new Command('vid', 'V身份')
 })
 .subCommand('info', 'V身份资讯', subcmd => {
     subcmd
+    .boolean('share', '是否分享你的身份卡（留空为否）')
     .execute(async (i, options) => {
         const vid = await VId.fetch(i.user.id);
-        return await vid.infoMessage({asset: i.user.id === vid.userId});
+        return (await vid.infoMessage(i, {ephemeral: !options.share, asset: !options.share}));
     })
 })
 
@@ -44,6 +45,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             await i.deferSlient();
             const vid = await VId.fetch(i.user.id)
             await vid.setLink(options.name, options.url);
+            vid.updateInfo(i);
             return new Reply(`**${options.name}** 链接已设定`)
         })  
     })
@@ -62,6 +64,7 @@ export const cmd_vid = new Command('vid', 'V身份')
         .execute(async (i, options) => {
             const vid = await VId.fetch(i.user.id)
             const link = await vid.removeLink(options.link);
+            vid.updateInfo(i);
             return new Reply(`**${link.name}** 链接已移除`)
         })
     })
@@ -106,6 +109,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             await i.deferSlient();
             const vid = await VId.fetch(i.user.id)
             await vid.setAsset(options.name, options.url);
+            vid.updateInfo(i);
             return new Reply(`**${options.name}** 素材链接已设定`)
         })  
     })
@@ -124,18 +128,21 @@ export const cmd_vid = new Command('vid', 'V身份')
         .execute(async (i, options) => {
             const vid = await VId.fetch(i.user.id)
             const link = await vid.removeAsset(options.link);
+            vid.updateInfo(i);
             return new Reply(`**${link.name}** 链接已移除`)
         })
     })
 })
 
-.subCommand('help', '功能指南', subcmd => {
-    subcmd.execute(i => {
-        return new MessageBuilder({ephemeral: true})
-            .embed(embed => {
-                embed
-                .description(`### V-ID Card\n用户可注册V身份后，编辑自己的V身份资讯，将自己的V身份卡分享到文字频道中。\n输入 \`/vid\` 可查看所用相关指令。`)
-    })})
+.subCommand('rename', '重命名', subcmd => {
+    subcmd
+    .string('name', '名字', {required: true})
+    .execute(async (i, options) => {
+        const vid = await VId.fetch(i.user.id);
+        await vid.rename(options.name);
+        vid.updateInfo(i);
+        return new Reply(`已重命名为 **${options.name}**`)
+    })
 })
 
 addInteractionListener('vid_intro_modal', async i => {
@@ -144,5 +151,6 @@ addInteractionListener('vid_intro_modal', async i => {
     const vid = await VId.fetch(userId)
     const intro = i.fields.getTextInputValue('intro');
     await vid.setIntro(intro);
+    vid.updateInfo(i);
     return new Reply(`V身份介绍已设定`)
 })

@@ -1,5 +1,4 @@
 import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction, Client } from "discord.js";
-import { client } from "../../method/client";
 import { CommandExecuteInteraction } from "../Bot/ExecutableCommand";
 import { Reply, ReplyError } from "../Bot/Reply";
 export const URLRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
@@ -12,9 +11,6 @@ export function addListener<E extends keyof ClientEvents>(event: E, callback: (.
         set.add(callback);
     } else {
         Object.assign(listeners, {[event]: new Set().add(callback)});
-        client.on(event, (...args) => {
-            listeners[event]!.forEach(fn => fn(...args))
-        })
     }
 }
 

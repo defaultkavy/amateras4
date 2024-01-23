@@ -1,11 +1,10 @@
-import { ButtonStyle, CategoryChannel, ChannelType, PermissionFlagsBits, TextChannel, User } from "discord.js";
+import { ButtonStyle, CategoryChannel, ChannelType, Guild, PermissionFlagsBits, TextChannel, User } from "discord.js";
 import { client } from "../method/client";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { deleteCategory, messageInit } from "../module/Util/channel";
 import { db } from "../method/db";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { addInteractionListener, getUTCTimestamp } from "../module/Util/util";
-import { Reply } from "../module/Bot/Reply";
 import { Snowflake } from "../module/Snowflake";
 import { config } from "../../bot_config";
 import { dangerEmbed, infoEmbed } from "../method/embed";
@@ -34,8 +33,7 @@ export class Lobby extends InGuildData {
         super(data);
     }
 
-    static async create(options: Omit<LobbyOptions, 'id' | 'timestamp'>) {
-        const guild = await client.guilds.fetch(options.guildId);
+    static async create(guild: Guild, options: Omit<LobbyOptions, 'id' | 'timestamp'>) {
         await guild.roles.fetch();
         const category = await guild.channels.create({
             name: options.name,
@@ -80,7 +78,7 @@ export class Lobby extends InGuildData {
             voiceChannelId: voice_channel.id,
             infoChannelId: info_channel.id,
             memberIdList: [options.ownerUserId],
-            assetMessageList: []
+            assetMessageList: [],
         }
         await Lobby.collection.insertOne(data)
 
@@ -233,9 +231,9 @@ export class Lobby extends InGuildData {
     async sendAssetMessage(userId: string, asset_channel?: TextChannel | null) {
         if (asset_channel === undefined) asset_channel = await this.assetChannel();
         if (!asset_channel) return;
-        const vid = await VId.safeFetch(userId)
+        const vid = await VId.safeFetch(userId);
         if (!vid) return;
-        const message = await (await vid.infoMessage({asset: true})).send(asset_channel)
+        const message = await (await vid.infoMessage(this.bot.client, {asset: true, lobby: true})).send(asset_channel);
         const data = {userId: userId, messageId: message.id};
         this.assetMessageList.push(data);
         await Lobby.collection.updateOne({id: this.id}, {$push: {assetMessageList: data}})

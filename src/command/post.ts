@@ -12,7 +12,8 @@ export const cmd_post = new Command('post', '贴文频道')
             if (options.channel.type !== ChannelType.GuildText) throw '请选择文字频道';
             await PostMode.create({
                 channelId: options.channel.id,
-                guildId: options.channel.guildId
+                guildId: options.channel.guildId,
+                clientId: i.client.user.id
             })
             return new Reply(`已开启贴文模式：${options.channel}`)
         }
