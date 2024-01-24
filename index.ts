@@ -28,7 +28,9 @@ const bot = new BotClient({
     id: client.user.id,
     timestamp: Date.now(),
     token: client.token,
-    ownerUserId: ''
+    ownerUserId: '',
+    avatarURL: client.user.avatarURL({size: 1024}),
+    username: client.user.username
 }, client)
 BotClient.manager.set(bot.id, bot);
 await bot.init()

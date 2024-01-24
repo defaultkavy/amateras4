@@ -1,9 +1,9 @@
-import { Client } from "discord.js";
+import { Client, ClientUser } from "discord.js";
 import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
 import { Snowflake } from "../module/Snowflake";
-import { startListen } from "../module/Util/util";
+import { addListener, startListen } from "../module/Util/util";
 import { ErrLog, Log } from "../module/Log/Log";
 import { CommandManager } from "../module/Bot/CommandManager";
 import { cmd_list } from "../../index";
@@ -12,7 +12,10 @@ export interface BotClientOptions extends DataOptions {
     token: string;
     ownerUserId: string;
 }
-export interface BotClientDB extends BotClientOptions {}
+export interface BotClientDB extends BotClientOptions {
+    username: string;
+    avatarURL: string | null;
+}
 export interface BotClient extends BotClientDB {}
 
 export class BotClient extends Data {
@@ -34,7 +37,9 @@ export class BotClient extends Data {
         const data: BotClientDB = {
             ...options,
             id: bot_client.user.id,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            username: bot_client.user.username,
+            avatarURL: bot_client.user.avatarURL({size: 1024})
         }
         this.collection.insertOne(data);
         const instance = new BotClient(data, bot_client);
@@ -63,6 +68,7 @@ export class BotClient extends Data {
     }
 
     async init() {
+        await this.update(this.client.user);
         startListen(this.client);
         // fetching
         await this.client.guilds.fetch();
@@ -81,7 +87,29 @@ export class BotClient extends Data {
         return bot
     }
 
+    async update(user: ClientUser) {
+        await BotClient.collection.updateOne({id: this.id}, {$set: {
+            username: user.username,
+            avatarURL: user.avatarURL({size: 1024})
+        }})
+        this.username = user.username;
+        this.avatarURL = user.avatarURL({size: 1024})
+    }
+
+    async delete(callback?: () => Promise<void>) {
+        await BotClient.collection.deleteOne({id: this.id});
+        BotClient.manager.delete(this.id);
+        if (callback) await callback()
+        await this.client.destroy();
+    }
+
     get inviteUrl() {
         return `https://discord.com/api/oauth2/authorize?client_id=${this.client.user.id}&permissions=8&scope=bot`
     }
 }
+
+addListener('userUpdate', (o, user) => {
+    if (user.id !== user.client.user.id) return;
+    const bot = BotClient.get(user.id);
+    bot.update(bot.client.user)
+})
