@@ -1,5 +1,6 @@
 import { config } from "./bot_config";
 import { cmd_bot } from "./src/command/bot";
+import { cmd_chat } from "./src/command/chat";
 import { cmdx_info } from "./src/command/context/info";
 import { cmd_help } from "./src/command/help";
 import { cmd_lobby } from "./src/command/lobby";
@@ -21,6 +22,7 @@ export const cmd_list = [
     cmd_post,
     cmd_bot,
     cmd_help,
+    cmd_chat,
     cmdx_info,
 ]
 listeners();

@@ -16,7 +16,8 @@ export function mod_welcome() {
                 const welcome = await WelcomeMessage.create({
                     guildId: i.guildId,
                     channelId: options.channel.id,
-                    content: options.content
+                    content: options.content,
+                    clientId: i.client.user.id
                 })
                 if (duplicate) return new Reply(`新成员信息设定覆盖完成`)
                 else return new Reply(`新成员信息设定完成`)

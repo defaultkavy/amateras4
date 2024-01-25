@@ -4,8 +4,6 @@ import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Reply } from "../module/Bot/Reply";
 import { addInteractionListener, codeBlock, substringWith } from "../module/Util/util";
 import { Poll } from "../structure/Poll";
-import { MessageActionRow } from "../module/Bot/ActionRow";
-import { textContent } from "../method/embed";
 
 export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('create', '建立投票', subcmd => {

@@ -27,9 +27,8 @@ export type RestInteractionType<Cached extends CacheType> =
 | AnySelectMenuInteraction<Cached>
 | ButtonInteraction<Cached>
 | ModalSubmitInteraction<Cached>;
-export function addInteractionListener(customIdStartWith: string, callback: (i: RestInteractionType<'cached'> & CommandExecuteInteraction) => OrPromise<string | Reply | Error | void>) {
+export function addInteractionListener(customIdStartWith: string, callback: (i: RestInteractionType<CacheType> & CommandExecuteInteraction) => OrPromise<string | Reply | Error | void>) {
     addListener('interactionCreate', async i => {
-        if (!i.inCachedGuild()) return;
         if (!i.isAnySelectMenu() && !i.isModalSubmit() && !i.isButton()) return;
         if (!i.customId.startsWith(customIdStartWith)) return;
         const additional: CommandExecuteInteraction = { deferSlient: async () => await i.deferReply({ephemeral: true})}

@@ -7,6 +7,7 @@ import { addListener, startListen } from "../module/Util/util";
 import { ErrLog, Log } from "../module/Log/Log";
 import { CommandManager } from "../module/Bot/CommandManager";
 import { cmd_list } from "../../index";
+import { Chat } from "./Chat";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -69,7 +70,6 @@ export class BotClient extends Data {
 
     async init() {
         await this.update(this.client.user);
-        startListen(this.client);
         // fetching
         await this.client.guilds.fetch();
         const guilds = [...this.client.guilds.cache.values()];
@@ -78,6 +78,10 @@ export class BotClient extends Data {
             await guild.channels.fetch()
         }
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds)
+        // function init
+        await Chat.init(this.client.user.id);
+        //
+        startListen(this.client);
         this.cmd_manager.listen();
     }
 

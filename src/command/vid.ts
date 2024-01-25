@@ -24,7 +24,7 @@ export const cmd_vid = new Command('vid', 'V身份')
     .boolean('share', '是否分享你的身份卡（留空为否）')
     .execute(async (i, options) => {
         const vid = await VId.fetch(i.user.id);
-        return (await vid.infoMessage(i, {ephemeral: !options.share, asset: !options.share}));
+        return (await vid.infoMessage(i.client, {ephemeral: !options.share, asset: !options.share}));
     })
 })
 
@@ -45,7 +45,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             await i.deferSlient();
             const vid = await VId.fetch(i.user.id)
             await vid.setLink(options.name, options.url);
-            vid.updateInfo(i);
+            vid.updateInfo(i.client);
             return new Reply(`**${options.name}** 链接已设定`)
         })  
     })
@@ -64,7 +64,7 @@ export const cmd_vid = new Command('vid', 'V身份')
         .execute(async (i, options) => {
             const vid = await VId.fetch(i.user.id)
             const link = await vid.removeLink(options.link);
-            vid.updateInfo(i);
+            vid.updateInfo(i.client);
             return new Reply(`**${link.name}** 链接已移除`)
         })
     })
@@ -109,7 +109,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             await i.deferSlient();
             const vid = await VId.fetch(i.user.id)
             await vid.setAsset(options.name, options.url);
-            vid.updateInfo(i);
+            vid.updateInfo(i.client);
             return new Reply(`**${options.name}** 素材链接已设定`)
         })  
     })
@@ -128,7 +128,7 @@ export const cmd_vid = new Command('vid', 'V身份')
         .execute(async (i, options) => {
             const vid = await VId.fetch(i.user.id)
             const link = await vid.removeAsset(options.link);
-            vid.updateInfo(i);
+            vid.updateInfo(i.client);
             return new Reply(`**${link.name}** 链接已移除`)
         })
     })
@@ -140,7 +140,7 @@ export const cmd_vid = new Command('vid', 'V身份')
     .execute(async (i, options) => {
         const vid = await VId.fetch(i.user.id);
         await vid.rename(options.name);
-        vid.updateInfo(i);
+        vid.updateInfo(i.client);
         return new Reply(`已重命名为 **${options.name}**`)
     })
 })
@@ -151,6 +151,6 @@ addInteractionListener('vid_intro_modal', async i => {
     const vid = await VId.fetch(userId)
     const intro = i.fields.getTextInputValue('intro');
     await vid.setIntro(intro);
-    vid.updateInfo(i);
+    vid.updateInfo(i.client);
     return new Reply(`V身份介绍已设定`)
 })

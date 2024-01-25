@@ -25,7 +25,7 @@ export class Reply extends MessageBuilder {
         return this;
     }
 
-    async reply(i: ReplyInteraction<'cached'>) {
+    async reply(i: ReplyInteraction<CacheType>) {
         const emptyEmbed = !Object.entries(this.embedData).length
         const data = {
             content: emptyEmbed ? this.message : undefined, 
