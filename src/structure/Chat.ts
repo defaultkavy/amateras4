@@ -110,12 +110,11 @@ addListener('messageCreate', message => {
 
 addInteractionListener('chat_close', async i => {
     if (!i.isButton()) return;
-    await i.deferSlient();
     const chat = Chat.get(i.client.user.id, i.user.id);
     if (!chat) throw '该聊天模式已不存在';
     await chat.delete();
     i.update(new MessageBuilder().clean().embed(embed => {
         embed.color('Grey')
-        .description('聊天模式已关闭')
+        .description(`${chat.channel} 的聊天模式已关闭`)
     }).data)
 })

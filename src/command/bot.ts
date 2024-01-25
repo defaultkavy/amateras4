@@ -7,6 +7,7 @@ export const cmd_bot = new Command('bot', 'Bot 系统指令')
     subcmd
     .string('token', 'Bot Token', {required: true})
     .execute(async (i, options) => {
+        await i.deferSlient()
         const bot = await BotClient.create({
             token: options.token,
             ownerUserId: i.user.id

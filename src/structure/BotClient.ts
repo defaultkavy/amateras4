@@ -8,6 +8,7 @@ import { ErrLog, Log } from "../module/Log/Log";
 import { CommandManager } from "../module/Bot/CommandManager";
 import { cmd_list } from "../../index";
 import { Chat } from "./Chat";
+import { CLIENT_OPTIONS } from "../method/client";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -32,9 +33,16 @@ export class BotClient extends Data {
     }
 
     static async create(options: DataCreateOptions<BotClientOptions>) {
-        const bot_client = new Client({intents: ['GuildMembers', 'MessageContent', 'GuildIntegrations', 'GuildMessages', 'Guilds']})
+        let bot_client = new Client(CLIENT_OPTIONS);
         await bot_client.login(options.token);
-        if (!bot_client.isReady()) throw 'Bot client login error';
+        await new Promise<void>(resolve => {
+            bot_client.once('ready', client => {
+                bot_client = client;
+                resolve();
+            })
+        })
+        if (!bot_client.isReady()) throw 'BotClient.create(): client is not ready after login';
+        new Log(`Login <${bot_client.user.username}(${bot_client.user.id})>`)
         const data: BotClientDB = {
             ...options,
             id: bot_client.user.id,
@@ -53,19 +61,26 @@ export class BotClient extends Data {
         const cursor = this.collection.find();
         const list = await cursor.toArray();
         cursor.close();
-        list.forEach(async data => {
-            new Log(`Login to bot client: ${data.id}`)
-            const bot_client = new Client({intents: ['GuildMembers', 'MessageContent', 'GuildIntegrations', 'GuildMessages', 'Guilds']})
+        await Promise.all(list.map(async data => {
+            let bot_client = new Client(CLIENT_OPTIONS);
             try {
                 await bot_client.login(data.token);
+                await new Promise<void>(resolve => {
+                    bot_client.once('ready', client => {
+                        bot_client = client;
+                        resolve();
+                    })
+                })
+                if (!bot_client.isReady()) throw 'BotClient.init(): client is not ready after login';
+                new Log(`Login <${bot_client.user.username}(${bot_client.user.id})>`)
             } catch(err) {
                 new ErrLog(err);
                 return;
             }
             const bot = new BotClient(data, bot_client as Client<true>);
             this.manager.set(bot.id, bot);
-            await bot.init();
-        })
+            return await bot.init();
+        }))
     }
 
     async init() {
