@@ -4,7 +4,7 @@ import { Chat } from "../structure/Chat";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
 
-export const cmd_chat = new Command('chat', '在这个频道中启动机器人聊天模式')
+export const cmd_chat = new Command('chat', '在这个频道中启用/关闭机器人聊天模式')
 .execute(async (i, options) => {
     if (i.channel?.type !== ChannelType.GuildText) throw '必须是文字频道';
     await i.deferSlient()
@@ -24,6 +24,6 @@ export const cmd_chat = new Command('chat', '在这个频道中启动机器人�
     return new MessageBuilder()
     .embed(embed => {
         embed.color('Green')
-        .description(`### 机器人聊天模式已启动\n请到[私信频道](https://discordapp.com/channels/@me/${chat.clientId})发送到 ${i.client.user.displayName} 的内容将会透过机器人账号发送到这个频道。`);
+        .description(`### 机器人聊天模式已启动\n请到 ${i.client.user} 的私信频道发送消息，所有发送到 ${i.client.user} 的内容将会透过它的账号发送到这个频道。`);
     })
 })
