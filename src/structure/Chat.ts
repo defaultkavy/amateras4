@@ -1,4 +1,4 @@
-import { ButtonStyle, ChannelType, DMChannel, MessageType, TextChannel } from "discord.js";
+import { ButtonStyle, ChannelType, DMChannel, Message, MessageType, TextChannel } from "discord.js";
 import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
@@ -51,8 +51,11 @@ export class Chat extends InGuildData {
         return [...this.manager.values()].find(chat => chat.clientId === clientId && chat.userId === userId);
     }
 
-    async send(content: string) {
-        this.channel.send(new MessageBuilder().content(content).data)
+    async send(message: Message) {
+        const attachmentsUrl = message.attachments.map(att => att.url)
+        this.channel.send(new MessageBuilder()
+        .content(`${message.content}\n${attachmentsUrl.toString().replaceAll(',', '\n')}`)
+        .data)
         this.updateInfo();
     }
 
@@ -102,7 +105,7 @@ addListener('messageCreate', message => {
     const chat = Chat.get(message.client.user.id, message.author.id);
     if (!chat) return;
     if (chat.clientId !== message.client.user.id) return;
-    chat.send(message.content);
+    chat.send(message);
 })
 
 addInteractionListener('chat_close', async i => {
