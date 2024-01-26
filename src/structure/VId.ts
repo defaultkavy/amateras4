@@ -80,8 +80,11 @@ export class VId extends Data {
             })
             .actionRow(row => {
                 row.button('更新资讯', `vid_info_update${asset ? '?asset' : ''}@${this.userId}`);
-                if (!ephemeral || !lobby) row.button('撤回讯息', `vid_info_delete@${this.userId}`, {style: ButtonStyle.Danger});
+                if (lobby) return;
+                if (ephemeral) return;
+                row.button('撤回讯息', `vid_info_delete@${this.userId}`, {style: ButtonStyle.Danger});
             })
+            .ephemeral(ephemeral)
     }
 
     async updateInfo(client: Client<true>) {

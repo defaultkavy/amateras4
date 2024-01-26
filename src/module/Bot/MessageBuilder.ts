@@ -64,7 +64,7 @@ export class MessageBuilder {
         return this;
     }
 
-    ephemeral(enable: boolean) {
+    ephemeral(enable: boolean | undefined) {
         this.data.ephemeral = enable;
         return this;
     }
