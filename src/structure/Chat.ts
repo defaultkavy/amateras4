@@ -61,7 +61,7 @@ export class Chat extends InGuildData {
 
     async delete() {
         await Chat.collection.deleteOne({id: this.id});
-        Chat.manager.delete(this.userId);
+        Chat.manager.delete(this.id);
     }
 
     infoMessage() {
