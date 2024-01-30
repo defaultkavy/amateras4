@@ -140,10 +140,10 @@ addInteractionListener('vid_info_update', async i => {
     if (!i.isButton()) return;
     const userId = i.customId.split('@')[1];
     const assetEnabled = i.customId.includes('?asset');
-    const lobbyMessage = i.customId.includes('?lobby');
+    const isLobbyMessage = i.customId.includes('?lobby');
     if (!userId) throw new ErrLog('VId: user id missing');
     const vid = await VId.fetch(userId);
-    const infoMessageBuilder = await vid.infoMessage(i.client, {asset: assetEnabled, lobby: lobbyMessage});
+    const infoMessageBuilder = await vid.infoMessage(i.client, {asset: assetEnabled, lobby: isLobbyMessage});
     await i.update(infoMessageBuilder.data);
 })
 
