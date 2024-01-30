@@ -79,7 +79,7 @@ export class VId extends Data {
                 .field('更新时间', `<t:${getUTCTimestamp()}:R>`, true)
             })
             .actionRow(row => {
-                row.button('更新资讯', `vid_info_update${asset ? '?asset' : ''}@${this.userId}`);
+                row.button('更新资讯', `vid_info_update${asset ? '?asset' : ''}${lobby ? '?lobby' : ''}@${this.userId}`);
                 if (lobby) return;
                 if (ephemeral) return;
                 row.button('撤回讯息', `vid_info_delete@${this.userId}`, {style: ButtonStyle.Danger});
@@ -140,9 +140,10 @@ addInteractionListener('vid_info_update', async i => {
     if (!i.isButton()) return;
     const userId = i.customId.split('@')[1];
     const assetEnabled = i.customId.includes('?asset');
+    const lobbyMessage = i.customId.includes('?lobby');
     if (!userId) throw new ErrLog('VId: user id missing');
     const vid = await VId.fetch(userId);
-    const infoMessageBuilder = await vid.infoMessage(i.client, {asset: assetEnabled});
+    const infoMessageBuilder = await vid.infoMessage(i.client, {asset: assetEnabled, lobby: lobbyMessage});
     await i.update(infoMessageBuilder.data);
 })
 
