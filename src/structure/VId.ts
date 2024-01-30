@@ -93,7 +93,7 @@ export class VId extends Data {
         cursur.close();
         lobbyData_list.forEach(async data => {
             const lobby = new Lobby(data);
-            lobby.updateAssetMessage(this.userId, await this.infoMessage(client, {asset: true}));
+            lobby.updateAssetMessage(this.userId, await this.infoMessage(client, {asset: true, lobby: true}));
         })
     }
 
