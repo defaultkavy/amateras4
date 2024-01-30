@@ -3,6 +3,7 @@ import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Modal } from "../module/Bot/Modal";
 import { Reply } from "../module/Bot/Reply";
 import { addInteractionListener } from "../module/Util/util";
+import { Admin } from "../structure/Admin";
 import { VId } from "../structure/VId";
 
 export const cmd_vid = new Command('vid', 'V身份')
@@ -10,10 +11,11 @@ export const cmd_vid = new Command('vid', 'V身份')
     subcmd
     .string('name', 'V身份全名', {required: true})
     .execute(async (i, options) => {
-        if (await VId.safeFetch(i.user.id)) throw `你已注册过V身份`
+        const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+        if (await VId.safeFetch(userId)) throw `你已注册过V身份`
         const vid = await VId.create({
             name: options.name,
-            userId: i.user.id,
+            userId: userId,
             intro: ''
         })
         return new Reply(`**${vid.name}**注册成功`)
@@ -23,7 +25,8 @@ export const cmd_vid = new Command('vid', 'V身份')
     subcmd
     .boolean('share', '是否分享你的身份卡（留空为否）')
     .execute(async (i, options) => {
-        const vid = await VId.fetch(i.user.id);
+        const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+        const vid = await VId.fetch(userId);
         return (await vid.infoMessage(i.client, {ephemeral: !options.share, asset: !options.share}));
     })
 })
@@ -43,7 +46,8 @@ export const cmd_vid = new Command('vid', 'V身份')
         .string('url', '链接', {required: true})
         .execute(async (i, options) => {
             await i.deferSlient();
-            const vid = await VId.fetch(i.user.id)
+            const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+            const vid = await VId.fetch(userId)
             await vid.setLink(options.name, options.url);
             vid.updateInfo(i.client);
             return new Reply(`**${options.name}** 链接已设定`)
@@ -54,7 +58,8 @@ export const cmd_vid = new Command('vid', 'V身份')
         subcmd
         .string('link', '选择链接', {required: true,
             autocomplete: async (focused, _, i) => {
-                const vid = await VId.fetch(i.user.id);
+                const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+                const vid = await VId.fetch(userId);
                 return vid.links.filter(link => link.name.includes(focused.value)).map(link => ({
                     name: `${link.name} (${link.url.substring(0, 50)}${link.url.length > 50 ? '...' : ''})`,
                     value: link.id
@@ -62,7 +67,8 @@ export const cmd_vid = new Command('vid', 'V身份')
             }
         })
         .execute(async (i, options) => {
-            const vid = await VId.fetch(i.user.id)
+            const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+            const vid = await VId.fetch(userId)
             const link = await vid.removeLink(options.link);
             vid.updateInfo(i.client);
             return new Reply(`**${link.name}** 链接已移除`)
@@ -73,7 +79,8 @@ export const cmd_vid = new Command('vid', 'V身份')
 .subCommand('destroy', '删除V身份资讯', subcmd => {
     subcmd
     .execute(async (i, options) => {
-        const vid = await VId.fetch(i.user.id);
+        const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+        const vid = await VId.fetch(userId);
         await vid.delete();
         return new Reply(`V身份资讯已删除`);
     })
@@ -81,9 +88,10 @@ export const cmd_vid = new Command('vid', 'V身份')
 
 .subCommand('intro', '设定介绍', subcmd => {
     subcmd.execute(async (i, options) => {
-        const vid = await VId.fetch(i.user.id);
+        const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+        const vid = await VId.fetch(userId);
         i.showModal(
-            new Modal('V-ID Card Edit', `vid_intro_modal@${i.user.id}`)
+            new Modal('V-ID Card Edit', `vid_intro_modal@${userId}`)
             .actionRow(row => {
                 row.paragraph('Intro', 'intro', {value: vid.intro, required: false})
             })
@@ -107,7 +115,8 @@ export const cmd_vid = new Command('vid', 'V身份')
         .string('url', '链接', {required: true})
         .execute(async (i, options) => {
             await i.deferSlient();
-            const vid = await VId.fetch(i.user.id)
+            const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+            const vid = await VId.fetch(userId)
             await vid.setAsset(options.name, options.url);
             vid.updateInfo(i.client);
             return new Reply(`**${options.name}** 素材链接已设定`)
@@ -118,7 +127,8 @@ export const cmd_vid = new Command('vid', 'V身份')
         subcmd
         .string('link', '选择链接', {required: true,
             autocomplete: async (focused, _, i) => {
-                const vid = await VId.fetch(i.user.id);
+                const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+                const vid = await VId.fetch(userId);
                 return vid.assets.filter(link => link.name.includes(focused.value)).map(link => ({
                     name: `${link.name} (${link.url.substring(0, 50)}${link.url.length > 50 ? '...' : ''})`,
                     value: link.id
@@ -126,7 +136,8 @@ export const cmd_vid = new Command('vid', 'V身份')
             }
         })
         .execute(async (i, options) => {
-            const vid = await VId.fetch(i.user.id)
+            const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+            const vid = await VId.fetch(userId)
             const link = await vid.removeAsset(options.link);
             vid.updateInfo(i.client);
             return new Reply(`**${link.name}** 链接已移除`)
@@ -138,7 +149,8 @@ export const cmd_vid = new Command('vid', 'V身份')
     subcmd
     .string('name', '名字', {required: true})
     .execute(async (i, options) => {
-        const vid = await VId.fetch(i.user.id);
+        const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
+        const vid = await VId.fetch(userId);
         await vid.rename(options.name);
         vid.updateInfo(i.client);
         return new Reply(`已重命名为 **${options.name}**`)

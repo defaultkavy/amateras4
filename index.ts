@@ -14,6 +14,7 @@ import { Log } from "./src/module/Log/Log";
 import { addListener } from "./src/module/Util/util";
 import { BotClient } from "./src/structure/BotClient";
 import { PostMode } from "./src/structure/Post";
+import { System } from "./src/structure/System";
 export const cmd_list = [
     cmd_lobby,
     cmd_mod,
@@ -39,6 +40,7 @@ await bot.init()
 
 // Init
 new Log('System Initializing...');
+System.init();
 await PostMode.init();
 await BotClient.init();
 new Log('System Initialized');
