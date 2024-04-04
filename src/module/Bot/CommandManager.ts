@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, AutocompleteFocusedOption, AutocompleteInteraction, Client, CommandInteractionOption, Guild, REST, Routes } from "discord.js";
+import { ApplicationCommandOptionAllowedChannelTypes, ApplicationCommandOptionType, AutocompleteFocusedOption, AutocompleteInteraction, BaseChannel, Client, CommandInteractionOption, Guild, GuildBasedChannel, GuildChannel, REST, Routes } from "discord.js";
 import { Command, SubcommandGroup } from "./Command";
 import { ExecutableCommand } from "./ExecutableCommand";
 import { MenuCommand, MessageMenuCommand, UserMenuCommand } from "./MenuCommand";
@@ -115,7 +115,7 @@ export enum CommandTypes {
 }
 
 export class OptionMap {
-    private cache = new Map<string, string | boolean | number | undefined>
+    private cache = new Map<string, string | boolean | number | BaseChannel | undefined>
     constructor(options: CommandInteractionOption[]) {
         options.forEach(option => this.cache.set(option.name, option.value));
     }

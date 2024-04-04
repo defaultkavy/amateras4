@@ -1,4 +1,4 @@
-import { ThreadAutoArchiveDuration } from "discord.js";
+import { MessageType, ThreadAutoArchiveDuration } from "discord.js";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
 import { addListener } from "../module/Util/util";
@@ -57,6 +57,7 @@ export class PostChannel extends InGuildData {
 
 addListener('messageCreate', async message => {
     if (!message.inGuild()) return;
+    if (message.type === MessageType.ChatInputCommand || message.type === MessageType.ContextMenuCommand) return;
     const postChannel = PostChannel.manager.get(message.channelId);
     if (!postChannel) return;
     if (message.client.user.id !== postChannel.clientId) return;
@@ -74,11 +75,16 @@ addListener('messageCreate', async message => {
             thread.setArchived()
         }
     } catch (err) {
-        console.debug(true)
         new Error(`${err}`)
     }
 })
 
 addListener('guildDelete', async guild => {
     PostChannel.collection.deleteMany({guildId: guild.id, clientId: guild.client.user.id})
+})
+
+addListener('channelDelete', async channel => {
+    PostChannel.manager.forEach(postChannel => {
+        if (postChannel.channelId === channel.id) postChannel.delete();
+    })
 })

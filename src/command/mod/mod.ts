@@ -1,4 +1,5 @@
 import { Command } from "../../module/Bot/Command";
+import { mod_forum } from "./forum";
 import { mod_lobby } from "./lobby";
 import { mod_log } from "./log-mode";
 import { mod_post } from "./post-mode";
@@ -11,3 +12,4 @@ mod_welcome();
 mod_vid();
 mod_post();
 mod_log();
+mod_forum();

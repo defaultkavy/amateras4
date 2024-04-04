@@ -1,3 +1,4 @@
+import { ChannelType, MessageType } from "discord.js";
 import { config } from "./bot_config";
 import { cmd_bot } from "./src/command/bot";
 import { cmd_chat } from "./src/command/chat";

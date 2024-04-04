@@ -1,4 +1,4 @@
-import { Client, Invite, TextChannel } from "discord.js";
+import { TextChannel } from "discord.js";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
