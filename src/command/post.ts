@@ -15,8 +15,8 @@ export const cmd_post = new Command('post', '贴文')
         i.showModal(
             new Modal('Forum Post Create', `forum-post-create@${forum.id}`)
                 .short('Title', 'title', {max_length: 100, required: true})
-                .paragraph('Content', 'content', {max_length: 2000})
-                .short('Cover Image URL', 'cover')
+                .paragraph('Content', 'content', {max_length: 2000, required: false, placeholder: '如果没有提供封面链接，此处为必填项'})
+                .short('Cover Image URL', 'cover', {required: false})
                 .data
         )
     })
@@ -37,7 +37,7 @@ export const cmd_post = new Command('post', '贴文')
         i.showModal(
             new Modal('Forum Post Edit', `forum-post-edit@${message.id}`)
             .short('Title', 'title', {max_length: 100, value: channel.name})
-            .paragraph('Content', 'content', {max_length: 2000, value: content})
+            .paragraph('Content', 'content', {max_length: 2000, value: content, required: false, placeholder: '如果没有提供封面链接，此处为必填项'})
             .short('Cover Image URL', 'cover', {value: coverUrl, required: false})
             .data
         )
@@ -56,6 +56,7 @@ addInteractionListener('forum-post-create', async i => {
         content: i.fields.getField('content').value,
         cover: i.fields.getField('cover').value
     }
+    if (!data.content.length && !data.cover.length) throw `贴文内容或封面链接至少需要填写一个`;
     const content = `${data.cover}\n${data.content}`;
     const channel = await forum.threads.create({
         name: data.title,
@@ -78,6 +79,7 @@ addInteractionListener('forum-post-edit', async i => {
         content: i.fields.getField('content').value,
         cover: i.fields.getField('cover').value
     }
+    if (!data.content.length && !data.cover.length) throw `贴文内容或封面链接至少需要填写一项`;
     try {
         if (data.title !== channel.name) channel.edit({
             name: data.title
