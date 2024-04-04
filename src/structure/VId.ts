@@ -1,4 +1,4 @@
-import { ButtonStyle, Client, Interaction } from "discord.js";
+import { ButtonStyle, Client, Interaction, MessageType } from "discord.js";
 import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
@@ -145,6 +145,13 @@ addInteractionListener('vid_info_update', async i => {
     const vid = await VId.fetch(userId);
     const infoMessageBuilder = await vid.infoMessage(i.client, {asset: assetEnabled, lobby: isLobbyMessage});
     await i.update(infoMessageBuilder.data);
+})
+addInteractionListener('vid_info_delete', async i => {
+    if (!i.isButton()) return;
+    if (!i.message.interaction) return;
+    if (i.message.interaction.user !== i.user) throw '只限指令使用者操作' 
+    await i.deferUpdate();
+    i.message.delete();
 })
 
 export interface LinkDB {

@@ -10,6 +10,7 @@ import { config } from "../../bot_config";
 import { dangerEmbed, infoEmbed } from "../method/embed";
 import { ErrLog } from "../module/Log/Log";
 import { VId } from "./VId";
+import { LogChannel } from "./LogChannel";
 
 export interface LobbyOptions extends InGuildDataOptions {
     name: string;
@@ -84,7 +85,8 @@ export class Lobby extends InGuildData {
 
         const lobby = new Lobby(data);
         lobby.infoMessageInit();
-        new MessageBuilder().embed(infoEmbed(`<@${options.ownerUserId}> 创建了房间`)).send(text_channel)
+        new MessageBuilder().embed(infoEmbed(`<@${options.ownerUserId}> 创建了房间`)).send(text_channel);
+        LogChannel.log(guild.id, `<@${options.ownerUserId}> 创建了房间：${lobby.name} => ${info_channel}`);
         return lobby;
     }
 
@@ -121,13 +123,15 @@ export class Lobby extends InGuildData {
         await Lobby.collection.updateOne({id: this.id}, {$set: {infoMessageId: message.id}});
     }
     
-    async delete() {
+    async delete(userId?: string) {
         if (this.categoryId) {
             const category = await this.guild.channels.fetch(this.categoryId);
             if (!category) throw 'category not found'
             await deleteCategory(category as CategoryChannel);
         }
         await Lobby.collection.deleteOne({id: this.id});
+        if (userId) LogChannel.log(this.guildId, `<@${userId}> 关闭了房间：${this.name}`);
+        else LogChannel.log(this.guildId, `系统已将房间关闭：${this.name}`);
     }
 
     async join(userId: string) {
@@ -312,6 +316,6 @@ addInteractionListener('lobby_info_close', async (i) => {
     if (!lobbyId) throw 'lobby id undefined';
     const lobby = await Lobby.fetch(lobbyId);
     if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
-    await lobby.delete();
+    await lobby.delete(i.user.id);
     i.deferUpdate();
 })

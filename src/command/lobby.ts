@@ -27,7 +27,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
         await i.deferSlient();
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
-        await lobby.delete();
+        await lobby.delete(i.user.id);
         return new Reply(`房间已关闭：${lobby.name}`)
     })
 })

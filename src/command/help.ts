@@ -10,6 +10,7 @@ const help_row = new MessageActionRow().stringSelect('help_cmd_select', [
     {label: '如何创建个人房间', value: 'help_select_lobby'},
     {label: '如何创建投票问卷', value: 'help_select_poll'},
     {label: '如何自定义机器人', value: 'help_select_bot'},
+    {label: '如何创建系统贴文', value: 'help_select_post'},
     {label: '如何设定我的V身份', value: 'help_select_vid'},
 ], {placeholder: '选择你需要了解的功能'})
 
@@ -47,6 +48,9 @@ addInteractionListener('help_cmd_select', async i => {
             break;
         case 'help_select_vid': 
             textContent('./help/vid.md', [help_row], i)
+            break;
+        case 'help_select_post': 
+            textContent('./help/post.md', [help_row], i)
             break;
     }
 })

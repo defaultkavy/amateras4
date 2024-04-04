@@ -1,5 +1,4 @@
 import { Command } from "../module/Bot/Command";
-import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Modal } from "../module/Bot/Modal";
 import { Reply } from "../module/Bot/Reply";
 import { addInteractionListener } from "../module/Util/util";

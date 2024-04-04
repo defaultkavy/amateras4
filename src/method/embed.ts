@@ -14,7 +14,7 @@ export function dangerEmbed(content: string) {
     .description(content)
 }
 
-export async function textContent(filepath: string, actionRows?: MessageActionRow[], i?: ButtonInteraction<'cached'> | AnySelectMenuInteraction<'cached'>) {
+export async function textContent(filepath: string, actionRows?: MessageActionRow[], i?: ButtonInteraction | AnySelectMenuInteraction) {
     const file = Bun.file(filepath)
     const content = await file.text()
     const builder = new MessageBuilder()

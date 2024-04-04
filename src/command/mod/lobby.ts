@@ -11,7 +11,7 @@ export function mod_lobby() {
             adminLobbySelect(subcmd)
             .execute(async (i, options) => {
                 const lobby = await Lobby.fetch(options.lobby);
-                lobby.delete();
+                lobby.delete(i.user.id);
                 return new Reply(`房间【${lobby.name}】已强制关闭`)
             })
         })
