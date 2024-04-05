@@ -9,14 +9,20 @@ export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('create', '建立投票', subcmd => {
     subcmd
     .string('title', '投票标题', {required: true, max_length: 100})
+    .string('options', '选项内容（使用中英文分号 ; 可添加复数个选项内容）', {required: false})
     .execute(async (i, options) => {
         await i.deferSlient();
         const poll = await Poll.create({
             ownerUserId: i.user.id,
-            title: options.title
+            title: options.title,
         })
-
-        return new Reply(`投票 **${poll.title}** 已建立`)
+        if (options.options) {
+            const labelList = options.options.split(/[;；]/).map(label => label.trim()).filter(label => label.length);
+            const OPTION_OVERSIZE = poll.options.length + labelList.length > 25;
+            if (OPTION_OVERSIZE) throw '超出选项上限，最多只能存在25个选项';
+            await poll.setOption(labelList.map(label => ({label: label})));
+        }
+        return new Reply(`投票 **${poll.title}** 已建立${poll.options.length ? `\n${codeBlock(poll.options.map(option => option.label).toString().replaceAll(',', '\n'))}` : ''}`)
     })
 })
 
@@ -28,11 +34,11 @@ export const cmd_poll = new Command('poll', '投票指令')
         .execute(async (i, options) => {
             await i.deferSlient();
             const poll = await pollOwnerFetch(i, options.poll)
-            const labelList = options.label.split(/[;；]/)
+            const labelList = options.label.split(/[;；]/).map(label => label.trim()).filter(label => label.length);
             const OPTION_OVERSIZE = poll.options.length + labelList.length > 25;
             if (OPTION_OVERSIZE) throw '超出选项上限，最多只能存在25个选项'
             await poll.setOption(labelList.map(label => ({label: label})))
-            return new Reply(`已添加选项\n${codeBlock(labelList.toString().replaceAll(',', '\n'))}`)
+            return new Reply(`当前选项\n${codeBlock(poll.options.map(option => option.label).toString().replaceAll(',', '\n'))}`)
         })
     })
 
