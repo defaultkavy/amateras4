@@ -79,7 +79,7 @@ addListener('messageCreate', async message => {
         message.react('😥')
         if (!message.hasThread) {
             const thread = await message.startThread({
-                name: `${message.author.displayName}的贴文留言`,
+                name: `${message.member!.displayName}的贴文留言`,
                 autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
             })
             thread.setArchived()
