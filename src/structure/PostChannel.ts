@@ -1,4 +1,4 @@
-import { MessageType, ThreadAutoArchiveDuration } from "discord.js";
+import { GuildTextBasedChannel, MessageType, TextChannel, ThreadAutoArchiveDuration } from "discord.js";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
 import { addListener } from "../module/Util/util";
@@ -38,6 +38,8 @@ export class PostChannel extends InGuildData {
         await this.collection.insertOne(data);
         const postChannel = new PostChannel(data);
         this.manager.set(postChannel.id, postChannel);
+        const topic = postChannel.channel.topic?.replace('【贴文模式】', '');
+        postChannel.channel.setTopic(`【贴文模式】${topic ?? ''}`).catch();
         return postChannel;
     }
 
@@ -52,6 +54,14 @@ export class PostChannel extends InGuildData {
     async delete() {
         PostChannel.manager.delete(this.id);
         await PostChannel.collection.deleteOne({id: this.id});
+        if (this.channel) {
+            const topic = this.channel.topic;
+            if (topic) this.channel.setTopic(topic.replace('【贴文模式】', '')).catch()
+        }
+    }
+
+    get channel() {
+        return this.guild.channels.cache.get(this.channelId) as TextChannel;
     }
 }
 
