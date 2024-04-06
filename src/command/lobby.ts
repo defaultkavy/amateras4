@@ -11,7 +11,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
     .string('name', '房间名字', {required: true})
     .execute(async (i, options) => {
         await i.deferSlient();
-        const lobby = await Lobby.create(i.guild, {
+        const lobby = await Lobby.create({
             guildId: i.guildId,
             name: options.name,
             ownerUserId: i.user.id,

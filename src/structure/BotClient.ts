@@ -10,7 +10,7 @@ import { cmd_list } from "../../index";
 import { Chat } from "./Chat";
 import { CLIENT_OPTIONS } from "../method/client";
 import { System } from "./System";
-import { cmd_sys } from "../command/sys";
+import { cmd_sys } from "../command/sys/sys";
 
 export interface BotClientOptions extends DataOptions {
     token: string;

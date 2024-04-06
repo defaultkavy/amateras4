@@ -18,25 +18,22 @@ export class AutoTag extends InGuildData {
         super(data);
     }
 
-    static async init() {
-        const cursor = this.collection.find()
-        const list = await cursor.toArray()
-        cursor.close();
-        list.forEach(data => {
-            const instance = new this(data);
-            this.manager.set(data.id, instance);
-            instance.init();
-        })
-    }
-
-    async init() {
-        this.check();
-    }
-
     check() {
         if (!this.channel) {this.delete(); return false}
         if (!this.channel.availableTags.find(tag => tag.id === this.id)) {this.delete(); return false}
         return true;
+    }
+
+    get channel() {
+        return this.guild.channels.cache.get(this.channelId) as ForumChannel;
+    }
+
+    get tag() {
+        return this.channel.availableTags.find(tag => tag.id === this.id) as GuildForumTag
+    }
+
+    async init() {
+        this.check();
     }
 
     static async create(options: DataCreateOptions<AutoTagOptions>) {
@@ -61,17 +58,9 @@ export class AutoTag extends InGuildData {
         return postChannel;
     }
 
-    get channel() {
-        return this.guild.channels.cache.get(this.channelId) as ForumChannel;
-    }
-
-    get tag() {
-        return this.channel.availableTags.find(tag => tag.id === this.id) as GuildForumTag
-    }
-
     async delete() {
-        AutoTag.manager.delete(this.id);
-        await AutoTag.collection.deleteOne({id: this.id});
+        (this.constructor as typeof InGuildData).manager.delete(this.id);
+        await (this.constructor as typeof InGuildData).collection.deleteOne({id: this.id});
     }
 }
 

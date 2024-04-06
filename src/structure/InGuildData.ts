@@ -1,4 +1,5 @@
-import { Data, DataOptions } from "../module/DB/Data";
+import { Collection } from "mongodb";
+import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
 import { BotClient } from "./BotClient";
 
 export interface InGuildDataOptions extends DataOptions {
@@ -7,6 +8,8 @@ export interface InGuildDataOptions extends DataOptions {
 }
 export interface InGuildData extends InGuildDataOptions {}
 export class InGuildData extends Data {
+    static manager: Map<string, InGuildData>;
+    static collection: Collection<any>;
     constructor(options: InGuildDataOptions) {
         super(options);
     }

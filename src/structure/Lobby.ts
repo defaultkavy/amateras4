@@ -11,6 +11,7 @@ import { dangerEmbed, infoEmbed } from "../method/embed";
 import { ErrLog } from "../module/Log/Log";
 import { VId } from "./VId";
 import { LogChannel } from "./LogChannel";
+import { BotClient } from "./BotClient";
 
 export interface LobbyOptions extends InGuildDataOptions {
     name: string;
@@ -34,7 +35,9 @@ export class Lobby extends InGuildData {
         super(data);
     }
 
-    static async create(guild: Guild, options: Omit<LobbyOptions, 'id' | 'timestamp'>) {
+    static async create(options: Omit<LobbyOptions, 'id' | 'timestamp'>) {
+        const guild = BotClient.get(options.clientId).client.guilds.cache.get(options.guildId);
+        if (!guild) throw 'Guild Missing';
         await guild.roles.fetch();
         const category = await guild.channels.create({
             name: options.name,

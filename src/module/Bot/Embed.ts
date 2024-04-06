@@ -61,4 +61,8 @@ export class Embed {
         return this;
     }
 
+    footer(text: string, icon_url: string) {
+        this.data.footer = {text,icon_url};
+        return this;
+    }
 }

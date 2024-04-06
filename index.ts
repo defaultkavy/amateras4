@@ -17,6 +17,8 @@ import { BotClient } from "./src/structure/BotClient";
 import { LogChannel } from "./src/structure/LogChannel";
 import { PostChannel } from "./src/structure/PostChannel";
 import { System } from "./src/structure/System";
+import { Game } from "./src/structure/Game";
+import { cmd_uid } from "./src/command/uid";
 export const cmd_list = [
     cmd_lobby,
     cmd_mod,
@@ -26,6 +28,7 @@ export const cmd_list = [
     cmd_help,
     cmd_chat,
     cmd_post,
+    cmd_uid,
     cmdx_info,
 ]
 listeners();
@@ -45,6 +48,7 @@ new Log('System Initializing...');
 System.init();
 await PostChannel.init();
 await LogChannel.init();
+await Game.init();
 await BotClient.init();
 new Log('System Initialized');
 //
