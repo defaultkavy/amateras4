@@ -60,11 +60,12 @@ export class GameUid extends Data {
         await GameUid.collection.deleteOne({id: this.id});
     }
 
-    async edit(data: {name: string, thumbnail_url: string, intro: string}) {
-        await GameUid.collection.updateOne({id: this.id}, {$set: {data}});
+    async edit(data: {name: string, thumbnail_url: string, intro: string, playerId: string}) {
+        await GameUid.collection.updateOne({id: this.id}, {$set: data});
         this.name = data.name;
         this.thumbnail_url = data.thumbnail_url;
         this.intro = data.intro;
+        this.playerId = data.playerId;
     }
     
     cardEmbed() {
