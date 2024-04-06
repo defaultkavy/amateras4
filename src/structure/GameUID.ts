@@ -70,6 +70,7 @@ export class GameUid extends Data {
     cardEmbed() {
         return new Embed()
             .author(this.name)
+            .description(this.intro)
             .thumbnail(this.thumbnail_url)
             .field('ID', `${this.playerId}`)
             .footer(this.game.name, this.game.icon_url)
