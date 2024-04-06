@@ -65,7 +65,7 @@ export class Poll extends Data {
         const timestamp = Date.now();
         await Poll.collection.updateOne({id: this.id}, {$set: {startTimestamp: timestamp}});
         this.startTimestamp = timestamp;
-        this.pollMessageUpdate();
+        this.pollMessageUpdateAll();
     }
 
     panelMessage(ephemeral = false) {
@@ -113,18 +113,25 @@ export class Poll extends Data {
         const message = await i.fetchReply();
         const data = {messageId: message.id, channelId: i.channelId, guildId: i.guildId, clientId: i.client.user.id};
         await Poll.collection.updateOne({id: this.id}, {$push: {messages: data}});
+        const oldMessageList = this.messages.filter(message => message.channelId === message.channelId);
         this.messages.push(data);
+        for (const oldMessage of oldMessageList) {
+            this.pollMessageUpdate(oldMessage, new MessageBuilder().clean().content(`此投票讯息已迁移至 ${message.url}`));
+            this.messages.splice(this.messages.indexOf(oldMessage), 1);
+            await Poll.collection.updateOne({id: this.id}, {$pull: {messages: {messageId: oldMessage.messageId}}});
+        }
     }
 
-    async pollMessageUpdate() {
-        this.messages.forEach(detail => {
-            const bot = BotClient.get(detail.clientId);
-            const channel = bot.client.guilds.cache.get(detail.guildId)
-            ?.channels.cache.get(detail.channelId)
-            if (channel?.isTextBased()) channel.messages.edit(detail.messageId, this.panelMessage().data).catch(err => {
-                Poll.collection.updateOne({id: this.id}, {$pull: {messages: {messageId: detail.messageId}}})
-                new ErrLog(err)
-            })
+    async pollMessageUpdateAll() {
+        this.messages.forEach(detail => this.pollMessageUpdate(detail, this.panelMessage()));
+    }
+
+    async pollMessageUpdate(message: PollDB['messages'][number], builder: MessageBuilder) {
+        const bot = BotClient.get(message.clientId);
+        const channel = bot.client.guilds.cache.get(message.guildId)?.channels.cache.get(message.channelId)
+        if (channel?.isTextBased()) channel.messages.edit(message.messageId, builder.data).catch(err => {
+            Poll.collection.updateOne({id: this.id}, {$pull: {messages: {messageId: message.messageId}}})
+            new ErrLog(err)
         })
     }
 
@@ -140,26 +147,26 @@ export class Poll extends Data {
             await Poll.collection.updateOne({id: this.id}, {$push: {options: data}})
             this.options.push(data);
         }
-        this.pollMessageUpdate()
+        this.pollMessageUpdateAll()
     }
 
     async removeOption(optionId: string) {
         await Poll.collection.updateOne({id: this.id}, {$pull: {options: {id: optionId}}})
         this.options = this.options.filter(option => option.id !== optionId)
-        this.pollMessageUpdate()
+        this.pollMessageUpdateAll()
         return 
     }
 
     async editOption(optionId: string, label: string) {
         await Poll.collection.updateOne({id: this.id}, {$set: {'options.$[option].label': label}}, {arrayFilters: [{'option.id': optionId}]});
         this.options.filter(option => option.id === optionId).forEach(option => option.label = label);
-        this.pollMessageUpdate()
+        this.pollMessageUpdateAll()
     }
 
     async setTitle(title: string) {
         await Poll.collection.updateOne({id: this.id}, {$set: {title: title}});
         this.title = title;
-        this.pollMessageUpdate()
+        this.pollMessageUpdateAll()
     }
 
     async select(userId: string, targetIdList: string[]) {
@@ -179,25 +186,25 @@ export class Poll extends Data {
             })
         this.options.forEach(option => option.memberIdList = option.memberIdList.filter(id => id !== userId));
         this.options.filter(option => targetIdList.includes(option.id)).forEach(option => option.memberIdList.push(userId));
-        this.pollMessageUpdate()
+        this.pollMessageUpdateAll()
     }
 
     async close() {
         await Poll.collection.updateOne({id: this.id}, {$set: {closed: true}})
         this.closed = true;
-        this.pollMessageUpdate();
+        this.pollMessageUpdateAll();
     }
 
     async setThumbnail(url: string) {
         await Poll.collection.updateOne({id: this.id}, {$set: {thumbnailUrl: url}});
         this.thumbnailUrl = url;
-        this.pollMessageUpdate();
+        this.pollMessageUpdateAll();
     }
 
     async removeThumbnail() {
         await Poll.collection.updateOne({id: this.id}, {$unset: {thumbnailUrl: ''}})
         this.thumbnailUrl = undefined;
-        this.pollMessageUpdate();
+        this.pollMessageUpdateAll();
     }
 
     async setMax(max: number) {
@@ -205,7 +212,7 @@ export class Poll extends Data {
         await Poll.collection.updateOne({id: this.id}, {$set: {maxVotes: max, minVotes: max < this.minVotes ? max : undefined}});
         if (max < this.minVotes) this.minVotes = max;
         this.maxVotes = max;
-        this.pollMessageUpdate();
+        this.pollMessageUpdateAll();
     }
 
     async setMin(min: number) {
@@ -213,7 +220,7 @@ export class Poll extends Data {
         await Poll.collection.updateOne({id: this.id}, {$set: {maxVotes: min > this.maxVotes ? min : undefined, minVotes: min}});
         if (min > this.maxVotes) this.maxVotes = min;
         this.minVotes = min;
-        this.pollMessageUpdate();
+        this.pollMessageUpdateAll();
     }
 
     get memberIdList() {
