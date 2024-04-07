@@ -102,8 +102,9 @@ export class PlayerSkill extends InGuildData {
 addListener('messageCreate', async message => {
     if (message.interaction) return;
     if (message.inGuild() === false) return;
-    if (!message.channelId) return;
-    const skillList = [...Skill.manager.values()].filter(skill => skill.channelIdList.includes(message.channelId));
+    const channelId = message.channelId;
+    if (!channelId) return;
+    const skillList = [...Skill.manager.values()].filter(skill => skill.channelIdList.includes(channelId) || message.channel.isThread() ? message.channel.parentId : false);
     const player = await UserPlayer.fetchFromUser(message.guildId, message.author.id);
     skillList.forEach(skill => {
         const playerSkill = player.skills.find(pSkill => pSkill.skill === skill);
