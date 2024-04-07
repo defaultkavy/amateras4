@@ -92,7 +92,8 @@ export class BotClient extends Data {
         const guilds = [...this.client.guilds.cache.values()];
         for (const guild of guilds) {
             await guild.fetch();
-            await guild.channels.fetch()
+            await guild.channels.fetch();
+            await guild.members.fetch();
         }
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds.filter(guild => !System.servers.includes(guild.id)));
         this.cmd_manager.add(cmd_sys)

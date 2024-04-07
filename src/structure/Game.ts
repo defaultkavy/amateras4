@@ -63,7 +63,7 @@ export class Game extends Data {
     }
 
     async edit(data: {name: string, alias_name: string[]}) {
-        await Game.collection.updateOne({id: this.id}, {$set: {data}});
+        await Game.collection.updateOne({id: this.id}, {$set: data});
         this.name = data.name;
         this.alias_name = data.alias_name;
     }

@@ -20,6 +20,10 @@ import { System } from "./src/structure/System";
 import { Game } from "./src/structure/Game";
 import { cmd_uid } from "./src/command/uid";
 import { cmdx_unsend } from "./src/context/unsend";
+import { UserPlayer } from "./src/structure/user-player/Player";
+import { cmd_skill } from "./src/command/skill";
+import { cmd_me } from "./src/command/player";
+import { db } from "./src/method/db";
 export const cmd_list = [
     cmd_lobby,
     cmd_mod,
@@ -30,6 +34,8 @@ export const cmd_list = [
     cmd_chat,
     cmd_post,
     cmd_uid,
+    cmd_skill,
+    cmd_me,
     cmdx_info,
     cmdx_unsend
 ]
@@ -43,7 +49,7 @@ const bot = new BotClient({
     username: client.user.username
 }, client)
 BotClient.manager.set(bot.id, bot);
-await bot.init()
+await bot.init();
 
 // Init
 new Log('System Initializing...');
@@ -52,6 +58,7 @@ await PostChannel.init();
 await LogChannel.init();
 await Game.init();
 await BotClient.init();
+UserPlayer.init();
 new Log('System Initialized');
 //
 if (config.dev) {

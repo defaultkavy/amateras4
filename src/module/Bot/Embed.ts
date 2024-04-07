@@ -47,6 +47,7 @@ export class Embed {
     }
 
     description(text?: string) {
+        if (!text?.length) text = undefined;
         this.data.description = text;
         return this;
     }
@@ -61,7 +62,7 @@ export class Embed {
         return this;
     }
 
-    footer(text: string, icon_url: string) {
+    footer(text: string, icon_url?: string) {
         this.data.footer = {text,icon_url};
         return this;
     }

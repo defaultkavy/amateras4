@@ -1,25 +1,39 @@
-import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction, Client } from "discord.js";
+import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction, Client, Guild } from "discord.js";
 import { CommandExecuteInteraction } from "../Bot/ExecutableCommand";
 import { Reply, ReplyError } from "../Bot/Reply";
 export const URLRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
-const listeners: {
+export const __EVENT_LISTENERS__: {
     [key in keyof ClientEvents]?: Set<(...args: ClientEvents[key]) => void>
 } = {}
 export function addListener<E extends keyof ClientEvents>(event: E, callback: (...args: ClientEvents[E]) => OrPromise<void> ) {
-    const set = listeners[event];
+    const set = __EVENT_LISTENERS__[event];
     if (set instanceof Set) {
         set.add(callback);
     } else {
-        Object.assign(listeners, {[event]: new Set().add(callback)});
+        Object.assign(__EVENT_LISTENERS__, {[event]: new Set().add(callback)});
     }
 }
 
+const __CLIENT_TYPE_EVENTS__: (keyof ClientEvents)[] = ['applicationCommandPermissionsUpdate', 'interactionCreate', ]
 export function startListen(client: Client<true>) {
-    for (const [event, fnSet] of Object.entries(listeners)) {
-        client.on(event, (...args) => {
+    for (const [event, fnSet] of Object.entries(__EVENT_LISTENERS__)) {
+        client.on(event, async (...args) => {
+            const guildId = guildIdExtract(args[0]);
+            const BotClient = (await import(`../../structure/BotClient.ts`)).BotClient;
+            if (guildId
+                && !__CLIENT_TYPE_EVENTS__.includes(event as keyof ClientEvents)
+                && [...BotClient.manager.values()].find(bot => [...bot.client.guilds.cache.keys()].includes(guildId))?.client !== client) return;
             //@ts-ignore
             fnSet.forEach(fn => fn(...args))
         })
+    }
+}
+
+function guildIdExtract(obj: Object) {
+    if (obj instanceof Guild) {
+        return obj.id;
+    } else if ('guildId' in obj) {
+        return obj.guildId as string;
     }
 }
 

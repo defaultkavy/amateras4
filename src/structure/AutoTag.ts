@@ -37,7 +37,7 @@ export class AutoTag extends InGuildData {
     }
 
     static async create(options: DataCreateOptions<AutoTagOptions>) {
-        const duplicate = await this.collection.findOne({id: options.channelId, tagId: options.tagId});
+        const duplicate = await this.collection.findOne({id: options.tagId, tagId: options.tagId});
         if (duplicate) throw `该标签已经是自动标签了`
         const data: AutoTagDB = {
             ...options,
@@ -58,6 +58,17 @@ export class AutoTag extends InGuildData {
         return postChannel;
     }
 
+    static async fetchListFromForum(forumId: string) {
+        const cursor = await this.collection.find({channelId: forumId});
+        const list = await cursor.toArray()
+        cursor.close();
+        return list.map(data => {
+            const instance = new this(data);
+            this.manager.set(data.id, instance);
+            return instance;
+        })
+    }
+
     async delete() {
         (this.constructor as typeof InGuildData).manager.delete(this.id);
         await (this.constructor as typeof InGuildData).collection.deleteOne({id: this.id});
@@ -67,11 +78,11 @@ export class AutoTag extends InGuildData {
 addListener('threadCreate', async thread => {
     const forumChannel = thread.parent;
     if (!(forumChannel && forumChannel.type === ChannelType.GuildForum)) return;
-    const autotag = AutoTag.manager.get(forumChannel.id);
-    if (!autotag) return;
-    if (!autotag.check()) return;
-    await thread.edit({
-        appliedTags: [autotag.tagId]
+    const autoTagList = await AutoTag.fetchListFromForum(forumChannel.id);
+    autoTagList.forEach(autotag => {
+        if (autotag.check()) thread.edit({
+            appliedTags: [autotag.tagId]
+        })
     })
 })
 
