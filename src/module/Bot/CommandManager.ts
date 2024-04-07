@@ -74,7 +74,7 @@ export class CommandManager {
                 }
             }
 
-            else if (i.isUserContextMenuCommand()) {
+            else if (i.isContextMenuCommand()) {
                 if (!i.inCachedGuild()) return;
                 const command = this.cache.get(i.commandName);
                 if (!(command instanceof MenuCommand)) return;

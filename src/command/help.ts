@@ -12,6 +12,7 @@ const help_row = new MessageActionRow().stringSelect('help_cmd_select', [
     {label: '如何自定义机器人', value: 'bot'},
     {label: '如何创建系统贴文', value: 'post'},
     {label: '如何设定我的V身份', value: 'vid'},
+    {label: '如何设定玩家名片', value: 'uid'},
 ], {placeholder: '选择你需要了解的功能'})
 
 export const cmd_help = new Command('help', '天照系统指南')
@@ -48,9 +49,11 @@ function helpContent(value: string, i?: ButtonInteraction | AnySelectMenuInterac
                 new MessageActionRow().button('下一页', 'help_bot_p2', {style: ButtonStyle.Primary})
             ], i)
         case 'vid': 
-        return textContent('./help/vid.md', [help_row], i)
+            return textContent('./help/vid.md', [help_row], i)
         case 'post': 
-        return textContent('./help/post.md', [help_row], i)
+            return textContent('./help/post.md', [help_row], i)
+        case 'uid': 
+            return textContent('./help/uid.md', [help_row], i)
     }
     throw '相关指令的指南不存在'
 }
