@@ -11,6 +11,7 @@ import { Chat } from "./Chat";
 import { CLIENT_OPTIONS } from "../method/client";
 import { System } from "./System";
 import { cmd_sys } from "../command/sys/sys";
+import { $Guild } from "./$Guild";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -87,14 +88,9 @@ export class BotClient extends Data {
 
     async init() {
         await this.update(this.client.user);
-        // fetching
-        await this.client.guilds.fetch();
-        const guilds = [...this.client.guilds.cache.values()];
-        for (const guild of guilds) {
-            await guild.fetch();
-            await guild.channels.fetch();
-            await guild.members.fetch();
-        }
+        // guilds init
+        const guilds = await $Guild.init(this.client);
+        // commands deploy
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds.filter(guild => !System.servers.includes(guild.id)));
         this.cmd_manager.add(cmd_sys)
         const adminGuilds = guilds.filter(guild => System.servers.includes(guild.id))

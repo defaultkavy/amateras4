@@ -6,7 +6,7 @@ import { config } from "../../../bot_config";
 import { Embed } from "../../module/Bot/Embed";
 import { addListener } from "../../module/Util/util";
 import { GuildMessage } from "../GuildMessage";
-import { ChannelType } from "discord.js";
+import { ChannelType, Guild } from "discord.js";
 
 export interface SkillOptions extends InGuildDataOptions {
     name: string;
@@ -25,8 +25,8 @@ export class Skill extends InGuildData {
         super(data);
     }
 
-    static async init() {
-        const cursor = this.collection.find()
+    static async init(guild: Guild) {
+        const cursor = this.collection.find({guildId: guild.id})
         const list = await cursor.toArray()
         cursor.close();
         list.forEach(data => {

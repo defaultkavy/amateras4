@@ -39,6 +39,10 @@ export const cmd_list = [
     cmdx_unsend
 ]
 listeners();
+
+// Init
+new Log('System Initializing...');
+System.init();
 const bot = new BotClient({
     id: client.user.id,
     timestamp: Date.now(),
@@ -49,16 +53,12 @@ const bot = new BotClient({
 }, client)
 BotClient.manager.set(bot.id, bot);
 await bot.init();
-
-// Init
-new Log('System Initializing...');
-System.init();
+await BotClient.init();
 GuildMessage;
+// Global data load
 await PostChannel.init();
 await LogChannel.init();
 await Game.init();
-await BotClient.init();
-UserPlayer.init();
 new Log('System Initialized');
 //
 if (config.dev) {

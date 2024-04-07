@@ -14,7 +14,7 @@ export function addListener<E extends keyof ClientEvents>(event: E, callback: (.
     }
 }
 
-const __CLIENT_TYPE_EVENTS__: (keyof ClientEvents)[] = ['applicationCommandPermissionsUpdate', 'interactionCreate', ]
+const __CLIENT_TYPE_EVENTS__: (keyof ClientEvents)[] = ['applicationCommandPermissionsUpdate', 'interactionCreate', 'guildCreate', 'guildDelete']
 export function startListen(client: Client<true>) {
     for (const [event, fnSet] of Object.entries(__EVENT_LISTENERS__)) {
         client.on(event, async (...args) => {

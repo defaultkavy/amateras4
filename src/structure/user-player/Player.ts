@@ -7,7 +7,7 @@ import { BotClient } from "../BotClient";
 import { Log } from "../../module/Log/Log";
 import { addInteractionListener, addListener, codeBlock } from "../../module/Util/util";
 import { Embed } from "../../module/Bot/Embed";
-import { ButtonStyle, GuildMember } from "discord.js";
+import { ButtonStyle, Guild, GuildMember } from "discord.js";
 import { Skill } from "./Skill";
 import { MessageBuilder } from "../../module/Bot/MessageBuilder";
 import { Reply } from "../../module/Bot/Reply";
@@ -28,37 +28,29 @@ export class UserPlayer extends InGuildData {
         super(data);
     }
 
-    static async init() {
-        await Skill.init();
-        const cursor = this.collection.find()
-        const list = await cursor.toArray()
+    static async init(guild: Guild) {
+        await Skill.init(guild);
+        const cursor = this.collection.find({guildId: guild.id})
+        const list = await cursor.toArray();
         cursor.close();
         list.forEach(data => {
             const instance = new this(data);
             this.manager.set(data.id, instance);
         })
-        new Log('User Player Initializing...')
-        const InitializedGuildList: string[] = [];
-        BotClient.manager.forEach(bot => {
-            bot.client.guilds.cache.forEach(guild => {
-                if (InitializedGuildList.includes(guild.id)) return;
-                let [playerCreated] = [0]
-                const guildPlayerUserIdList = [...this.manager.values()].filter(player => player.guildId === guild.id).map(player => player.userId)
-                guild.members.cache.forEach(member => {
-                    if (guildPlayerUserIdList.includes(member.id) === false) {
-                        playerCreated += 1;
-                        this.create({
-                            clientId: bot.id,
-                            guildId: guild.id,
-                            intro: '',
-                            userId: member.id
-                        })
-                    }
+        let [playerCreated] = [0]
+        const guildPlayerUserIdList = [...this.manager.values()].filter(player => player.guildId === guild.id).map(player => player.userId)
+        guild.members.cache.forEach(member => {
+            if (guildPlayerUserIdList.includes(member.id) === false) {
+                playerCreated += 1;
+                this.create({
+                    clientId: guild.client.user.id,
+                    guildId: guild.id,
+                    intro: '',
+                    userId: member.id
                 })
-                new Log(`[${guild.name}] Player created: ${playerCreated}. Total: ${guild.members.cache.size}.`)
-                InitializedGuildList.push(guild.id)
-            })
+            }
         })
+        new Log(`[${guild.name}] Player created: ${playerCreated}. Total: ${guild.members.cache.size}.`)
     }
 
     static async create(options: DataCreateOptions<UserPlayerOptions>) {
@@ -154,15 +146,6 @@ export class UserPlayer extends InGuildData {
     }
 }
 
-addListener('guildMemberAdd', async member => {
-    UserPlayer.create({
-        clientId: member.client.user.id,
-        guildId: member.guild.id,
-        intro: '',
-        userId: member.id
-    })
-})
-
 addInteractionListener('player-skill-detail', async i => {
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
     return new Reply().embed(await player.skillEmbed())
@@ -172,4 +155,17 @@ addInteractionListener('player-skill-refresh', async i => {
     if (i.isButton() === false) return;
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
     i.update((await player.cardMessage()).data)
+})
+
+addListener('guildMemberAdd', async member => {
+    UserPlayer.create({
+        clientId: member.client.user.id,
+        guildId: member.guild.id,
+        intro: '',
+        userId: member.id
+    })
+})
+
+addListener('guildCreate', async guild => {
+    
 })
