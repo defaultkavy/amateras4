@@ -14,19 +14,27 @@ export const cmd_me = new Command('user', '用户指令')
     })
 })
 
+.subCommand('view', '查看你的名片', subcmd => {
+    subcmd
+    .execute(async (i, options) => {
+        const player = await UserPlayer.fetchFromUser(i.guildId, i.user.id)
+        return (await player.cardMessage()).ephemeral(true);
+    })
+})
+
 .subCommand('intro', '编辑你的简介', subcmd => {
     subcmd
     .execute(async (i, options) => {
         const player = await UserPlayer.fetchFromUser(i.guildId, i.user.id);
         i.showModal(
-            new Modal(`Edit Player Intro`, `player-intro@${player.id}`)
+            new Modal(`Edit User Intro`, `user-intro@${player.id}`)
             .paragraph('Intro', 'intro', {required: false, max_length: 100})
             .data
         )
     })
 })
 
-addInteractionListener('player-intro', async i => {
+addInteractionListener('user-intro', async i => {
     if (i.isModalSubmit() === false) return;
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
     await player.editIntro(i.fields.getTextInputValue('intro'));

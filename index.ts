@@ -1,4 +1,3 @@
-import { ChannelType, MessageType } from "discord.js";
 import { config } from "./bot_config";
 import { cmd_bot } from "./src/command/bot";
 import { cmd_chat } from "./src/command/chat";
@@ -22,7 +21,7 @@ import { cmd_uid } from "./src/command/uid";
 import { cmdx_unsend } from "./src/context/unsend";
 import { UserPlayer } from "./src/structure/user-player/Player";
 import { cmd_skill } from "./src/command/skill";
-import { cmd_me } from "./src/command/player";
+import { cmd_me } from "./src/command/user";
 import { GuildMessage } from "./src/structure/GuildMessage";
 export const cmd_list = [
     cmd_lobby,
