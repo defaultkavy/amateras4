@@ -79,6 +79,7 @@ addListener('messageCreate', async message => {
     if (message.system) return;
     if (message.interaction) return;
     if (message.inGuild() === false) return;
+    if (!message.author) return;
     GuildMessage.create(message);
 })
 
@@ -86,6 +87,7 @@ addListener('messageDelete', async message => {
     if (message.system) return;
     if (message.interaction) return;
     if (message.inGuild() === false) return;
+    if (!message.author) return;
     GuildMessage.delete(message.id);
 })
 
@@ -93,6 +95,7 @@ addListener('messageUpdate', async message => {
     if (message.system) return;
     if (message.interaction) return;
     if (message.inGuild() === false) return;
+    if (!message.author) return;
     GuildMessage.update(message);
 })
 
@@ -100,6 +103,7 @@ addListener('messageReactionAdd', async ({message}) => {
     if (message.system) return;
     if (message.interaction) return;
     if (message.inGuild() === false) return;
+    if (!message.author) return;
     GuildMessage.update(message);
 })
 
@@ -107,6 +111,7 @@ addListener('messageReactionRemove', async ({message}) => {
     if (message.system) return;
     if (message.interaction) return;
     if (message.inGuild() === false) return;
+    if (!message.author) return;
     GuildMessage.update(message);
 })
 
