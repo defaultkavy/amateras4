@@ -1,5 +1,4 @@
 import { Command } from "../module/Bot/Command";
-import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Modal } from "../module/Bot/Modal";
 import { Reply } from "../module/Bot/Reply";
 import { addInteractionListener } from "../module/Util/util";
@@ -31,6 +30,14 @@ export const cmd_me = new Command('user', '用户指令')
             .paragraph('Intro', 'intro', {required: false, max_length: 100})
             .data
         )
+    })
+})
+
+.subCommand('skill', '查看你的技能信息', subcmd => {
+    subcmd
+    .execute(async (i, options) => {
+        const player = await UserPlayer.fetchFromUser(i.guildId, i.user.id);
+        return new Reply().embed(await player.skillEmbed())
     })
 })
 
