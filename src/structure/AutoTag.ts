@@ -70,8 +70,8 @@ export class AutoTag extends InGuildData {
     }
 
     async delete() {
-        (this.constructor as typeof InGuildData).manager.delete(this.id);
-        await (this.constructor as typeof InGuildData).collection.deleteOne({id: this.id});
+        AutoTag.manager.delete(this.id);
+        await AutoTag.collection.deleteOne({id: this.id});
     }
 }
 

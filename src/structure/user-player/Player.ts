@@ -104,10 +104,11 @@ export class UserPlayer extends InGuildData {
         this.intro = intro;
     }
 
-    cardEmbed() {
+    async cardEmbed() {
+        const skillDetailList = await Promise.all(this.skills.map(async pskill => ({...await pskill.detail(), name: pskill.skill.name})))
         const description = `${this.intro}\n${this.skills.length ? codeBlock(`${
-                this.skills.sort((a, b) => b.level - a.level).slice(0, 2).map(pSkill => `${
-                    pSkill.skill.name} LV${pSkill.level}`).toString().replaceAll(',', ' | ')
+                skillDetailList.sort((a, b) => b.level - a.level).slice(0, 2).map(pSkill => `${
+                    pSkill.name} LV${pSkill.level}`).toString().replaceAll(',', ' | ')
             }`) : ''
         }`.trim();
         return new Embed()
@@ -119,9 +120,9 @@ export class UserPlayer extends InGuildData {
             .max()
     }
 
-    cardMessage() {
+    async cardMessage() {
         const builder = new MessageBuilder()
-            .embed(this.cardEmbed())
+            .embed(await this.cardEmbed())
         const row = new MessageActionRow;
         if (this.skills.length) row.button('技能详情', `player-skill-detail@${this.id}`, {style: ButtonStyle.Primary})
         row.button('更新资讯', `player-skill-refresh@${this.id}`, {style: ButtonStyle.Secondary})
@@ -129,10 +130,11 @@ export class UserPlayer extends InGuildData {
         return builder;
     }
 
-    skillEmbed() {
+    async skillEmbed() {
+        const skillDetailList = await Promise.all(this.skills.map(async pskill => ({...await pskill.detail(), name: pskill.skill.name, threshold: pskill.skill.threshold})))
         const description = `${
             codeBlock(
-                this.skills.sort((a, b) => b.level - a.level).map(pSkill => `${pSkill.skill.name} LV${pSkill.level} EXP(${pSkill.currentExp}/${pSkill.skill.threshold})`).toString().replaceAll(',', '\n')
+                skillDetailList.sort((a, b) => b.level - a.level).map(pSkill => `${pSkill.name} LV${pSkill.level} EXP(${pSkill.currentExp}/${pSkill.threshold})`).toString().replaceAll(',', '\n')
             )
         }`
         return new Embed()
@@ -164,11 +166,11 @@ addListener('guildMemberAdd', async member => {
 
 addInteractionListener('player-skill-detail', async i => {
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
-    return new Reply().embed(player.skillEmbed())
+    return new Reply().embed(await player.skillEmbed())
 })
 
 addInteractionListener('player-skill-refresh', async i => {
     if (i.isButton() === false) return;
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
-    i.update(player.cardMessage().data)
+    i.update((await player.cardMessage()).data)
 })

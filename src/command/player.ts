@@ -10,7 +10,7 @@ export const cmd_me = new Command('user', '用户指令')
     subcmd
     .execute(async (i, options) => {
         const player = await UserPlayer.fetchFromUser(i.guildId, i.user.id)
-        return player.cardMessage();
+        return await player.cardMessage();
     })
 })
 
@@ -30,5 +30,5 @@ addInteractionListener('player-intro', async i => {
     if (i.isModalSubmit() === false) return;
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
     await player.editIntro(i.fields.getTextInputValue('intro'));
-    return new Reply().embed(player.cardEmbed());
+    return new Reply().embed(await player.cardEmbed());
 })

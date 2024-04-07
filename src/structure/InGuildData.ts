@@ -8,8 +8,6 @@ export interface InGuildDataOptions extends DataOptions {
 }
 export interface InGuildData extends InGuildDataOptions {}
 export class InGuildData extends Data {
-    static manager: Map<string, InGuildData>;
-    static collection: Collection<any>;
     constructor(options: InGuildDataOptions) {
         super(options);
     }

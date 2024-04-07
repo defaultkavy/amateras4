@@ -6,12 +6,13 @@ import { config } from "../../../bot_config";
 import { __EVENT_LISTENERS__, addListener } from "../../module/Util/util";
 import { Skill } from "./Skill";
 import { UserPlayer } from "./Player";
+import { GuildMessage } from "../GuildMessage";
+import { ChannelType } from "discord.js";
 
 export interface PlayerSkillOptions extends InGuildDataOptions {
     skillId: string;
     playerId: string;
     userId: string;
-    exp: number;
 }
 export interface PlayerSkillDB extends PlayerSkillOptions {}
 export interface PlayerSkill extends PlayerSkillDB {}
@@ -77,49 +78,55 @@ export class PlayerSkill extends InGuildData {
         await PlayerSkill.collection.deleteOne({id: this.id});
     }
 
-    async expUp(exp: number) {
-        await PlayerSkill.collection.updateOne({id: this.id}, {$inc: {exp}})
-        this.exp += exp;
-    }
-
-    async expDown(exp: number) {
-        await PlayerSkill.collection.updateOne({id: this.id}, {$inc: {exp: -exp}})
-        this.exp -= exp;
+    async detail() {
+        const cursor = await GuildMessage.collection.aggregate([
+            {$match: {
+                $or: [
+                    {channelId: {$in: this.skill.channelIdList}},
+                    {parentChannelId: {$in: this.skill.channelIdList}, parentChannelType: ChannelType.GuildForum}
+                ],
+                $and: [{authorId: this.userId}]
+            }},
+            {$group: {
+                _id: null,
+                count: { $sum: 1}
+            }}
+        ])
+        const messages = await cursor.toArray();
+        cursor.close();
+        const exp = messages[0] ? messages[0].count : 0;
+        return {
+            exp: exp,
+            level: exp === 0 ? 0 : 1 + Math.floor(exp / this.skill.threshold),
+            currentExp: exp % this.skill.threshold
+        }
     }
 
     get skill() {
         return Skill.manager.get(this.skillId) as Skill;
     }
-
-    get level() {
-        return this.exp === 0 ? 0 : 1 + Math.floor(this.exp / this.skill.threshold);
-    }
-
-    get currentExp() {
-        return this.exp % this.skill.threshold;
-    }
 }
-addListener('messageCreate', async message => {
-    if (message.interaction) return;
-    if (message.inGuild() === false) return;
-    const channelId = message.channelId;
-    if (!channelId) return;
-    const skillList = [...Skill.manager.values()].filter(skill => skill.channelIdList.includes(channelId) || message.channel.isThread() ? message.channel.parentId : false);
-    const player = await UserPlayer.fetchFromUser(message.guildId, message.author.id);
-    skillList.forEach(skill => {
-        const playerSkill = player.skills.find(pSkill => pSkill.skill === skill);
-        if (!playerSkill) {
-            PlayerSkill.create({
-                clientId: message.client.user.id,
-                exp: 1,
-                guildId: message.guildId,
-                playerId: player.id,
-                skillId: skill.id,
-                userId: message.author.id
-            })
-        } else {
-            playerSkill.expUp(1);
-        }
-    })
+// addListener('messageCreate', async message => {
+//     if (message.interaction) return;
+//     if (message.inGuild() === false) return;
+//     const channelId = message.channelId;
+//     if (!channelId) return;
+//     const skillList = [...Skill.manager.values()].filter(skill => skill.channelIdList.includes(channelId) || message.channel.isThread() ? message.channel.parentId : false);
+//     const player = await UserPlayer.fetchFromUser(message.guildId, message.author.id);
+//     skillList.forEach(skill => {
+//         const playerSkill = player.skills.find(pSkill => pSkill.skill === skill);
+//         if (!playerSkill) {
+//             PlayerSkill.create({
+//                 clientId: message.client.user.id,
+//                 exp: 1,
+//                 guildId: message.guildId,
+//                 playerId: player.id,
+//                 skillId: skill.id,
+//                 userId: message.author.id
+//             })
+//         } else {
+//             playerSkill.expUp(1);
+//         }
+//     })
     
-})
+// })

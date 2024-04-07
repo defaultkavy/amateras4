@@ -4,6 +4,7 @@ import { DataCreateOptions } from "../../module/DB/Data";
 import { Snowflake } from "../../module/Snowflake";
 import { config } from "../../../bot_config";
 import { Embed } from "../../module/Bot/Embed";
+import { addListener } from "../../module/Util/util";
 
 export interface SkillOptions extends InGuildDataOptions {
     name: string;
@@ -97,3 +98,17 @@ export class Skill extends InGuildData {
             .footer(`Skill Info`)
     }
 }
+
+addListener('channelDelete', async channel => {
+    if (channel.isDMBased()) return;
+    Skill.manager.forEach(skill => {
+        if (skill.channelIdList.includes(channel.id)) skill.removeChannel([channel.id]);
+    })
+})
+
+addListener('threadDelete', async thread => {
+    Skill.manager.forEach(skill => {
+        if (skill.channelIdList.includes(thread.id)) skill.removeChannel([thread.id]);
+        if (thread.parentId && skill.channelIdList.includes(thread.parentId)) skill.removeChannel([thread.parentId]);
+    })
+})

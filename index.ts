@@ -23,7 +23,7 @@ import { cmdx_unsend } from "./src/context/unsend";
 import { UserPlayer } from "./src/structure/user-player/Player";
 import { cmd_skill } from "./src/command/skill";
 import { cmd_me } from "./src/command/player";
-import { db } from "./src/method/db";
+import { GuildMessage } from "./src/structure/GuildMessage";
 export const cmd_list = [
     cmd_lobby,
     cmd_mod,
@@ -54,6 +54,7 @@ await bot.init();
 // Init
 new Log('System Initializing...');
 System.init();
+GuildMessage;
 await PostChannel.init();
 await LogChannel.init();
 await Game.init();

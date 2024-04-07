@@ -1,4 +1,4 @@
-import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction, Client, Guild } from "discord.js";
+import { ClientEvents, CacheType, AnySelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction, ChannelSelectMenuInteraction, Client, Guild, MessageReaction } from "discord.js";
 import { CommandExecuteInteraction } from "../Bot/ExecutableCommand";
 import { Reply, ReplyError } from "../Bot/Reply";
 export const URLRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
@@ -20,9 +20,11 @@ export function startListen(client: Client<true>) {
         client.on(event, async (...args) => {
             const guildId = guildIdExtract(args[0]);
             const BotClient = (await import(`../../structure/BotClient.ts`)).BotClient;
-            if (guildId
-                && !__CLIENT_TYPE_EVENTS__.includes(event as keyof ClientEvents)
-                && [...BotClient.manager.values()].find(bot => [...bot.client.guilds.cache.keys()].includes(guildId))?.client !== client) return;
+            if (guildId) {
+                if (!__CLIENT_TYPE_EVENTS__.includes(event as keyof ClientEvents)) {
+                    if ([...BotClient.manager.values()].find(bot => [...bot.client.guilds.cache.keys()].includes(guildId))?.client !== client) return;
+                }
+            }
             //@ts-ignore
             fnSet.forEach(fn => fn(...args))
         })
@@ -30,10 +32,12 @@ export function startListen(client: Client<true>) {
 }
 
 function guildIdExtract(obj: Object) {
-    if (obj instanceof Guild) {
-        return obj.id;
-    } else if ('guildId' in obj) {
+    if ('guildId' in obj) {
         return obj.guildId as string;
+    } else if (obj instanceof Guild) {
+        return obj.id;
+    } else if (obj instanceof MessageReaction) {
+        return obj.message.guildId;
     }
 }
 
