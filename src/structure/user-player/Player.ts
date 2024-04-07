@@ -8,7 +8,6 @@ import { Log } from "../../module/Log/Log";
 import { addInteractionListener, addListener, codeBlock } from "../../module/Util/util";
 import { Embed } from "../../module/Bot/Embed";
 import { ButtonStyle, GuildMember } from "discord.js";
-import { PlayerSkill } from "./PlayerSkill";
 import { Skill } from "./Skill";
 import { MessageBuilder } from "../../module/Bot/MessageBuilder";
 import { Reply } from "../../module/Bot/Reply";
@@ -31,7 +30,6 @@ export class UserPlayer extends InGuildData {
 
     static async init() {
         await Skill.init();
-        await PlayerSkill.init();
         const cursor = this.collection.find()
         const list = await cursor.toArray()
         cursor.close();
@@ -105,8 +103,9 @@ export class UserPlayer extends InGuildData {
     }
 
     async cardEmbed() {
-        const skillDetailList = await Promise.all(this.skills.map(async pskill => ({...await pskill.detail(), name: pskill.skill.name})))
-        const description = `${this.intro}\n${this.skills.length ? codeBlock(`${
+        const skills = this.skills;
+        const skillDetailList = await Promise.all(skills.map(async skill => ({...await skill.detail(this.userId), name: skill.name})))
+        const description = `${this.intro}\n${skills.length ? codeBlock(`${
                 skillDetailList.sort((a, b) => b.level - a.level).slice(0, 2).map(pSkill => `${
                     pSkill.name} LV${pSkill.level}`).toString().replaceAll(',', ' | ')
             }`) : ''
@@ -131,7 +130,7 @@ export class UserPlayer extends InGuildData {
     }
 
     async skillEmbed() {
-        const skillDetailList = await Promise.all(this.skills.map(async pskill => ({...await pskill.detail(), name: pskill.skill.name, threshold: pskill.skill.threshold})))
+        const skillDetailList = await Promise.all(this.skills.map(async skill => ({...await skill.detail(this.userId), name: skill.name, threshold: skill.threshold})))
         const description = `${
             codeBlock(
                 skillDetailList.sort((a, b) => b.level - a.level).map(pSkill => `${pSkill.name} LV${pSkill.level} EXP(${pSkill.currentExp}/${pSkill.threshold})`).toString().replaceAll(',', '\n')
@@ -151,7 +150,7 @@ export class UserPlayer extends InGuildData {
     }
 
     get skills() {
-        return PlayerSkill.getFromPlayer(this.id);
+        return [...Skill.manager.values()].filter(skill => skill.guildId === this.guildId);
     }
 }
 

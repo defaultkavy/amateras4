@@ -5,6 +5,8 @@ import { Snowflake } from "../../module/Snowflake";
 import { config } from "../../../bot_config";
 import { Embed } from "../../module/Bot/Embed";
 import { addListener } from "../../module/Util/util";
+import { GuildMessage } from "../GuildMessage";
+import { ChannelType } from "discord.js";
 
 export interface SkillOptions extends InGuildDataOptions {
     name: string;
@@ -88,6 +90,30 @@ export class Skill extends InGuildData {
     async editThreshold(threshold: number) {
         await Skill.collection.updateOne({id: this.id}, {$set: {threshold}})
         this.threshold = threshold;
+    }
+
+    async detail(userId: string) {
+        const cursor = GuildMessage.collection.aggregate([
+            {$match: {
+                $or: [
+                    {channelId: {$in: this.channelIdList}},
+                    {parentChannelId: {$in: this.channelIdList}, parentChannelType: ChannelType.GuildForum}
+                ],
+                $and: [{authorId: userId}]
+            }},
+            {$group: {
+                _id: null,
+                count: { $sum: 1}
+            }}
+        ])
+        const messages = await cursor.toArray();
+        cursor.close();
+        const exp = messages[0] ? messages[0].count : 0;
+        return {
+            exp: exp,
+            level: exp === 0 ? 0 : 1 + Math.floor(exp / this.threshold),
+            currentExp: exp % this.threshold
+        }
     }
 
     infoEmbed() {
