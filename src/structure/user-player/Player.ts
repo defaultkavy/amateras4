@@ -106,7 +106,7 @@ export class UserPlayer extends InGuildData {
         const skills = this.skills;
         const skillDetailList = await Promise.all(skills.map(async skill => ({...await skill.detail(this.userId), name: skill.name})))
         const description = `${this.intro}\n${skills.length ? codeBlock(`${
-                skillDetailList.sort((a, b) => b.level - a.level).slice(0, 3).map(pSkill => `${
+                skillDetailList.filter(skill => skill.level).sort((a, b) => b.level - a.level).slice(0, 3).map(pSkill => `${
                     pSkill.name} LV${pSkill.level}`).toString().replaceAll(',', ' | ')
             }`) : ''
         }`.trim();
