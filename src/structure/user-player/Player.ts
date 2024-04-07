@@ -12,6 +12,7 @@ import { PlayerSkill } from "./PlayerSkill";
 import { Skill } from "./Skill";
 import { MessageBuilder } from "../../module/Bot/MessageBuilder";
 import { Reply } from "../../module/Bot/Reply";
+import { MessageActionRow } from "../../module/Bot/ActionRow";
 
 export interface UserPlayerOptions extends InGuildDataOptions {
     intro: string;
@@ -121,9 +122,10 @@ export class UserPlayer extends InGuildData {
     cardMessage() {
         const builder = new MessageBuilder()
             .embed(this.cardEmbed())
-        if (this.skills.length) builder.actionRow(row => {
-                row.button('技能详情', `player-skill-detail@${this.id}`, {style: ButtonStyle.Secondary})
-            })
+        const row = new MessageActionRow;
+        if (this.skills.length) row.button('技能详情', `player-skill-detail@${this.id}`, {style: ButtonStyle.Primary})
+        row.button('更新资讯', `player-skill-refresh@${this.id}`, {style: ButtonStyle.Secondary})
+        builder.actionRow(row);
         return builder;
     }
 
@@ -163,4 +165,10 @@ addListener('guildMemberAdd', async member => {
 addInteractionListener('player-skill-detail', async i => {
     const player = await UserPlayer.fetch(i.customId.split('@')[1]);
     return new Reply().embed(player.skillEmbed())
+})
+
+addInteractionListener('player-skill-refresh', async i => {
+    if (i.isButton() === false) return;
+    const player = await UserPlayer.fetch(i.customId.split('@')[1]);
+    i.update(player.cardMessage().data)
 })
