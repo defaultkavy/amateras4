@@ -1,23 +1,24 @@
 import { Log } from "../src/module/Log/Log";
 import { BotClient } from "../src/structure/BotClient";
 import { botInit } from "../src/method/botInit";
-import { GuildMessage, GuildMessageDB } from "../src/structure/GuildMessage";
+import { $Message, $MessageDB } from "../src/structure/$Message";
 
 await botInit(true);
-const messageList = await GuildMessage.collection.find().toArray()
-const messageSet = new Set<GuildMessageDB>();
+await $Message.collection.deleteMany({bot: true}).then(result => new Log(`Bot Message Data Deleted: ${result.deletedCount}`));
+const messageList = await $Message.collection.find().toArray();
+const messageSet = new Set<$MessageDB>();
 messageList.forEach(data => messageSet.add(data));
 let [updated] = [0]
 let [channelMissing, messageError] = [0, 0]
 
-const expectedRemoveList: GuildMessageDB[] = [];
+const expectedRemoveList: $MessageDB[] = [];
 const interval = setInterval(() => {
     if (messageSet.size === 0) {
         clearInterval(interval)
         new Log(`Message updated: ${updated}, messageError: ${messageError}`)
         return;
     }
-    const list = Array.from(messageSet).slice(0, 50);
+    const list = Array.from(messageSet).slice(0, 20);
     for (const data of list) {
         if (expectedRemoveList.includes(data)) return;
     }
@@ -25,7 +26,7 @@ const interval = setInterval(() => {
     fetch(list)
 }, 2000)
 
-async function fetch(messageList: GuildMessageDB[]) {
+async function fetch(messageList: $MessageDB[]) {
     new Log('Fetch')
     for (const messageData of messageList) {
         const bot = BotClient.getFromGuild(messageData.guildId)[0]
@@ -41,7 +42,7 @@ async function fetch(messageList: GuildMessageDB[]) {
                 messageError +=1;
                 return;
             }
-            GuildMessage.update(message);
+            $Message.update(message);
             updated +=1;
             new Log(`Message update: ${message.id}. Count: ${updated}`)
         });

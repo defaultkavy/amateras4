@@ -5,7 +5,7 @@ import { Snowflake } from "../../module/Snowflake";
 import { config } from "../../../bot_config";
 import { Embed } from "../../module/Bot/Embed";
 import { addListener } from "../../module/Util/util";
-import { GuildMessage } from "../GuildMessage";
+import { $Message } from "../$Message";
 import { ChannelType, Guild } from "discord.js";
 
 export interface SkillOptions extends InGuildDataOptions {
@@ -93,7 +93,7 @@ export class Skill extends InGuildData {
     }
 
     async detail(userId: string) {
-        const cursor = GuildMessage.collection.aggregate([
+        const cursor = $Message.collection.aggregate([
             {$match: {
                 $or: [
                     {channelId: {$in: this.channelIdList}},

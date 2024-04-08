@@ -4,13 +4,13 @@ import { LogChannel } from "./src/structure/LogChannel";
 import { PostChannel } from "./src/structure/PostChannel";
 import { System } from "./src/structure/System";
 import { Game } from "./src/structure/Game";
-import { GuildMessage } from "./src/structure/GuildMessage";
+import { $Message } from "./src/structure/$Message";
 
 // Init
 new Log('System Initializing...');
 System.init();
 await botInit();
-GuildMessage;
+$Message;
 // Global data load
 await PostChannel.init();
 await LogChannel.init();
