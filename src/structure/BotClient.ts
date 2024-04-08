@@ -6,12 +6,12 @@ import { Snowflake } from "../module/Snowflake";
 import { addListener, startListen } from "../module/Util/util";
 import { ErrLog, Log } from "../module/Log/Log";
 import { CommandManager } from "../module/Bot/CommandManager";
-import { cmd_list } from "../../index";
 import { Chat } from "./Chat";
 import { CLIENT_OPTIONS } from "../method/client";
 import { System } from "./System";
 import { cmd_sys } from "../command/sys/sys";
 import { $Guild } from "./$Guild";
+import { cmd_list } from "../../cmdList";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -60,7 +60,7 @@ export class BotClient extends Data {
         return instance;
     }
 
-    static async init() {
+    static async init(debug = false) {
         const cursor = this.collection.find();
         const list = await cursor.toArray();
         cursor.close();
@@ -82,14 +82,15 @@ export class BotClient extends Data {
             }
             const bot = new BotClient(data, bot_client as Client<true>);
             this.manager.set(bot.id, bot);
-            return await bot.init();
+            return await bot.init(debug);
         }))
     }
 
-    async init() {
+    async init(debug = false) {
         await this.update(this.client.user);
         // guilds init
         const guilds = await $Guild.init(this.client);
+        if (debug) return;
         // commands deploy
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds.filter(guild => !System.servers.includes(guild.id)));
         this.cmd_manager.add(cmd_sys)
@@ -106,6 +107,10 @@ export class BotClient extends Data {
         const bot = this.manager.get(id);
         if (!bot) throw new ErrLog(`BotClient missing`)
         return bot
+    }
+
+    static getFromGuild(guildId: string) {
+        return Array.from(this.manager.values()).filter(bot => bot.client.guilds.cache.has(guildId));
     }
 
     async update(user: ClientUser) {

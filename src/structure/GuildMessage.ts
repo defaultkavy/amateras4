@@ -18,6 +18,7 @@ export interface GuildMessageDB {
     }[];
     parentChannelType: ChannelType | null;
     channelType: ChannelType;
+    stickers: string[];
 }
 export interface GuildMessage extends GuildMessageDB {}
 
@@ -70,7 +71,8 @@ export class GuildMessage {
                 count: reaction.count
             })),
             channelType: message.channel.type,
-            parentChannelType: message.channel.parent ? message.channel.parent.type : null
+            parentChannelType: message.channel.parent ? message.channel.parent.type : null,
+            stickers: message.stickers.map(sticker => sticker.id)
         }
     }
 }

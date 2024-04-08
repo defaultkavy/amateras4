@@ -56,7 +56,7 @@ export function serverSelector(subcmd: ExecutableCommand) {
     .string('server', '选择其它伺服器（只有天照系统 Bot 存在的伺服器可选）', {required: false,
         autocomplete: async (focused, options, i) => {
             const playerDataList = [...UserPlayer.manager.values()].filter(data => data.userId === i.user.id);
-            return playerDataList.filter(data => $Guild.manager.has(data.guildId) && $Guild.get(data.guildId).guild.name.includes(focused.value)).map(data => ({
+            return playerDataList.filter(data => $Guild.manager.has(data.guildId) && $Guild.get(data.guildId).guild.name.toLowerCase().includes(focused.value.toLowerCase())).map(data => ({
                 name: $Guild.get(data.guildId).guild.name,
                 value: data.guildId
             }))

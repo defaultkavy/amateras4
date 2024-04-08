@@ -1,5 +1,4 @@
-import { Collection } from "mongodb";
-import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
+import { Data, DataOptions } from "../module/DB/Data";
 import { BotClient } from "./BotClient";
 
 export interface InGuildDataOptions extends DataOptions {

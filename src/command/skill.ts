@@ -107,7 +107,7 @@ export function skillSelector(subcmd: ExecutableCommand) {
     return subcmd
         .string('skill', '技能名字', {required: true,
             autocomplete: async (focused, options, i) => {
-                const skillList = await Skill.collection.find({guildId: i.guildId}).toArray();
+                const skillList = Array.from(Skill.manager.values()).filter(skill => skill.guildId === i.guildId);
                 const matches = skillList.filter(skill => skill.name.toLowerCase().includes(focused.value.toLowerCase()));
                 return matches.map(skill => ({
                     name: skill.name,
