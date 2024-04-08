@@ -3,20 +3,27 @@ import { textContent } from "../method/embed";
 import { MessageActionRow } from "../module/Bot/ActionRow";
 import { Command } from "../module/Bot/Command";
 import { addInteractionListener } from "../module/Util/util";
-
-const help_row = new MessageActionRow().stringSelect('help_cmd_select', [
-    {label: '关于天照系统', value: 'intro'},
-    {label: '如何设定欢迎讯息', value: 'welcome'},
-    {label: '如何创建个人房间', value: 'lobby'},
-    {label: '如何创建投票问卷', value: 'poll'},
-    {label: '如何自定义机器人', value: 'bot'},
-    {label: '如何创建系统贴文', value: 'post'},
-    {label: '如何设定我的V身份', value: 'vid'},
-    {label: '如何设定玩家名片', value: 'uid'},
-], {placeholder: '选择你需要了解的功能'})
+const cmd_data_list = [
+    {label: '关于天照系统', value: 'intro', emoji: '⚙️'},
+    {label: '如何设定欢迎讯息', value: 'welcome', emoji: '👋'},
+    {label: '如何设定个人资料和发送名片', value: 'user', emoji: '🪪'},
+    {label: '如何设定技能', value: 'skill', emoji: '📖'},
+    {label: '如何设定游戏名片', value: 'uid', emoji: '🎮'},
+    {label: '如何创建投票问卷', value: 'poll', emoji: '🎫'},
+    {label: '如何创建个人房间', value: 'lobby', emoji: '🏠'},
+    {label: '如何创建系统贴文', value: 'post', emoji: '✉️'},
+    {label: '如何设定我的V身份', value: 'vid', emoji: '✨'},
+    {label: '如何自定义机器人', value: 'bot', emoji: '🤖'},
+]
+const help_row = new MessageActionRow().stringSelect('help_cmd_select', cmd_data_list, {placeholder: '选择你需要了解的功能'})
 
 export const cmd_help = new Command('help', '天照系统指南')
-.string('cmd', '输入指令名', {required: false})
+.string('cmd', '输入指令名', {required: false, 
+    choices: cmd_data_list.map(data => ({
+        name: data.value,
+        value: data.value
+    })),
+})
 .execute(async (i, options) => {
     if (options.cmd) return helpContent(options.cmd);
     return textContent('./help/help.md', [help_row]);
@@ -30,9 +37,13 @@ addInteractionListener('help_cmd_select', async i => {
 function helpContent(value: string, i?: ButtonInteraction | AnySelectMenuInteraction) {
     switch (value) {
         case 'intro': 
-            return textContent('./help/help.md', [help_row], i)
         case 'welcome': 
-            textContent('./help/welcome.md', [help_row], i)
+        case 'vid': 
+        case 'post': 
+        case 'uid': 
+        case 'user':
+        case 'skill':
+            return textContent(`./help/${value}.md`, [help_row], i)
         case 'lobby': 
         return textContent('./help/lobby.md', [
                 help_row,
@@ -48,12 +59,6 @@ function helpContent(value: string, i?: ButtonInteraction | AnySelectMenuInterac
                 help_row,
                 new MessageActionRow().button('下一页', 'help_bot_p2', {style: ButtonStyle.Primary})
             ], i)
-        case 'vid': 
-            return textContent('./help/vid.md', [help_row], i)
-        case 'post': 
-            return textContent('./help/post.md', [help_row], i)
-        case 'uid': 
-            return textContent('./help/uid.md', [help_row], i)
     }
     throw '相关指令的指南不存在'
 }

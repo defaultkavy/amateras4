@@ -1,4 +1,4 @@
-import { InteractionResponse, ChatInputCommandInteraction, CommandInteractionOption, ApplicationCommandOptionType, ApplicationCommandSubCommandData, ApplicationCommandNonOptionsData, ApplicationCommandChannelOptionData, ApplicationCommandAutocompleteNumericOptionData, ApplicationCommandAutocompleteStringOptionData, ApplicationCommandNumericOptionData, ApplicationCommandStringOptionData, ApplicationCommandRoleOptionData, ApplicationCommandUserOptionData, ApplicationCommandMentionableOptionData, ApplicationCommandBooleanOptionData, ApplicationCommandAttachmentOption, AutocompleteFocusedOption, AutocompleteInteraction, ApplicationCommandOptionChoiceData, User, GuildBasedChannel, Role, Attachment, CacheType, ApplicationCommandChoicesData } from "discord.js";
+import { InteractionResponse, ChatInputCommandInteraction, CommandInteractionOption, ApplicationCommandOptionType, ApplicationCommandSubCommandData, ApplicationCommandNonOptionsData, ApplicationCommandChannelOptionData, ApplicationCommandAutocompleteNumericOptionData, ApplicationCommandAutocompleteStringOptionData, ApplicationCommandNumericOptionData, ApplicationCommandStringOptionData, ApplicationCommandRoleOptionData, ApplicationCommandUserOptionData, ApplicationCommandMentionableOptionData, ApplicationCommandBooleanOptionData, ApplicationCommandAttachmentOption, AutocompleteFocusedOption, AutocompleteInteraction, ApplicationCommandOptionChoiceData, User, GuildBasedChannel, Role, Attachment, CacheType, ApplicationCommandChoicesData, ApplicationCommandOptionData, ApplicationCommandChoicesOption, ApplicationCommandAutocompleteStringOption, ApplicationCommandAutocompleteNumericOption, ApplicationCommandStringOption, ApplicationCommandNumericOption } from "discord.js";
 import { CommandOption } from "./Command";
 import { Reply } from "./Reply";
 import { MessageBuilder } from "./MessageBuilder";
@@ -137,16 +137,21 @@ export type ApplicationCommandValueOptionData =
 export type ApplicationCommandFilteredOptionData<T extends CommandOptionValueTypes> = 
     T extends ApplicationCommandOptionType.Attachment ? ApplicationCommandAttachmentOption
     : T extends ApplicationCommandOptionType.Boolean ? ApplicationCommandBooleanOptionData
-    : T extends ApplicationCommandOptionType.String ? ApplicationCommandStringOptionData | ApplicationCommandAutocompleteRestructure<ApplicationCommandAutocompleteStringOptionData>
+    : T extends ApplicationCommandOptionType.String ? ApplicationCommandOptionRestructure<string>
+    : T extends ApplicationCommandOptionType.Number ? ApplicationCommandOptionRestructure<number>
     : T extends ApplicationCommandOptionType.Channel ? ApplicationCommandChannelOptionData
     : T extends ApplicationCommandOptionType.User ? ApplicationCommandUserOptionData
-    : T extends ApplicationCommandOptionType.Integer ? ApplicationCommandNumericOptionData
-    : T extends ApplicationCommandOptionType.Number ? ApplicationCommandNumericOptionData | ApplicationCommandAutocompleteRestructure<ApplicationCommandAutocompleteNumericOptionData>
+    : T extends ApplicationCommandOptionType.Integer ? ApplicationCommandOptionRestructure<number>
     : T extends ApplicationCommandOptionType.Mentionable ? ApplicationCommandMentionableOptionData
     : T extends ApplicationCommandOptionType.Role ? ApplicationCommandRoleOptionData
     : ApplicationCommandStringOptionData
 
-type ApplicationCommandAutocompleteRestructure<T extends {autocomplete: true}> = Omit<T, 'autocomplete'> & {autocomplete: AutocompleteFn}
+type ApplicationCommandOptionRestructure<T extends string | number> = 
+(ApplicationCommandChoicesRestructure<T extends string ? ApplicationCommandStringOption : ApplicationCommandNumericOption> 
+| ApplicationCommandAutocompleteRestructure<T extends string ? ApplicationCommandAutocompleteStringOption : ApplicationCommandAutocompleteNumericOption> ) 
+
+type ApplicationCommandChoicesRestructure<T extends ApplicationCommandChoicesOption> = Omit<T, 'autocomplete'> & {autocomplete?: undefined} & (ApplicationCommandStringOption | ApplicationCommandNumericOption);
+type ApplicationCommandAutocompleteRestructure<T extends {autocomplete: true}> = Omit<T, 'autocomplete'> & {autocomplete: AutocompleteFn, choices?: undefined}
 export type AutocompleteFn = (focused: AutocompleteFocusedOption, options: OptionMap, i: AutocompleteInteraction<'cached'>) => Promise<ApplicationCommandOptionChoiceData[]> | ApplicationCommandOptionChoiceData[]
 export type AutocompleteOptionMap = Map<string, CommandInteractionOption<CacheType>>
 

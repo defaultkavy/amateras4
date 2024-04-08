@@ -70,7 +70,8 @@ export class $Message {
                 id: reaction.emoji.id,
                 name: reaction.emoji.name,
                 identifier: reaction.emoji.identifier,
-                count: reaction.count
+                count: reaction.count,
+                animated: reaction.emoji.animated
             })),
             channelType: message.channel.type,
             parentChannelType: message.channel.parent ? message.channel.parent.type : null,
@@ -97,12 +98,12 @@ export class $Message {
     static getEmojiFromContent(str: string): $EmojiData[] {
         const emojiMap = new Map<string, $EmojiData>()
         for (const [emojiIdentifier] of str.matchAll(emojiRegex())) {
-            const data = emojiMap.get(emojiIdentifier) ?? {name: null, count: 0, identifier: emojiIdentifier, id: null}
+            const data = emojiMap.get(emojiIdentifier) ?? {name: null, count: 0, identifier: emojiIdentifier, id: null, animated: null}
             if (emojiMap.has(emojiIdentifier) === false) emojiMap.set(emojiIdentifier, data)
             data.count += 1;
         }
-        for (const [emojiIdentifier, emojiName, emojiId] of str.matchAll(/<:(.+?):([0-9]+)>/g)) {
-            const data = emojiMap.get(emojiIdentifier) ?? {name: emojiName, count: 0, identifier: emojiIdentifier, id: emojiId}
+        for (const [animated, emojiIdentifier, emojiName, emojiId] of str.matchAll(/<(a?):(.+?):([0-9]+)>/g)) {
+            const data = emojiMap.get(emojiIdentifier) ?? {name: emojiName, count: 0, identifier: emojiIdentifier, id: emojiId, animated: !!animated}
             if (emojiMap.has(emojiName) === false) emojiMap.set(emojiIdentifier, data)
             data.count += 1;
         }
@@ -114,6 +115,7 @@ export interface $EmojiData {
     identifier: string;
     id: string | null;
     name: string | null;
+    animated: boolean | null;
 }
 
 addListener('messageCreate', async message => $Message.create(message))
