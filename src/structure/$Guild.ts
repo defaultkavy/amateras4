@@ -1,5 +1,8 @@
 import { Client, Guild } from "discord.js";
 import { UserPlayer } from "./user-player/Player";
+import { Log } from "../module/Log/Log";
+import { addListener } from "../module/Util/util";
+import { BotClient } from "./BotClient";
 
 export class $Guild {
     guild: Guild;
@@ -30,7 +33,18 @@ export class $Guild {
         await UserPlayer.init(this.guild);
     }
 
-    static get(guild: Guild) {
-        return this.manager.get(guild.id) as $Guild;
+    static get(guildId: string) {
+        return this.manager.get(guildId) as $Guild;
     }
 }
+addListener('guildCreate', async guild => {
+    new Log(`Joining ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
+    const bot = BotClient.get(guild.client.user.id);
+    await $Guild.init(bot.client);
+    await bot.cmd_manager.deployGuilds([guild]);
+})
+
+addListener('guildDelete', guild => {
+    new Log(`Leaving ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
+    if ([...BotClient.manager.values()].filter(bot => bot.client.guilds.cache.get(guild.id)).length === 0) $Guild.manager.delete(guild.id);
+})

@@ -23,6 +23,7 @@ import { UserPlayer } from "./src/structure/user-player/Player";
 import { cmd_skill } from "./src/command/skill";
 import { cmd_me } from "./src/command/user";
 import { GuildMessage } from "./src/structure/GuildMessage";
+import { $Guild } from "./src/structure/$Guild";
 export const cmd_list = [
     cmd_lobby,
     cmd_mod,
@@ -38,7 +39,6 @@ export const cmd_list = [
     cmdx_info,
     cmdx_unsend
 ]
-listeners();
 
 // Init
 new Log('System Initializing...');
@@ -65,17 +65,3 @@ if (config.dev) {
     cmd_list.push(cmd_test)
 }
 new Log(`Welcome to Amateras 4.`)
-
-function listeners() {
-    addListener('guildCreate', async guild => {
-        new Log(`Joining ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
-        await guild.fetch();
-        await guild.channels.fetch();
-        const bot = BotClient.get(guild.client.user.id);
-        await bot.cmd_manager.deployGuilds([guild])
-    })
-
-    addListener('guildDelete', guild => {
-        new Log(`Leaving ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
-    })
-}
