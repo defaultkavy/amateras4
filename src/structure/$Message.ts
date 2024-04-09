@@ -1,6 +1,6 @@
 import { ChannelType, Guild, Message, PartialMessage } from "discord.js";
 import { db } from "../method/db";
-import { addListener } from "../module/Util/util";
+import { addListener } from "../module/Util/listener";
 import emojiRegex from "emoji-regex";
 
 export interface $MessageDB {
@@ -96,13 +96,13 @@ export class $Message {
     }
 
     static getEmojiFromContent(str: string): $EmojiData[] {
-        const emojiMap = new Map<string, $EmojiData>()
+        const emojiMap = new Map<string, $EmojiData>();
         for (const [emojiIdentifier] of str.matchAll(emojiRegex())) {
             const data = emojiMap.get(emojiIdentifier) ?? {name: null, count: 0, identifier: emojiIdentifier, id: null, animated: null}
             if (emojiMap.has(emojiIdentifier) === false) emojiMap.set(emojiIdentifier, data)
             data.count += 1;
         }
-        for (const [animated, emojiIdentifier, emojiName, emojiId] of str.matchAll(/<(a?):(.+?):([0-9]+)>/g)) {
+        for (const [emojiIdentifier, animated, emojiName, emojiId] of str.matchAll(/<(a?):(.+?):([0-9]+)>/g)) {
             const data = emojiMap.get(emojiIdentifier) ?? {name: emojiName, count: 0, identifier: emojiIdentifier, id: emojiId, animated: !!animated}
             if (emojiMap.has(emojiName) === false) emojiMap.set(emojiIdentifier, data)
             data.count += 1;
@@ -120,7 +120,7 @@ export interface $EmojiData {
 
 addListener('messageCreate', async message => $Message.create(message))
 addListener('messageDelete', async message => $Message.delete(message.id))
-addListener('messageUpdate', async (message) => $Message.update(message))
+addListener('messageUpdate', async (_, message) => $Message.update(message))
 addListener('messageReactionRemoveAll', async (message) => $Message.update(message))
 addListener('messageReactionAdd', async ({message}) => $Message.update(message))
 addListener('messageReactionRemove', async ({message}) => $Message.update(message))

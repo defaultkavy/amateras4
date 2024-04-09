@@ -4,7 +4,7 @@ import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { deleteCategory, messageInit } from "../module/Util/channel";
 import { db } from "../method/db";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
-import { addInteractionListener, getUTCTimestamp } from "../module/Util/util";
+import { getUTCTimestamp } from "../module/Util/util";
 import { Snowflake } from "../module/Snowflake";
 import { config } from "../../bot_config";
 import { dangerEmbed, infoEmbed } from "../method/embed";
@@ -12,6 +12,7 @@ import { ErrLog } from "../module/Log/Log";
 import { VId } from "./VId";
 import { LogChannel } from "./LogChannel";
 import { BotClient } from "./BotClient";
+import { addInteractionListener } from "../module/Util/listener";
 
 export interface LobbyOptions extends InGuildDataOptions {
     name: string;

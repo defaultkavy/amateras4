@@ -5,8 +5,9 @@ import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Data, DataOptions } from "../module/DB/Data";
 import { ErrLog } from "../module/Log/Log";
 import { Snowflake } from "../module/Snowflake";
-import { URLRegex, addInteractionListener, getUTCTimestamp } from "../module/Util/util";
+import { URLRegex, getUTCTimestamp } from "../module/Util/util";
 import { Lobby } from "./Lobby";
+import { addInteractionListener } from "../module/Util/listener";
 
 export interface VIdOptions extends DataOptions {
     userId: string;

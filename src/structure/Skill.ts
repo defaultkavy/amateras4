@@ -1,12 +1,16 @@
-import { InGuildData, InGuildDataOptions } from "../InGuildData";
-import { db } from "../../method/db";
-import { DataCreateOptions } from "../../module/DB/Data";
-import { Snowflake } from "../../module/Snowflake";
-import { config } from "../../../bot_config";
-import { Embed } from "../../module/Bot/Embed";
-import { addListener } from "../../module/Util/util";
-import { $Message } from "../$Message";
+import { InGuildData, InGuildDataOptions } from "./InGuildData";
+import { db } from "../method/db";
+import { DataCreateOptions } from "../module/DB/Data";
+import { Snowflake } from "../module/Snowflake";
+import { config } from "../../bot_config";
+import { Embed } from "../module/Bot/Embed";
+import { addListener } from "../module/Util/listener";
+import { $Message } from "./$Message";
 import { ChannelType, Guild } from "discord.js";
+import { $ } from "../module/Util/text";
+import { countArrayItem, mode } from "../module/Util/util";
+import { $Member } from "./$Member";
+import { $Guild } from "./$Guild";
 
 export interface SkillOptions extends InGuildDataOptions {
     name: string;
@@ -92,7 +96,7 @@ export class Skill extends InGuildData {
         this.threshold = threshold;
     }
 
-    async detail(userId: string) {
+    async detailFromUser(userId: string) {
         const cursor = $Message.collection.aggregate([
             {$match: {
                 $or: [
@@ -109,11 +113,33 @@ export class Skill extends InGuildData {
         const messages = await cursor.toArray();
         cursor.close();
         const exp = messages[0] ? messages[0].count : 0;
+        return this.calcDetail(exp);
+    }
+
+    calcDetail(exp: number) {
         return {
             exp: exp,
             level: exp === 0 ? 0 : 1 + Math.floor(exp / this.threshold),
             currentExp: exp % this.threshold
         }
+    }
+
+    async rankingList(limit: number) {
+        const cursor = $Message.collection.aggregate([
+            {$match: {
+                $or: [
+                    {channelId: {$in: this.channelIdList}},
+                    {parentChannelId: {$in: this.channelIdList}, parentChannelType: ChannelType.GuildForum}
+                ]
+            }}
+        ])
+        const messageList = await cursor.toArray();
+        cursor.close();
+        const mostSkilledUserDataList = countArrayItem(messageList.map(data => data.authorId)).sort((a, b) => b.count - a.count).slice(0, limit);
+        return mostSkilledUserDataList.map(data => ({
+            $member: $Member.getFromMember(this.guildId, data.value),
+            ...this.calcDetail(data.count)
+        }));
     }
 
     infoEmbed() {
@@ -122,6 +148,33 @@ export class Skill extends InGuildData {
             .title(this.name)
             .field(`Channels`, this.channelIdList.map(id => `<#${id}>`).toString().replaceAll(',', ' '))
             .footer(`Skill Info`)
+    }
+
+    static guildSkills(guildId: string) {
+        return [...Skill.manager.values()].filter(skill => skill.guildId === guildId);
+    }
+
+    static async rankingEmbed(guildId: string) {
+        const guild = $Guild.get(guildId).guild;
+        const skills = this.guildSkills(guildId);
+        const $skillRankedList = await Promise.all(skills.map(async skill => {
+            return {
+                skill: skill,
+                $memberDetails: await skill.rankingList(3)
+            }
+        }))
+        return new Embed()
+            .description($.Text([
+                $skillRankedList.map(rank => {
+                    return [
+                        $.H3(rank.skill.name),
+                        rank.$memberDetails.map(detail => $.Blockquote(`${detail.$member} LV${detail.level}`))
+                    ]
+                })
+            ]))
+            .color('Yellow')
+            .footer(`${guild.name} | Skill Ranking`, guild.iconURL())
+            .max()
     }
 }
 

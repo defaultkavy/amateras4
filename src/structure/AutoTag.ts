@@ -2,7 +2,7 @@ import { ChannelType, ForumChannel, GuildForumTag, MessageType } from "discord.j
 import { db } from "../method/db";
 import { InGuildDataOptions, InGuildData } from "./InGuildData";
 import { DataCreateOptions } from "../module/DB/Data";
-import { addListener } from "../module/Util/util";
+import { addListener } from "../module/Util/listener";
 
 export interface AutoTagOptions extends InGuildDataOptions {
     channelId: string;

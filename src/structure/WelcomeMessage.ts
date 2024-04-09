@@ -4,7 +4,7 @@ import { Snowflake } from "../module/Snowflake";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { ErrLog } from "../module/Log/Log";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
-import { addListener } from "../module/Util/util";
+import { addListener } from "../module/Util/listener";
 import { config } from "../../bot_config";
 
 export interface WelcomeMessageOptions extends InGuildDataOptions {

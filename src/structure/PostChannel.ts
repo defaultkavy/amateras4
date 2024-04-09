@@ -1,7 +1,7 @@
 import { GuildTextBasedChannel, MessageType, TextChannel, ThreadAutoArchiveDuration } from "discord.js";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
-import { addListener } from "../module/Util/util";
+import { addListener } from "../module/Util/listener";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 
 export interface PostChannelOptions extends InGuildDataOptions {

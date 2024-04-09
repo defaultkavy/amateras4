@@ -4,10 +4,11 @@ import { db } from "../method/db";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
 import { Snowflake } from "../module/Snowflake";
-import { addInteractionListener, getUTCTimestamp } from "../module/Util/util";
+import { getUTCTimestamp } from "../module/Util/util";
 import { client } from "../method/client";
 import { ErrLog } from "../module/Log/Log";
 import { BotClient } from "./BotClient";
+import { addInteractionListener } from "../module/Util/listener";
 
 export interface PollOptions extends DataOptions {
     ownerUserId: string;

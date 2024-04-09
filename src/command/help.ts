@@ -2,7 +2,7 @@ import { AnySelectMenuInteraction, ButtonInteraction, ButtonStyle, Interaction }
 import { textContent } from "../method/embed";
 import { MessageActionRow } from "../module/Bot/ActionRow";
 import { Command } from "../module/Bot/Command";
-import { addInteractionListener } from "../module/Util/util";
+import { addInteractionListener } from "../module/Util/listener";
 const cmd_data_list = [
     {label: '关于天照系统', value: 'intro', emoji: '⚙️'},
     {label: '如何设定欢迎讯息', value: 'welcome', emoji: '👋'},

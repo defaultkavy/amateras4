@@ -1,34 +1,36 @@
-import { InGuildData, InGuildDataOptions } from "../InGuildData";
-import { db } from "../../method/db";
-import { DataCreateOptions } from "../../module/DB/Data";
-import { Snowflake } from "../../module/Snowflake";
-import { config } from "../../../bot_config";
-import { BotClient } from "../BotClient";
-import { Log } from "../../module/Log/Log";
-import { addInteractionListener, addListener, codeBlock } from "../../module/Util/util";
-import { Embed } from "../../module/Bot/Embed";
-import { ButtonStyle, Guild, GuildMember } from "discord.js";
+import { InGuildData, InGuildDataOptions } from "./InGuildData";
+import { db } from "../method/db";
+import { DataCreateOptions } from "../module/DB/Data";
+import { Snowflake } from "../module/Snowflake";
+import { config } from "../../bot_config";
+import { BotClient } from "./BotClient";
+import { Log } from "../module/Log/Log";
+import { Embed } from "../module/Bot/Embed";
+import { ButtonStyle, Guild, GuildMember, codeBlock } from "discord.js";
 import { Skill } from "./Skill";
-import { MessageBuilder } from "../../module/Bot/MessageBuilder";
-import { Reply } from "../../module/Bot/Reply";
-import { MessageActionRow } from "../../module/Bot/ActionRow";
+import { MessageBuilder } from "../module/Bot/MessageBuilder";
+import { Reply } from "../module/Bot/Reply";
+import { MessageActionRow } from "../module/Bot/ActionRow";
+import { addInteractionListener, addListener } from "../module/Util/listener";
+import { $Guild } from "./$Guild";
 
-export interface UserPlayerOptions extends InGuildDataOptions {
+export interface $MemberOptions extends InGuildDataOptions {
     intro: string;
     userId: string;
 }
-export interface UserPlayerDB extends UserPlayerOptions {}
-export interface UserPlayer extends UserPlayerDB {}
+export interface $MemberDB extends $MemberOptions {}
+export interface $Member extends $MemberDB {}
 
-export class UserPlayer extends InGuildData {
-    static collection = db.collection<UserPlayerDB>('player');
-    static manager = new Map<string, UserPlayer>();
+export class $Member extends InGuildData {
+    static collection = db.collection<$MemberDB>('member');
+    static manager = new Map<string, $Member>();
     static snowflake = new Snowflake({epoch: config.epoch, workerId: 11});
-    constructor(data: UserPlayerDB) {
+    constructor(data: $MemberDB) {
         super(data);
     }
 
-    static async init(guild: Guild) {
+    static async init(guildId: string) {
+        const guild = $Guild.get(guildId).guild;
         await Skill.init(guild);
         const cursor = this.collection.find({guildId: guild.id})
         const list = await cursor.toArray();
@@ -37,11 +39,11 @@ export class UserPlayer extends InGuildData {
             const instance = new this(data);
             this.manager.set(data.id, instance);
         })
-        let [playerCreated] = [0]
+        let [memberCreated] = [0]
         const guildPlayerUserIdList = [...this.manager.values()].filter(player => player.guildId === guild.id).map(player => player.userId)
         guild.members.cache.forEach(member => {
             if (guildPlayerUserIdList.includes(member.id) === false) {
-                playerCreated += 1;
+                memberCreated += 1;
                 this.create({
                     clientId: guild.client.user.id,
                     guildId: guild.id,
@@ -50,14 +52,14 @@ export class UserPlayer extends InGuildData {
                 })
             }
         })
-        new Log(`[${guild.name}] Player created: ${playerCreated}. Total: ${guild.members.cache.size}.`)
+        new Log(`[${guild.name}] Player created: ${memberCreated}. Total: ${guild.members.cache.size}.`)
     }
 
-    static async create(options: DataCreateOptions<UserPlayerOptions>) {
+    static async create(options: DataCreateOptions<$MemberOptions>) {
         const duplicate = await this.collection.findOne({id: options.userId, guildId: options.guildId});
         if (duplicate) throw `该玩家已存在`;
         const snowflake = this.snowflake.generate(true);
-        const data: UserPlayerDB = {
+        const data: $MemberDB = {
             ...options,
             id: snowflake.id,
             timestamp: snowflake.timestamp
@@ -76,7 +78,7 @@ export class UserPlayer extends InGuildData {
         return instance;
     }
 
-    static async fetchFromUser(guildId: string, userId: string) {
+    static async fetchFromMember(guildId: string, userId: string) {
         const data = await this.collection.findOne({guildId, userId});
         if (!data) throw '该用户资料不存在';
         const instance = new this(data);
@@ -84,19 +86,23 @@ export class UserPlayer extends InGuildData {
         return instance;
     }
 
+    static getFromMember(guildId: string, userId: string) {
+        return Array.from(this.manager.values()).find($member => $member.guildId === guildId && $member.userId === userId) as $Member;
+    }
+
     async delete() {
-        UserPlayer.manager.delete(this.id);
-        await UserPlayer.collection.deleteOne({id: this.id});
+        $Member.manager.delete(this.id);
+        await $Member.collection.deleteOne({id: this.id});
     }
 
     async editIntro(intro: string) {
-        await UserPlayer.collection.updateOne({id: this.id}, {$set: {intro}});
+        await $Member.collection.updateOne({id: this.id}, {$set: {intro}});
         this.intro = intro;
     }
 
     async cardEmbed() {
         const skills = this.skills;
-        const skillDetailList = await Promise.all(skills.map(async skill => ({...await skill.detail(this.userId), name: skill.name})))
+        const skillDetailList = await Promise.all(skills.map(async skill => ({...await skill.detailFromUser(this.userId), name: skill.name})))
         const filteredList = skillDetailList.filter(skill => skill.level);
         const description = `${this.intro}\n${filteredList.length ? codeBlock(`${
                 filteredList.sort((a, b) => b.level - a.level).slice(0, 3).map(pSkill => `${
@@ -123,7 +129,7 @@ export class UserPlayer extends InGuildData {
     }
 
     async skillEmbed() {
-        const skillDetailList = await Promise.all(this.skills.map(async skill => ({...await skill.detail(this.userId), name: skill.name, threshold: skill.threshold})))
+        const skillDetailList = await Promise.all(this.skills.map(async skill => ({...await skill.detailFromUser(this.userId), name: skill.name, threshold: skill.threshold})))
         const description = `${
             codeBlock(
                 skillDetailList.sort((a, b) => b.level - a.level).map(pSkill => `${pSkill.name} LV${pSkill.level} EXP(${pSkill.currentExp}/${pSkill.threshold})`).toString().replaceAll(',', '\n')
@@ -145,28 +151,28 @@ export class UserPlayer extends InGuildData {
     get skills() {
         return [...Skill.manager.values()].filter(skill => skill.guildId === this.guildId);
     }
+
+    toString() {
+        return this.member.toString();
+    }
 }
 
 addInteractionListener('player-skill-detail', async i => {
-    const player = await UserPlayer.fetch(i.customId.split('@')[1]);
-    return new Reply().embed(await player.skillEmbed())
+    const $member = await $Member.fetch(i.customId.split('@')[1]);
+    return new Reply().embed(await $member.skillEmbed())
 })
 
 addInteractionListener('player-skill-refresh', async i => {
     if (i.isButton() === false) return;
-    const player = await UserPlayer.fetch(i.customId.split('@')[1]);
-    i.update((await player.cardMessage()).data)
+    const $member = await $Member.fetch(i.customId.split('@')[1]);
+    i.update((await $member.cardMessage()).data)
 })
 
 addListener('guildMemberAdd', async member => {
-    UserPlayer.create({
+    $Member.create({
         clientId: member.client.user.id,
         guildId: member.guild.id,
         intro: '',
         userId: member.id
     })
-})
-
-addListener('guildCreate', async guild => {
-    
 })

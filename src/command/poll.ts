@@ -2,13 +2,13 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { Command } from "../module/Bot/Command";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Reply } from "../module/Bot/Reply";
-import { addInteractionListener, codeBlock, substringWith } from "../module/Util/util";
+import { codeBlock, substringWith } from "../module/Util/util";
 import { Poll } from "../structure/Poll";
 
 export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('create', '建立投票', subcmd => {
     subcmd
-    .string('title', '投票标题', {required: true, max_length: 100})
+    .string('title', '投票标题', {required: true, maxLength: 100})
     .string('options', '选项内容（使用中英文分号 ; 可添加复数个选项内容）', {required: false})
     .execute(async (i, options) => {
         await i.deferSlient();
@@ -93,7 +93,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 
 .subCommand('title', '修改投票标题', subcmd => {
     pollSelector(subcmd)
-    .string('title', '标题', {required: true, max_length: 100})
+    .string('title', '标题', {required: true, maxLength: 100})
     .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll)
         await poll.setTitle(options.title);

@@ -1,7 +1,7 @@
 import { ChannelType, Guild } from "discord.js";
 import { Command } from "../module/Bot/Command";
 import { Modal } from "../module/Bot/Modal";
-import { addInteractionListener } from "../module/Util/util";
+import { addInteractionListener } from "../module/Util/listener";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
 import { LogChannel } from "../structure/LogChannel";

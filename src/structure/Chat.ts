@@ -3,9 +3,9 @@ import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
 import { Snowflake } from "../module/Snowflake";
-import { addInteractionListener, addListener } from "../module/Util/util";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
+import { addListener, addInteractionListener } from "../module/Util/listener";
 
 export interface ChatOptions extends InGuildDataOptions {
     userId: string;

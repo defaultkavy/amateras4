@@ -11,7 +11,7 @@ export class Embed {
         return this;
     }
 
-    thumbnail(url: string | undefined) {
+    thumbnail(url: string | undefined | null) {
         this.data.thumbnail = url ? {
             url: url,
         } : undefined;
@@ -38,10 +38,11 @@ export class Embed {
         return this;
     }
 
-    author(name: string, url?: string) {
+    author(name: string, options?: {url?: string, icon_url?: string | null}) {
         this.data.author = {
             name: name,
-            url: url
+            url: options?.url,
+            icon_url: options?.icon_url ?? undefined
         }
         return this;
     }
@@ -62,8 +63,13 @@ export class Embed {
         return this;
     }
 
-    footer(text: string, icon_url?: string) {
-        this.data.footer = {text,icon_url};
+    footer(text: string, icon_url?: string | null) {
+        this.data.footer = {text, icon_url: icon_url ?? undefined};
+        return this;
+    }
+
+    timestamp(text: string | undefined) {
+        this.data.timestamp = text;
         return this;
     }
 }

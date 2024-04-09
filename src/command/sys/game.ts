@@ -1,7 +1,8 @@
 import { ExecutableCommand } from "../../module/Bot/ExecutableCommand";
 import { Modal } from "../../module/Bot/Modal";
 import { Reply } from "../../module/Bot/Reply";
-import { addInteractionListener, codeBlock } from "../../module/Util/util";
+import { addInteractionListener } from "../../module/Util/listener";
+import { codeBlock } from "../../module/Util/util";
 import { Game } from "../../structure/Game";
 import { cmd_sys } from "./sys";
 

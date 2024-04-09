@@ -3,7 +3,6 @@ import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
 import { Snowflake } from "../module/Snowflake";
-import { addListener, startListen } from "../module/Util/util";
 import { ErrLog, Log } from "../module/Log/Log";
 import { CommandManager } from "../module/Bot/CommandManager";
 import { Chat } from "./Chat";
@@ -12,6 +11,9 @@ import { System } from "./System";
 import { cmd_sys } from "../command/sys/sys";
 import { $Guild } from "./$Guild";
 import { cmd_list } from "../../cmdList";
+import { startListen, addListener } from "../module/Util/listener";
+import { $Member } from "./$Member";
+import { GuildStats } from "./GuildStats";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -84,6 +86,11 @@ export class BotClient extends Data {
             this.manager.set(bot.id, bot);
             return await bot.init(debug);
         }))
+
+        for (const [id] of $Guild.manager) {
+            await $Member.init(id);
+            GuildStats.init(id);
+        }
     }
 
     async init(debug = false) {
@@ -107,6 +114,10 @@ export class BotClient extends Data {
         const bot = this.manager.get(id);
         if (!bot) throw new ErrLog(`BotClient missing`)
         return bot
+    }
+
+    static getClientGuild(clientId: string, guildId: string) {
+        return this.manager.get(clientId)?.client.guilds.cache.get(guildId);
     }
 
     static getFromGuild(guildId: string) {

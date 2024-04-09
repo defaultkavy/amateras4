@@ -1,24 +1,26 @@
 import { Client, Guild } from "discord.js";
-import { UserPlayer } from "./user-player/Player";
 import { Log } from "../module/Log/Log";
-import { addListener } from "../module/Util/util";
+import { addListener } from "../module/Util/listener";
 import { BotClient } from "./BotClient";
 
 export class $Guild {
+    id: string;
     guild: Guild;
-    static manager = new Map<string, $Guild>();
+    clientId: string;
+    static manager = new Map<string, $Guild[]>();
     constructor(guild: Guild) {
         this.guild = guild;
+        this.id = guild.id;
+        this.clientId = guild.client.user.id;
     }
 
     static async init(client: Client) {
         await client.guilds.fetch();
         const guilds = [...client.guilds.cache.values()];
-        const cachedGuilds = guilds.filter(guild => this.manager.has(guild.id));
-        const uncacheGuilds = guilds.filter(guild => !this.manager.has(guild.id));
-        for (const guild of uncacheGuilds) {
-            const $guild = this.manager.get(guild.id) ?? new $Guild(guild);
-            if (this.manager.has(guild.id) === false) this.manager.set(guild.id, $guild);
+        for (const guild of guilds) {
+            const $guild = new $Guild(guild);
+            const $guildList = this.manager.get(guild.id) ?? [$guild];
+            if (this.manager.has(guild.id) === false) this.manager.set(guild.id, $guildList);
             await $guild.init();
         }
         return guilds;
@@ -30,11 +32,10 @@ export class $Guild {
             this.guild.channels.fetch(),
             this.guild.members.fetch(),
         ])
-        await UserPlayer.init(this.guild);
     }
 
     static get(guildId: string) {
-        return this.manager.get(guildId) as $Guild;
+        return this.manager.get(guildId)?.at(0) as $Guild;
     }
 }
 addListener('guildCreate', async guild => {

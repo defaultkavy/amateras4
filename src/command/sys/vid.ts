@@ -2,7 +2,7 @@ import { cmd_sys } from "./sys";
 import { vidTemplate } from "../../data/vid_data";
 import { Modal } from "../../module/Bot/Modal";
 import { Reply } from "../../module/Bot/Reply";
-import { addInteractionListener } from "../../module/Util/util";
+import { addInteractionListener } from "../../module/Util/listener";
 import { Admin } from "../../structure/Admin";
 import { VId } from "../../structure/VId";
 

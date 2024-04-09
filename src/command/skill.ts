@@ -2,8 +2,8 @@ import { Command } from "../module/Bot/Command";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Modal } from "../module/Bot/Modal";
 import { Reply } from "../module/Bot/Reply";
-import { addInteractionListener } from "../module/Util/util";
-import { Skill } from "../structure/user-player/Skill";
+import { addInteractionListener } from "../module/Util/listener";
+import { Skill } from "../structure/Skill";
 
 export const cmd_skill = new Command('skill', '技能设定')
 .subCommand('create', '创建技能', subcmd => {
