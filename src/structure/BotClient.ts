@@ -14,6 +14,7 @@ import { cmd_list } from "../../cmdList";
 import { startListen, addListener } from "../module/Util/listener";
 import { $Member } from "./$Member";
 import { GuildStats } from "./GuildStats";
+import { setIntervalAbsolute } from "../module/Util/util";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -89,8 +90,9 @@ export class BotClient extends Data {
 
         for (const [id] of $Guild.manager) {
             await $Member.init(id);
-            GuildStats.init(id);
+            GuildStats.init(id)
         }
+        setIntervalAbsolute(5, 'minute', () => Array.from($Guild.manager.keys()).forEach(id => GuildStats.init(id)));
     }
 
     async init(debug = false) {

@@ -4,7 +4,7 @@ export function multipleResolver<T>(resolver: Multiple<T>): T[] {
     return resolver instanceof Array ? resolver : [resolver]
 }
 
-export function setIntervalAbsolute(unit: 'milisecond' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year', callback: () => OrPromise<any>, multiply: number = 1) {
+export function setIntervalAbsolute(multiply: number, unit: 'milisecond' | 'second' | 'minute' | 'hour' | 'day' | 'month' | 'year', callback: () => OrPromise<any>) {
     const now = new Date();
     const next = new Date(now)
     switch (unit) {
@@ -19,7 +19,7 @@ export function setIntervalAbsolute(unit: 'milisecond' | 'second' | 'minute' | '
     
     setTimeout(() => {
         callback()
-        setIntervalAbsolute(unit, callback, multiply)
+        setIntervalAbsolute(multiply, unit, callback)
     }, +next - +now);
 }
 
