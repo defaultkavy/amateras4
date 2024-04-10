@@ -99,6 +99,11 @@ export namespace $ {
     export function Italic(...text: TextComponent[]) { return new $Inline(text, 'italic') }
     export function Strike(...text: TextComponent[]) { return new $Inline(text, 'strikethrough') }
     export function Timestamp(timestamp: number | string, format: $Timestamp['format'], convert = true) { return new $Timestamp(convert ? timestamp.toString().slice(0, -3) : timestamp, format) }
+    export function Emoji(identifier: string, animated: boolean | null = null) { 
+        identifier = decodeURI(identifier);
+        if (identifier.includes(':')) return new $Inline(`<${animated ? 'a' : ''}:${identifier}>`, 'none')
+        else return new $Inline(`${identifier}`, 'none')
+    }
     export type Style = 'bold' | 'underline' | 'italic' | 'strikethrough' | 'code'
 }
 function text_renderer(resolver: TextComponent) {

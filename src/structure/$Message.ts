@@ -102,7 +102,7 @@ export class $Message {
             if (emojiMap.has(emojiIdentifier) === false) emojiMap.set(emojiIdentifier, data)
             data.count += 1;
         }
-        for (const [emojiIdentifier, animated, emojiName, emojiId] of str.matchAll(/<(a?):(.+?):([0-9]+)>/g)) {
+        for (const [_, animated, emojiIdentifier, emojiName, emojiId] of str.matchAll(/<(a?):((.+?):([0-9]+))>/g)) {
             const data = emojiMap.get(emojiIdentifier) ?? {name: emojiName, count: 0, identifier: emojiIdentifier, id: emojiId, animated: !!animated}
             if (emojiMap.has(emojiName) === false) emojiMap.set(emojiIdentifier, data)
             data.count += 1;

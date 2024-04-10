@@ -84,7 +84,7 @@ export class GuildStats extends InGuildData {
 
     static async fetchFromChannel(channelId: string) {
         const data = await this.collection.findOne({channelId});
-        if (!data) throw 'Guild stats message not found from channel';
+        if (!data) return;
         const instance = new this(data);
         this.manager.set(instance.id, instance);
         return instance;
@@ -113,7 +113,7 @@ export class GuildStats extends InGuildData {
         const messageDataList = await cursor.toArray();
         const mostActiveChannelIdList = mode(messageDataList.map(data => data.channelId)).map(data => data.values).flat().splice(0, 3);
         const mostUsedEmojiIdentifierList = mode(messageDataList.map(data => [...data.emojis, ...data.reactions]).flat().filter(emoji => !emoji.id || guild.emojis.cache.has(emoji.id)).flat())
-            .map(data => data.values).flat().map(emoji => decodeURI(emoji.identifier)).splice(0, 5)
+            .map(data => data.values).flat().splice(0, 5)
         cursor.close()
         return new Embed()
             .author(guild.name, {icon_url: guild.iconURL()})
@@ -127,7 +127,7 @@ export class GuildStats extends InGuildData {
                         $.Blockquote(`活跃频道 `, `${mostActiveChannelIdList.map(id => `<#${id}>`).toString().replaceAll(',', ' ')}`) 
                         : null,
                     mostUsedEmojiIdentifierList.length ? 
-                    $.Blockquote(`常用表情 `, `${mostUsedEmojiIdentifierList.toString().replaceAll(',', ' ')}`) 
+                    $.Blockquote(`常用表情 `, `${mostUsedEmojiIdentifierList.map(emoji => $.Emoji(emoji.identifier, emoji.animated)).toString().replaceAll(',', ' ')}`) 
                     : null,
                 
                 $.H3(`System Info`),
