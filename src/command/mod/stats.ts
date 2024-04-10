@@ -9,7 +9,7 @@ export function mod_stats() {
             subcmd
             .execute(async (i, options) => {
                 await i.reply((await GuildStats.infoMessage(i.guild)).data)
-                const message = await i.fetchReply()
+                const message = await i.fetchReply();
                 GuildStats.create({
                     channelId: i.channelId,
                     clientId: i.client.user.id,
