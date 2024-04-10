@@ -112,8 +112,19 @@ export class GuildStats extends InGuildData {
         const cursor = $Message.collection.find({guildId: guild.id, timestamp: {$gte: Date.now() - 60_000 * 60 * 24}})
         const messageDataList = await cursor.toArray();
         const mostActiveChannelIdList = mode(messageDataList.map(data => data.channelId)).map(data => data.values).flat().splice(0, 3);
-        const mostUsedEmojiIdentifierList = mode(messageDataList.map(data => [...data.emojis, ...data.reactions]).flat().filter(emoji => !emoji.id || guild.emojis.cache.has(emoji.id)).flat())
-            .map(data => data.values).flat().splice(0, 5)
+        const emojiList = messageDataList
+            .map(data => [...data.emojis, ...data.reactions])
+            .flat()
+            .filter(emoji => !emoji.id || guild.emojis.cache.has(emoji.id))
+        const emojiIdentifierList = emojiList.map(emoji => emoji.identifier)
+        const mostUsedEmojiList = mode(emojiIdentifierList) 
+            .map(data => data.values) 
+            .flat() 
+            .splice(0, 5)
+            .map(identifier => ({
+                identifier,
+                animated: emojiList.find(emoji => emoji.identifier === identifier)?.animated
+            }))
         cursor.close()
         return new Embed()
             .author(guild.name, {icon_url: guild.iconURL()})
@@ -126,8 +137,8 @@ export class GuildStats extends InGuildData {
                     mostActiveChannelIdList.length ? 
                         $.Blockquote(`活跃频道 `, `${mostActiveChannelIdList.map(id => `<#${id}>`).toString().replaceAll(',', ' ')}`) 
                         : null,
-                    mostUsedEmojiIdentifierList.length ? 
-                    $.Blockquote(`常用表情 `, `${mostUsedEmojiIdentifierList.map(emoji => $.Emoji(emoji.identifier, emoji.animated)).toString().replaceAll(',', ' ')}`) 
+                    mostUsedEmojiList.length ? 
+                    $.Blockquote(`常用表情 `, `${mostUsedEmojiList.map(emoji => $.Emoji(emoji.identifier, emoji.animated)).toString().replaceAll(',', ' ')}`) 
                     : null,
                 
                 $.H3(`System Info`),
