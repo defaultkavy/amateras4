@@ -66,7 +66,13 @@ export class $Message {
             parentChannelId: message.channel.isThread() ? message.channel.parentId : null,
             contentLength: message.content.length,
             bot: message.author.bot,
-            reactions: [...message.reactions.cache.values()].map(reaction => ({
+            reactions: [...message.reactions.cache.values()].filter(reaction => {
+                let count = reaction.count;
+                [...reaction.users.cache.values()].forEach(user => {
+                    if (user.bot) count -= 1;
+                })
+                return count;
+            }).map(reaction => ({
                 id: reaction.emoji.id,
                 name: reaction.emoji.name,
                 identifier: reaction.emoji.identifier,

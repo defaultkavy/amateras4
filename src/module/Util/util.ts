@@ -63,3 +63,13 @@ export function mode<T>(arr: T[]) {
     })
     return countDataList.sort((a, b) => b.count - a.count);
 }
+
+export async function queue<T, R>(list: T[], limit: number, callback: (value: T, index: number, array: T[]) => R | Promise<R>) {
+    const queue = [...list];
+    const result: R[] = [];
+    while(queue.length) {
+        const works = queue.splice(0, limit);
+        result.push(...await Promise.all(works.map(item => callback(item, list.indexOf(item), list))))
+    }
+    return result;
+}
