@@ -109,7 +109,8 @@ export class GuildStats extends InGuildData {
     }
 
     static async infoEmbed(guild: Guild) {
-        const cursor = $Message.collection.find({guildId: guild.id, timestamp: {$gte: Date.now() - 60_000 * 60 * 24}})
+        const timestamp24hrs = Date.now() - 60_000 * 60 * 24;
+        const cursor = $Message.collection.find({guildId: guild.id, timestamp: {$gte: timestamp24hrs}})
         const messageDataList = await cursor.toArray();
         const mostActiveChannelIdList = mode(messageDataList.map(data => data.channelId)).map(data => data.values).flat().splice(0, 3);
         const emojiList = messageDataList
@@ -130,16 +131,21 @@ export class GuildStats extends InGuildData {
             .author(guild.name, {icon_url: guild.iconURL()})
             .description($.Text([
                 $.H3(`Server Info`),
-                $.Blockquote(`成员人数 `, $('code')`${guild.memberCount}`),
-                $.Blockquote(`创建日期 `, $.Timestamp(guild.createdTimestamp, 'long-date')),
-                $.H3(`Server Activities (in 24hrs)`),
-                    $.Blockquote(`消息数量 `, `${messageDataList.length}`),
-                    mostActiveChannelIdList.length ? 
-                        $.Blockquote(`活跃频道 `, `${mostActiveChannelIdList.map(id => `<#${id}>`).toString().replaceAll(',', ' ')}`) 
-                        : null,
-                    mostUsedEmojiList.length ? 
-                    $.Blockquote(`常用表情 `, `${mostUsedEmojiList.map(emoji => $.Emoji(emoji.identifier, emoji.animated)).toString().replaceAll(',', ' ')}`) 
-                    : null,
+                $.Blockquote(`成员人数 | `, $('bold')`${guild.memberCount}`),
+                $.Blockquote(`创建日期 | `, $.Timestamp(guild.createdTimestamp, 'long-date')),
+                $.H3(`Server Activities From ${$.Timestamp(timestamp24hrs, 'relative')}`),
+                    $.Blockquote(`消息数量 | `), 
+                    $.Bold(`${messageDataList.length}`),
+                    mostUsedEmojiList.length ? [
+                        $.Blockquote(`常用表情 | `), 
+                        $.Text(`${mostUsedEmojiList.map(emoji => $.Emoji(emoji.identifier, emoji.animated)).toString().replaceAll(',', ' ')}`) 
+                    ] : null,
+                    mostActiveChannelIdList.length ? [
+                        $.Blockquote(`活跃频道`), 
+                        $.Blockquote(
+                            mostActiveChannelIdList.map(id => $.Line(`| ${ $.Channel(id) }`, $('bold')` (${ messageDataList.filter(data => data.channelId === id).length })`))
+                        )
+                    ] : null,
                 
                 $.H3(`System Info`),
                 $.Blockquote(`系统上线于 `, $.Timestamp(guild.client.readyTimestamp, 'relative'))

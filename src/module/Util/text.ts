@@ -8,7 +8,7 @@ export class $Text {
     }
 }
 export class $Block extends $Text {
-    type: 'blockquote' | 'codeblock' | 'none' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+    type: 'blockquote' | 'codeblock' | 'none' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'ordered-list' | 'unordered-list';
     constructor(str: TextComponent, type: $Block['type']) {
         super(str);
         this.type = type;
@@ -16,7 +16,7 @@ export class $Block extends $Text {
     toString(): string { 
         switch (this.type) {
             case 'none': return this.content;
-            case 'blockquote': return `> ${this.content}`;
+            case 'blockquote': return `> ${this.content.replaceAll('\n', '\n> ')}`;
             case 'codeblock': return `\`\`\`${this.content}\`\`\``;
             case 'h1': return `# ${this.content}`;
             case 'h2': return `## ${this.content}`;
@@ -24,6 +24,8 @@ export class $Block extends $Text {
             case 'h4': return `#### ${this.content}`;
             case 'h5': return `##### ${this.content}`;
             case 'h6': return `###### ${this.content}`;
+            case 'ordered-list': return `1. ${this.content}`;
+            case 'unordered-list': return `- ${this.content}`
         }
     }
 }
@@ -81,12 +83,14 @@ export function $(...styles: $.Style[]) {
     }
 }
 export namespace $ {
-    export function Text(resolver: TextComponent) {
+    export function Text(...resolver: TextComponent[]) {
         return text_renderer(resolver);
     }
     export function Line(...text: TextComponent[]) { return new $Block(text, 'none') }
     export function CodeBlock(...text: TextComponent[]) { return new $Block(text, 'codeblock') }
     export function Blockquote(...text: TextComponent[]) { return new $Block(text, 'blockquote')}
+    export function OList(...text: TextComponent[]) { return new $Block(text, 'ordered-list')}
+    export function UList(...text: TextComponent[]) { return new $Block(text, 'unordered-list')}
     export function H1(...text: TextComponent[]) { return new $Block(text, 'h1') }
     export function H2(...text: TextComponent[]) { return new $Block(text, 'h2') }
     export function H3(...text: TextComponent[]) { return new $Block(text, 'h3') }
@@ -104,6 +108,7 @@ export namespace $ {
         if (identifier.includes(':')) return new $Inline(`<${animated ? 'a' : ''}:${identifier}>`, 'none')
         else return new $Inline(`${identifier}`, 'none')
     }
+    export function Channel(id: string) { return new $Inline(`<#${id}>`, 'none') }
     export type Style = 'bold' | 'underline' | 'italic' | 'strikethrough' | 'code'
 }
 function text_renderer(resolver: TextComponent) {
