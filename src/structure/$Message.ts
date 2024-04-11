@@ -1,6 +1,6 @@
 import { ChannelType, Guild, Message, PartialMessage } from "discord.js";
 import { db } from "../method/db";
-import { addListener } from "../module/Util/listener";
+import { addClientListener, addListener } from "../module/Util/listener";
 import emojiRegex from "emoji-regex";
 
 export interface $MessageDB {

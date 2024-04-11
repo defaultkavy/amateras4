@@ -8,6 +8,7 @@ import { Snowflake } from "../module/Snowflake";
 import { URLRegex, getUTCTimestamp } from "../module/Util/util";
 import { Lobby } from "./Lobby";
 import { addInteractionListener } from "../module/Util/listener";
+import { snowflakes } from "../method/snowflake";
 
 export interface VIdOptions extends DataOptions {
     userId: string;
@@ -21,8 +22,8 @@ export interface VIdDB extends VIdOptions {
 export interface VId extends VIdDB {}
 export class VId extends Data {
     static collection = db.collection<VIdDB>('vid');
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 2});
-    static link_snowflake = new Snowflake({epoch: config.epoch, workerId: 3});
+    static snowflake = snowflakes.vid;
+    static link_snowflake = snowflakes.vid_link;
     constructor(data: VIdDB) {
         super(data);
         if (!this.assets) this.assets = [];

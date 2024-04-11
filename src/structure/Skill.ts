@@ -1,16 +1,15 @@
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
-import { Snowflake } from "../module/Snowflake";
-import { config } from "../../bot_config";
 import { Embed } from "../module/Bot/Embed";
-import { addListener } from "../module/Util/listener";
+import { addClientListener } from "../module/Util/listener";
 import { $Message } from "./$Message";
 import { ChannelType, Guild } from "discord.js";
 import { $ } from "../module/Util/text";
 import { countArrayItem, mode } from "../module/Util/util";
 import { $Member } from "./$Member";
 import { $Guild } from "./$Guild";
+import { snowflakes } from "../method/snowflake";
 
 export interface SkillOptions extends InGuildDataOptions {
     name: string;
@@ -24,7 +23,7 @@ export interface Skill extends SkillDB {}
 export class Skill extends InGuildData {
     static collection = db.collection<SkillDB>('skill');
     static manager = new Map<string, Skill>();
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 10});
+    static snowflake = snowflakes.skill;
     constructor(data: SkillDB) {
         super(data);
     }
@@ -178,14 +177,14 @@ export class Skill extends InGuildData {
     }
 }
 
-addListener('channelDelete', async channel => {
+addClientListener('channelDelete', async channel => {
     if (channel.isDMBased()) return;
     Skill.manager.forEach(skill => {
         if (skill.channelIdList.includes(channel.id)) skill.removeChannel([channel.id]);
     })
 })
 
-addListener('threadDelete', async thread => {
+addClientListener('threadDelete', async thread => {
     Skill.manager.forEach(skill => {
         if (skill.channelIdList.includes(thread.id)) skill.removeChannel([thread.id]);
         if (thread.parentId && skill.channelIdList.includes(thread.parentId)) skill.removeChannel([thread.parentId]);

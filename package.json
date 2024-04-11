@@ -9,8 +9,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@discordjs/voice": "^0.16.1",
     "discord.js": "^14.14.1",
     "emoji-regex": "^10.3.0",
-    "mongodb": "^6.3.0"
+    "mongodb": "^6.3.0",
+    "ytdl-core": "^4.11.5"
   }
 }

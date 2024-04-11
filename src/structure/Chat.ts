@@ -5,7 +5,8 @@ import { DataCreateOptions } from "../module/DB/Data";
 import { Snowflake } from "../module/Snowflake";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
-import { addListener, addInteractionListener } from "../module/Util/listener";
+import { addClientListener, addInteractionListener } from "../module/Util/listener";
+import { snowflakes } from "../method/snowflake";
 
 export interface ChatOptions extends InGuildDataOptions {
     userId: string;
@@ -18,7 +19,7 @@ export interface Chat extends ChatDB {}
 
 export class Chat extends InGuildData {
     static collection = db.collection<ChatDB>('chat');
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 7});
+    static snowflake = snowflakes.chat;
     static manager = new Map<string, Chat>();
     constructor(data: ChatDB) {
         super(data);
@@ -99,7 +100,7 @@ export class Chat extends InGuildData {
     }
 }
 
-addListener('messageCreate', message => {
+addClientListener('messageCreate', message => {
     if (message.author.bot) return;
     if (message.channel.type !== ChannelType.DM) return;
     const chat = Chat.get(message.client.user.id, message.author.id);

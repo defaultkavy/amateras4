@@ -11,8 +11,9 @@ import { Skill } from "./Skill";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
 import { MessageActionRow } from "../module/Bot/ActionRow";
-import { addInteractionListener, addListener } from "../module/Util/listener";
+import { addInteractionListener, addClientListener } from "../module/Util/listener";
 import { $Guild } from "./$Guild";
+import { snowflakes } from "../method/snowflake";
 
 export interface $MemberOptions extends InGuildDataOptions {
     intro: string;
@@ -24,7 +25,7 @@ export interface $Member extends $MemberDB {}
 export class $Member extends InGuildData {
     static collection = db.collection<$MemberDB>('member');
     static manager = new Map<string, $Member>();
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 11});
+    static snowflake = snowflakes.$member;
     constructor(data: $MemberDB) {
         super(data);
     }
@@ -168,7 +169,7 @@ addInteractionListener('player-skill-refresh', async i => {
     i.update((await $member.cardMessage()).data)
 })
 
-addListener('guildMemberAdd', async member => {
+addClientListener('guildMemberAdd', async member => {
     $Member.create({
         clientId: member.client.user.id,
         guildId: member.guild.id,

@@ -1,5 +1,6 @@
 import { config } from "../../bot_config";
 import { db } from "../method/db";
+import { snowflakes } from "../method/snowflake";
 import { Embed } from "../module/Bot/Embed";
 import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
 import { Snowflake } from "../module/Snowflake";
@@ -20,7 +21,7 @@ export interface GameUid extends GameUidDB {}
 export class GameUid extends Data {
     static collection = db.collection<GameUidDB>('game-uid');
     static manager = new Map<string, GameUid>();
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 9});
+    static snowflake = snowflakes.game_uid;
     constructor(data: GameUidDB) {
         super(data);
     }

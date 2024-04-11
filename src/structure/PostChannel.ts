@@ -1,7 +1,7 @@
 import { GuildTextBasedChannel, MessageType, TextChannel, ThreadAutoArchiveDuration } from "discord.js";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
-import { addListener } from "../module/Util/listener";
+import { addClientListener } from "../module/Util/listener";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 
 export interface PostChannelOptions extends InGuildDataOptions {
@@ -65,7 +65,7 @@ export class PostChannel extends InGuildData {
     }
 }
 
-addListener('messageCreate', async message => {
+addClientListener('messageCreate', async message => {
     if (!message.inGuild()) return;
     if (message.type === MessageType.ChatInputCommand || message.type === MessageType.ContextMenuCommand) return;
     const postChannel = PostChannel.manager.get(message.channelId);
@@ -89,11 +89,11 @@ addListener('messageCreate', async message => {
     }
 })
 
-addListener('guildDelete', async guild => {
+addClientListener('guildDelete', async guild => {
     PostChannel.collection.deleteMany({guildId: guild.id, clientId: guild.client.user.id})
 })
 
-addListener('channelDelete', async channel => {
+addClientListener('channelDelete', async channel => {
     PostChannel.manager.forEach(postChannel => {
         if (postChannel.channelId === channel.id) postChannel.delete();
     })

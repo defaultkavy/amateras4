@@ -4,8 +4,9 @@ import { Snowflake } from "../module/Snowflake";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { ErrLog } from "../module/Log/Log";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
-import { addListener } from "../module/Util/listener";
+import { addClientListener } from "../module/Util/listener";
 import { config } from "../../bot_config";
+import { snowflakes } from "../method/snowflake";
 
 export interface WelcomeMessageOptions extends InGuildDataOptions {
     channelId: string;
@@ -15,7 +16,7 @@ export interface WelcomeMessageDB extends WelcomeMessageOptions {}
 export interface WelcomeMessage extends WelcomeMessageDB {}
 export class WelcomeMessage extends InGuildData {
     static collection = db.collection<WelcomeMessageDB>('welcome-message');
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 1});
+    static snowflake = snowflakes.welcome;
     constructor(data: WelcomeMessageDB) {
         super(data);
     }
@@ -56,7 +57,7 @@ export class WelcomeMessage extends InGuildData {
     }
 }
 
-addListener('guildMemberAdd', async member => {
+addClientListener('guildMemberAdd', async member => {
     const welcome = await WelcomeMessage.fetch(member.guild.id)
     if (!welcome) return;
     welcome.send(member.id);

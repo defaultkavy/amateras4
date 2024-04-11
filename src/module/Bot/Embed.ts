@@ -47,7 +47,7 @@ export class Embed {
         return this;
     }
 
-    description(text?: string) {
+    description(text?: string | null) {
         if (!text?.length) text = undefined;
         this.data.description = text;
         return this;
@@ -70,6 +70,11 @@ export class Embed {
 
     timestamp(text: string | undefined) {
         this.data.timestamp = text;
+        return this;
+    }
+
+    url(url: string | undefined | null) {
+        this.data.url = url ?? undefined;
         return this;
     }
 }

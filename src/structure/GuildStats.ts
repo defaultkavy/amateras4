@@ -7,7 +7,7 @@ import { $Message } from "./$Message";
 import { mode } from "../module/Util/util";
 import { $ } from "../module/Util/text";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
-import { addInteractionListener, addListener } from "../module/Util/listener";
+import { addInteractionListener, addClientListener } from "../module/Util/listener";
 import { $Guild } from "./$Guild";
 import { Log } from "../module/Log/Log";
 import { $Member } from "./$Member";
@@ -28,8 +28,8 @@ export class GuildStats extends InGuildData {
         super(data);
     }
 
-    static async init(guildId: string) {
-        const cursor = this.collection.find({guildId})
+    static async init(clientId: string, guildId: string) {
+        const cursor = this.collection.find({clientId, guildId})
         const list = await cursor.toArray()
         cursor.close();
         const messageBuilder = await this.infoMessage($Guild.get(guildId).guild);
@@ -174,6 +174,6 @@ addInteractionListener('guild-stats-skill-ranking', async i =>{
     return new Reply().embed(await Skill.rankingEmbed(i.guildId))
 })
 
-addListener('guildMemberAdd', (member) => {
-    GuildStats.init(member.guild.id)
+addClientListener('guildMemberAdd', (member) => {
+    GuildStats.init(member.client.user.id, member.guild.id)
 })

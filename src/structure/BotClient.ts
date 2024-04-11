@@ -2,7 +2,6 @@ import { Client, ClientUser } from "discord.js";
 import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
-import { Snowflake } from "../module/Snowflake";
 import { ErrLog, Log } from "../module/Log/Log";
 import { CommandManager } from "../module/Bot/CommandManager";
 import { Chat } from "./Chat";
@@ -11,10 +10,9 @@ import { System } from "./System";
 import { cmd_sys } from "../command/sys/sys";
 import { $Guild } from "./$Guild";
 import { cmd_list } from "../../cmdList";
-import { startListen, addListener } from "../module/Util/listener";
+import { startListen, addClientListener } from "../module/Util/listener";
 import { $Member } from "./$Member";
-import { GuildStats } from "./GuildStats";
-import { setIntervalAbsolute } from "../module/Util/util";
+import { snowflakes } from "../method/snowflake";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -28,7 +26,7 @@ export interface BotClient extends BotClientDB {}
 
 export class BotClient extends Data {
     static collection = db.collection<BotClientDB>('bot-client');
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 6});
+    static snowflake = snowflakes.bot;
     static manager = new Map<string, BotClient>();
     client: Client<true>;
     cmd_manager: CommandManager;
@@ -90,9 +88,7 @@ export class BotClient extends Data {
 
         for (const [id] of $Guild.manager) {
             await $Member.init(id);
-            GuildStats.init(id)
         }
-        setIntervalAbsolute(5, 'minute', () => Array.from($Guild.manager.keys()).forEach(id => GuildStats.init(id)));
     }
 
     async init(debug = false) {
@@ -147,7 +143,7 @@ export class BotClient extends Data {
     }
 }
 
-addListener('userUpdate', (o, user) => {
+addClientListener('userUpdate', (o, user) => {
     if (user.id !== user.client.user.id) return;
     const bot = BotClient.get(user.id);
     bot.update(bot.client.user)

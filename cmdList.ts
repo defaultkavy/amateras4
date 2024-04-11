@@ -4,6 +4,7 @@ import { cmd_chat } from "./src/command/chat";
 import { cmd_help } from "./src/command/help";
 import { cmd_lobby } from "./src/command/lobby";
 import { cmd_mod } from "./src/command/mod/mod";
+import { cmd_play } from "./src/command/play";
 import { cmd_poll } from "./src/command/poll";
 import { cmd_post } from "./src/command/post";
 import { cmd_skill } from "./src/command/skill";
@@ -26,6 +27,7 @@ export const cmd_list = [
     cmd_uid,
     cmd_skill,
     cmd_me,
+    // cmd_play,
     cmdx_info,
     cmdx_unsend
 ]

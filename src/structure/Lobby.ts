@@ -13,6 +13,7 @@ import { VId } from "./VId";
 import { LogChannel } from "./LogChannel";
 import { BotClient } from "./BotClient";
 import { addInteractionListener } from "../module/Util/listener";
+import { snowflakes } from "../method/snowflake";
 
 export interface LobbyOptions extends InGuildDataOptions {
     name: string;
@@ -31,7 +32,7 @@ export interface LobbyDB extends LobbyOptions {
 export interface Lobby extends LobbyDB {}
 export class Lobby extends InGuildData {
     static collection = db.collection<LobbyDB>('lobby');
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 0});
+    static snowflake = snowflakes.lobby;
     constructor(data: LobbyDB) {
         super(data);
     }

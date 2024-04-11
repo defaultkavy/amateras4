@@ -2,7 +2,7 @@ import { ChannelType, ForumChannel, GuildForumTag, MessageType } from "discord.j
 import { db } from "../method/db";
 import { InGuildDataOptions, InGuildData } from "./InGuildData";
 import { DataCreateOptions } from "../module/DB/Data";
-import { addListener } from "../module/Util/listener";
+import { addClientListener } from "../module/Util/listener";
 
 export interface AutoTagOptions extends InGuildDataOptions {
     channelId: string;
@@ -75,7 +75,7 @@ export class AutoTag extends InGuildData {
     }
 }
 
-addListener('threadCreate', async thread => {
+addClientListener('threadCreate', async thread => {
     const forumChannel = thread.parent;
     if (!(forumChannel && forumChannel.type === ChannelType.GuildForum)) return;
     const autoTagList = await AutoTag.fetchListFromForum(forumChannel.id);
@@ -86,11 +86,11 @@ addListener('threadCreate', async thread => {
     })
 })
 
-addListener('guildDelete', async guild => {
+addClientListener('guildDelete', async guild => {
     AutoTag.collection.deleteMany({guildId: guild.id, clientId: guild.client.user.id})
 })
 
-addListener('channelDelete', async channel => {
+addClientListener('channelDelete', async channel => {
     AutoTag.manager.forEach(autotag => {
         if (autotag.channelId === channel.id) autotag.delete();
     })

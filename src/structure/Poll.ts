@@ -9,6 +9,7 @@ import { client } from "../method/client";
 import { ErrLog } from "../module/Log/Log";
 import { BotClient } from "./BotClient";
 import { addInteractionListener } from "../module/Util/listener";
+import { snowflakes } from "../method/snowflake";
 
 export interface PollOptions extends DataOptions {
     ownerUserId: string;
@@ -26,8 +27,8 @@ export interface PollDB extends PollOptions {
 export interface Poll extends PollDB {}
 export class Poll extends Data {
     static collection = db.collection<PollDB>('poll');
-    static snowflake = new Snowflake({epoch: config.epoch, workerId: 4});
-    static pollOptionSnowflake = new Snowflake({epoch: config.epoch, workerId: 5});
+    static snowflake = snowflakes.poll;
+    static pollOptionSnowflake = snowflakes.poll_option;
     constructor(data: PollDB) {
         super(data);
     }

@@ -1,7 +1,11 @@
 import { Client, Guild } from "discord.js";
 import { Log } from "../module/Log/Log";
-import { addListener } from "../module/Util/listener";
+import { addClientListener } from "../module/Util/listener";
 import { BotClient } from "./BotClient";
+import { GuildStats } from "./GuildStats";
+import { MusicPlayerPanel } from "./music/MusicPlayerPanel";
+import { setIntervalAbsolute } from "../module/Util/util";
+import { MusicPlayer } from "./music/MusicPlayer";
 
 export class $Guild {
     id: string;
@@ -32,20 +36,24 @@ export class $Guild {
             this.guild.channels.fetch(),
             this.guild.members.fetch(),
         ])
+        GuildStats.init(this.clientId, this.id);
+        // await MusicPlayer.init(this.clientId, this.id);
+        // MusicPlayerPanel.init(this.clientId, this.id);
+        setIntervalAbsolute(5, 'minute', () => GuildStats.init(this.clientId, this.id));
     }
 
     static get(guildId: string) {
         return this.manager.get(guildId)?.at(0) as $Guild;
     }
 }
-addListener('guildCreate', async guild => {
+addClientListener('guildCreate', async guild => {
     new Log(`Joining ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
     const bot = BotClient.get(guild.client.user.id);
     await $Guild.init(bot.client);
     await bot.cmd_manager.deployGuilds([guild]);
 })
 
-addListener('guildDelete', guild => {
+addClientListener('guildDelete', guild => {
     new Log(`Leaving ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
     if ([...BotClient.manager.values()].filter(bot => bot.client.guilds.cache.get(guild.id)).length === 0) $Guild.manager.delete(guild.id);
 })
