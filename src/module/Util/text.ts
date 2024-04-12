@@ -69,19 +69,27 @@ export class $Timestamp extends $Text {
 }
 export type TextComponent = string | number | boolean | null | undefined | $Text | TextComponent[]
 export type $ = typeof $;
-export function $(...styles: $.Style[]) {
+export function $(text: TextComponent[]): string;
+export function $(...styles: $.Style[]): (textArr: TemplateStringsArray, ...values: any[]) => $Inline
+export function $(arg1: $.Style | TextComponent[], ...args: $.Style[]) {
+    if (arg1 instanceof Array) return text_renderer(arg1);
     return (textArr: TemplateStringsArray, ...values: any[]) => {
-        let txt = '';
-        textArr.forEach((text, i) => {
-            const value = i > values.length - 1 ? '' : values[i]
-            txt+= text + value;
-        })
-        styles.forEach(style => {
-            txt = new $Inline(txt, style).toString();
-        })
-        return new $Inline(txt, 'none')
+        return templateStringResolver(textArr, [arg1, ...args], values);
     }
 }
+
+function templateStringResolver(textArr: TemplateStringsArray, styles: $.Style[], values: any[]) {
+    let txt = '';
+    textArr.forEach((text, i) => {
+        const value = i > values.length - 1 ? '' : values[i]
+        txt+= text + value;
+    })
+    styles.forEach(style => {
+        txt = new $Inline(txt, style).toString();
+    })
+    return new $Inline(txt, 'none')
+}
+
 export namespace $ {
     export function Text(...resolver: TextComponent[]) {
         return text_renderer(resolver);

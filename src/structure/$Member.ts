@@ -14,6 +14,8 @@ import { MessageActionRow } from "../module/Bot/ActionRow";
 import { addInteractionListener, addClientListener } from "../module/Util/listener";
 import { $Guild } from "./$Guild";
 import { snowflakes } from "../method/snowflake";
+import { GameUid } from "./GameUID";
+import { $ } from "../module/Util/text";
 
 export interface $MemberOptions extends InGuildDataOptions {
     intro: string;
@@ -102,21 +104,46 @@ export class $Member extends InGuildData {
     }
 
     async cardEmbed() {
+        // skills
         const skills = this.skills;
         const skillDetailList = await Promise.all(skills.map(async skill => ({...await skill.detailFromUser(this.userId), name: skill.name})))
-        const filteredList = skillDetailList.filter(skill => skill.level);
-        const description = `${this.intro}\n${filteredList.length ? codeBlock(`${
-                filteredList.sort((a, b) => b.level - a.level).slice(0, 3).map(pSkill => `${
-                    pSkill.name} LV${pSkill.level}`).toString().replaceAll(',', ' | ')
-            }`) : ''
-        }`.trim();
-        return new Embed()
+        const skillFilteredList = skillDetailList.filter(skill => skill.level);
+        // game
+        const gameUidList = await GameUid.fetchListFromUser(this.userId);
+        //
+        const description = $.Text([
+            $.Line(`${this.intro}`),
+            // skillFilteredList.length 
+            //     ? [
+            //         $.Line($('bold')`技能等级`),
+            //         skillFilteredList.sort((a, b) => b.level - a.level).slice(0, 3).map(pSkill => $.Blockquote(`${pSkill.name} LV${pSkill.level}`))
+            //     ]
+            //     : null,
+            // gameUidList.length
+            //     ? [
+            //         $.Line($('bold')`玩过的游戏`),
+            //         gameUidList.map(uid => $.Blockquote(uid.game.name))
+            //     ]
+            //     : null,
+        ]).trim();
+        const embed = new Embed()
             .author(this.member.displayName)
             .description(description.length ? description : undefined)
             .color(this.member.roles.highest.color)
             .thumbnail(this.member.displayAvatarURL())
             .footer(`${this.guild.name} | User Card`, this.guild.iconURL() ?? undefined)
             .max()
+        if (skillFilteredList.length) embed.field(
+                $([`技能 `, $('bold')`(${ skillFilteredList.length })`]), 
+                $(skillFilteredList.sort((a, b) => b.level - a.level).slice(0, 3).map(pSkill => $.Blockquote(`${pSkill.name} LV${pSkill.level}`))),
+                true
+            )
+        if (gameUidList.length) embed.field(
+                $([`游戏 `, $('bold')`(${gameUidList.length})`]), 
+                $(gameUidList.slice(0, 3).map(uid => $.Blockquote(uid.game.name))),
+                true
+            )
+        return embed
     }
 
     async cardMessage() {
