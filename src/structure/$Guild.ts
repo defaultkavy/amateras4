@@ -6,6 +6,7 @@ import { GuildStats } from "./GuildStats";
 import { MusicPlayerPanel } from "./music/MusicPlayerPanel";
 import { setIntervalAbsolute } from "../module/Util/util";
 import { MusicPlayer } from "./music/MusicPlayer";
+import { config } from "../../bot_config";
 
 export class $Guild {
     id: string;
@@ -18,19 +19,16 @@ export class $Guild {
         this.clientId = guild.client.user.id;
     }
 
-    static async init(client: Client) {
+    static async init(client: Client, debug = false) {
         await client.guilds.fetch();
         const guilds = [...client.guilds.cache.values()];
         for (const guild of guilds) {
-            const $guild = new $Guild(guild);
-            const $guildList = this.manager.get(guild.id) ?? [$guild];
-            if (this.manager.has(guild.id) === false) this.manager.set(guild.id, $guildList);
-            await $guild.init();
+            await this.create(guild);
         }
         return guilds;
     }
 
-    async init() {
+    async init(debug = false) {
         await Promise.all([
             this.guild.fetch(),
             this.guild.channels.fetch(),
@@ -45,12 +43,22 @@ export class $Guild {
     static get(guildId: string) {
         return this.manager.get(guildId)?.at(0) as $Guild;
     }
+
+    static async create(guild: Guild) {
+        const $guild = new $Guild(guild);
+        const $guildList = this.manager.get(guild.id) ?? [$guild];
+        if (this.manager.has(guild.id) === false) this.manager.set(guild.id, $guildList);
+        await $guild.init();
+    }
+
+    get bot() {
+        return BotClient.get(this.clientId);
+    }
 }
 addClientListener('guildCreate', async guild => {
     new Log(`Joining ${guild.name} <${guild.client.user.username}(${guild.client.user.id})>`)
-    const bot = BotClient.get(guild.client.user.id);
-    await $Guild.init(bot.client);
-    await bot.cmd_manager.deployGuilds([guild]);
+    await $Guild.create(guild);
+    await BotClient.get(guild.client.user.id).cmd_manager.deployGuilds([guild]);
 })
 
 addClientListener('guildDelete', guild => {

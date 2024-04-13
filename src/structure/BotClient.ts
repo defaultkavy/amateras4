@@ -65,6 +65,7 @@ export class BotClient extends Data {
         const cursor = this.collection.find();
         const list = await cursor.toArray();
         cursor.close();
+        // Login all bot
         await Promise.all(list.map(async data => {
             let bot_client = new Client(CLIENT_OPTIONS);
             try {
@@ -94,7 +95,7 @@ export class BotClient extends Data {
     async init(debug = false) {
         await this.update(this.client.user);
         // guilds init
-        const guilds = await $Guild.init(this.client);
+        const guilds = await $Guild.init(this.client, debug);
         if (debug) return;
         // commands deploy
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds.filter(guild => !System.servers.includes(guild.id)));
