@@ -1,19 +1,20 @@
 import { ButtonStyle, ChatInputCommandInteraction, TextChannel } from "discord.js";
-import { config } from "../../bot_config";
 import { db } from "../method/db";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Data, DataCreateOptions, DataOptions } from "../module/DB/Data";
-import { Snowflake } from "../module/Snowflake";
 import { getUTCTimestamp } from "../module/Util/util";
 import { client } from "../method/client";
 import { ErrLog } from "../module/Log/Log";
 import { BotClient } from "./BotClient";
 import { addInteractionListener } from "../module/Util/listener";
 import { snowflakes } from "../method/snowflake";
+import { $ } from "../module/Util/text";
 
 export interface PollOptions extends DataOptions {
     ownerUserId: string;
     title: string;
+    minVotes?: number;
+    maxVotes?: number;
 }
 export interface PollDB extends PollOptions {
     options: PollOptionDB[];
@@ -23,6 +24,7 @@ export interface PollDB extends PollOptions {
     minVotes: number;
     maxVotes: number;
     startTimestamp?: number;
+    closeTimestamp?: number;
 }
 export interface Poll extends PollDB {}
 export class Poll extends Data {
@@ -36,13 +38,13 @@ export class Poll extends Data {
     static async create(options: DataCreateOptions<PollOptions>) {
         const snowflake = this.snowflake.generate(true);
         const data: PollDB = {
-            ...options,
             ...snowflake,
             options: [],
             messages: [],
             closed: false,
             minVotes: 1,
-            maxVotes: 1
+            maxVotes: 1,
+            ...options,
         }
         await this.collection.insertOne(data)
         return new Poll(data);
@@ -64,32 +66,45 @@ export class Poll extends Data {
     }
 
     async start() {
+        if (!this.options.length) throw '至少需要1个投票选项';
         const timestamp = Date.now();
         await Poll.collection.updateOne({id: this.id}, {$set: {startTimestamp: timestamp}});
         this.startTimestamp = timestamp;
         this.pollMessageUpdateAll();
     }
 
-    panelMessage(ephemeral = false) {
+    panelMessage() {
         const builder = new MessageBuilder()
             .embed(embed => {
                 const resultMap = this.resultMap;
-                const optionText = this.options.map((option, i) => {
+                const highestPercentage = [...resultMap.values()].sort((a, b) => b - a)[0];
+                const options = this.options.map((option, i) => {
                     const percentage = resultMap.get(option.id)
-                    return `${i+1}. ${option.label} (**${Intl.NumberFormat('default', {style: 'percent'}).format(percentage ?? 0)}**)`
-                }).toString();
+                    return $([
+                            percentage === highestPercentage && percentage !== 0 ? $('bold')`${option.label}` : `${option.label}`, 
+                            ` | `,
+                            $('bold')`${Intl.NumberFormat('default', {style: 'percent'}).format(percentage ?? 0)}`
+                        ])
+                });
                 embed
-                .color(this.closed ? 'Blue' : this.startTimestamp ? 'Green' : 'Grey')
-                .author(`投票 - ${this.closed ? '已结算' : this.startTimestamp ? '开启中' : '未开启'}`)
-                .description(`## ${this.title}`)
+                .color(this.closed ? 'Grey' : this.startTimestamp ? `Blurple` : 'Grey')
+                .description($([
+                    $.H2(this.title),
+                    options.map(option => $.Blockquote(option)),
+                    $.Line(),
+                    $.Line(`投票发起 | `, $.User(this.ownerUserId)),
+                    $.If(this.minVotes > 1, () => $.Line(`最少需选 | `, `${this.minVotes}`)),
+                    $.If(this.maxVotes > 1, () => $.Line(`最多可选 | `, `${this.maxVotes}`)),
+                    $.If(this.startTimestamp, (timestamp) => [
+                        $.Line(`开始时间 | `, `<t:${getUTCTimestamp(timestamp)}:R>`),
+                    ]),
+                    $.If(this.closeTimestamp, (timestamp) => [
+                        $.Line('结算时间 | ', $.Timestamp(timestamp, 'relative')),
+                    ])
+                ]))
                 .thumbnail(this.thumbnailUrl)
-                .field(`选项${this.maxVotes > 1 ? `（最多可选择${this.maxVotes}个）` : ''}`, `${optionText.replaceAll(',', '\n')}`)
-                .field('创建者', `<@${this.ownerUserId}>`, true)
-                .field('投票人数', `**${this.memberIdList.length}**人参与了投票`, true)
-                .emptyField(true)
-                .field('更新时间', `<t:${getUTCTimestamp()}:R>`, true)
-                if (this.startTimestamp) embed.field('开始时间', `<t:${getUTCTimestamp(this.startTimestamp)}:R>`, true)
-                embed.emptyField(true)
+                .footer(`${this.startTimestamp ? `${this.memberIdList.length}人投票` : '投票未开启'}`)
+                .timestamp(new Date().toISOString())
                 .max()
             })
             if (this.startTimestamp && !this.closed) builder.actionRow(row => {
@@ -106,7 +121,6 @@ export class Poll extends Data {
                 if (this.startTimestamp && !this.closed) row.button('结算投票', `poll_panel_close@${this.id}`, {style: ButtonStyle.Danger})
                 row.button('更新资讯', `poll_panel_update@${this.id}`)
             })
-            .ephemeral(ephemeral)
             return builder
     }
 
@@ -191,10 +205,20 @@ export class Poll extends Data {
         this.pollMessageUpdateAll()
     }
 
-    async close() {
-        await Poll.collection.updateOne({id: this.id}, {$set: {closed: true}})
+    async close(annouce?: boolean) {
+        this.closeTimestamp = Date.now();
+        await Poll.collection.updateOne({id: this.id}, {$set: {closed: true, closeTimestamp: this.closeTimestamp}});
         this.closed = true;
         this.pollMessageUpdateAll();
+        if (annouce === false) return;
+        this.messages.forEach(async messageData => {
+            const bot = BotClient.get(messageData.clientId);
+            const channel = bot.client.guilds.cache.get(messageData.guildId)?.channels.cache.get(messageData.channelId)
+            if (!channel?.isTextBased()) return;
+            const message = await channel.messages.fetch(messageData.messageId).catch(err => undefined);
+            if (!message) return;
+            channel.send(new MessageBuilder().content(`投票：${$('bold')`${this.title}`} 已结算，点击 ${message.url} 查看。`).data)
+        })
     }
 
     async setThumbnail(url: string) {
@@ -272,7 +296,7 @@ addInteractionListener('poll_panel_close', async i => {
     if (!pollId) throw 'poll id missing';
     const poll = await Poll.fetch(pollId);
     if (poll.ownerUserId !== i.user.id) throw '你不是投票创建者'
-    await poll.close();
+    await poll.close(true);
     i.deferUpdate();
 })
 

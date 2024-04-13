@@ -1,9 +1,6 @@
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { db } from "../method/db";
 import { DataCreateOptions } from "../module/DB/Data";
-import { Snowflake } from "../module/Snowflake";
-import { config } from "../../bot_config";
-import { BotClient } from "./BotClient";
 import { Log } from "../module/Log/Log";
 import { Embed } from "../module/Bot/Embed";
 import { ButtonStyle, Guild, GuildMember, codeBlock } from "discord.js";

@@ -117,6 +117,8 @@ export namespace $ {
         else return new $Inline(`${identifier}`, 'none')
     }
     export function Channel(id: string) { return new $Inline(`<#${id}>`, 'none') }
+    export function User(id: string) { return new $Inline(`<@${id}>`, 'none')}
+    export function If<T extends any>(condition: T, content: (result: NonNullable<T>) => TextComponent) { if (condition) return content(condition) }
     export type Style = 'bold' | 'underline' | 'italic' | 'strikethrough' | 'code'
 }
 function text_renderer(resolver: TextComponent) {
@@ -127,6 +129,7 @@ function text_renderer(resolver: TextComponent) {
     }
     resolver.forEach((str, i) => {
         if (str === null) return;
+        if (str === undefined) return;
         if (str instanceof $Block) return txt+= `${txt.length ? '\n' : ''}${str}`;
         else return txt+= str
     })

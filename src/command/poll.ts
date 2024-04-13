@@ -10,11 +10,16 @@ export const cmd_poll = new Command('poll', '投票指令')
     subcmd
     .string('title', '投票标题', {required: true, maxLength: 100})
     .string('options', '选项内容（使用中英文分号 ; 可添加复数个选项内容）', {required: false})
+    .integer('min', '最小需选项', {required: false, maxValue: 25, minValue: 1})
+    .integer('max', '最大可选项', {required: false, maxValue: 25, minValue: 1})
+    .boolean('send', '是否发送到频道', {required: false})
     .execute(async (i, options) => {
-        await i.deferSlient();
+        if (!options.send) await i.deferSlient();
         const poll = await Poll.create({
             ownerUserId: i.user.id,
             title: options.title,
+            maxVotes: options.max,
+            minVotes: options.min
         })
         if (options.options) {
             const labelList = options.options.split(/[;；]/).map(label => label.trim()).filter(label => label.length);
@@ -22,7 +27,8 @@ export const cmd_poll = new Command('poll', '投票指令')
             if (OPTION_OVERSIZE) throw '超出选项上限，最多只能存在25个选项';
             await poll.setOption(labelList.map(label => ({label: label})));
         }
-        return new Reply(`投票 **${poll.title}** 已建立${poll.options.length ? `\n${codeBlock(poll.options.map(option => option.label).toString().replaceAll(',', '\n'))}` : ''}`)
+        if (!options.send) return poll.panelMessage().ephemeral(true);
+        else poll.sendPollMessage(i);
     })
 })
 
@@ -38,7 +44,7 @@ export const cmd_poll = new Command('poll', '投票指令')
             const OPTION_OVERSIZE = poll.options.length + labelList.length > 25;
             if (OPTION_OVERSIZE) throw '超出选项上限，最多只能存在25个选项'
             await poll.setOption(labelList.map(label => ({label: label})))
-            return new Reply(`当前选项\n${codeBlock(poll.options.map(option => option.label).toString().replaceAll(',', '\n'))}`)
+            return new Reply(`已添加 ${labelList.length} 个选项`)
         })
     })
 
@@ -103,9 +109,10 @@ export const cmd_poll = new Command('poll', '投票指令')
 
 .subCommand('close', '结算投票', subcmd => {
     pollSelector(subcmd)
+    .boolean('annouce', '是否发布结算讯息（预设为是）', {required: false})
     .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll)
-        await poll.close()
+        await poll.close(options.annouce)
         return new Reply(`投票已关闭：**${poll.title}**`)
     })
 })
