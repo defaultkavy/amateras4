@@ -86,10 +86,6 @@ export class BotClient extends Data {
             this.manager.set(bot.id, bot);
             return await bot.init(debug);
         }))
-
-        for (const [id] of $Guild.manager) {
-            await $Member.init(id);
-        }
     }
 
     async init(debug = false) {

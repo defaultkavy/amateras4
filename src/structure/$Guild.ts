@@ -3,10 +3,8 @@ import { Log } from "../module/Log/Log";
 import { addClientListener } from "../module/Util/listener";
 import { BotClient } from "./BotClient";
 import { GuildStats } from "./GuildStats";
-import { MusicPlayerPanel } from "./music/MusicPlayerPanel";
 import { setIntervalAbsolute } from "../module/Util/util";
-import { MusicPlayer } from "./music/MusicPlayer";
-import { config } from "../../bot_config";
+import { $Member } from "./$Member";
 
 export class $Guild {
     id: string;
@@ -34,6 +32,7 @@ export class $Guild {
             this.guild.channels.fetch(),
             this.guild.members.fetch(),
         ])
+        await $Member.init(this.guild)
         GuildStats.init(this.clientId, this.id);
         // await MusicPlayer.init(this.clientId, this.id);
         // MusicPlayerPanel.init(this.clientId, this.id);

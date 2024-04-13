@@ -29,8 +29,7 @@ export class $Member extends InGuildData {
         super(data);
     }
 
-    static async init(guildId: string) {
-        const guild = $Guild.get(guildId).guild;
+    static async init(guild: Guild) {
         await Skill.init(guild);
         const cursor = this.collection.find({guildId: guild.id})
         const list = await cursor.toArray();
