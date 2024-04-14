@@ -129,12 +129,12 @@ export class Poll extends Data {
         const message = await i.fetchReply();
         const data = {messageId: message.id, channelId: i.channelId, guildId: i.guildId, clientId: i.client.user.id};
         await Poll.collection.updateOne({id: this.id}, {$push: {messages: data}});
-        const oldMessageList = this.messages.filter(message => message.channelId === message.channelId);
+        const oldMessageDataList = this.messages.filter(messageData => messageData.channelId === message.channelId);
         this.messages.push(data);
-        for (const oldMessage of oldMessageList) {
-            this.pollMessageUpdate(oldMessage, new MessageBuilder().clean().content(`此投票讯息已迁移至 ${message.url}`));
-            this.messages.splice(this.messages.indexOf(oldMessage), 1);
-            await Poll.collection.updateOne({id: this.id}, {$pull: {messages: {messageId: oldMessage.messageId}}});
+        for (const oldMessageData of oldMessageDataList) {
+            this.pollMessageUpdate(oldMessageData, new MessageBuilder().clean().content(`此投票讯息已迁移至 ${message.url}`));
+            this.messages.splice(this.messages.indexOf(oldMessageData), 1);
+            await Poll.collection.updateOne({id: this.id}, {$pull: {messages: {messageId: oldMessageData.messageId}}});
         }
     }
 
