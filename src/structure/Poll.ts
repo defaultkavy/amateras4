@@ -78,10 +78,10 @@ export class Poll extends Data {
             .embed(embed => {
                 const resultMap = this.resultMap;
                 const highestPercentage = [...resultMap.values()].sort((a, b) => b - a)[0];
-                const options = this.options.map((option, i) => {
+                const options = this.options.sort((a, b) => b.memberIdList.length - a.memberIdList.length).map((option, i) => {
                     const percentage = resultMap.get(option.id)
                     return $([
-                            percentage === highestPercentage && percentage !== 0 ? $('bold')`${option.label}` : `${option.label}`, 
+                            this.closed && percentage === highestPercentage && percentage !== 0 ? $('bold')`${option.label}` : `${option.label}`, 
                             ` | `,
                             $('bold')`${Intl.NumberFormat('default', {style: 'percent'}).format(percentage ?? 0)}`
                         ])
