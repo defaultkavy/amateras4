@@ -15,4 +15,7 @@ export const snowflakes = {
     skill: new Snowflake({epoch: config.epoch, workerId: 10}),
     $member: new Snowflake({epoch: config.epoch, workerId: 11}),
     music_player: new Snowflake({epoch: config.epoch, workerId: 12}),
+    dcp_follow: new Snowflake({epoch: config.epoch, workerId: 13}),
+    dcp_collection: new Snowflake({epoch: config.epoch, workerId: 14}),
+    dcp_list: new Snowflake({epoch: config.epoch, workerId: 15}),
 }

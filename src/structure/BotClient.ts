@@ -135,6 +135,10 @@ export class BotClient extends Data {
         await this.client.destroy();
     }
 
+    static getUser(userId: string) {
+        return [...BotClient.manager.values()].map(bot => [bot.client.users.cache.get(userId), [...bot.client.users.cache.values()].find(user => user.username === userId)]).flat().find(user => user !== undefined)
+    }
+
     get inviteUrl() {
         return `https://discord.com/api/oauth2/authorize?client_id=${this.client.user.id}&permissions=8&scope=bot`
     }

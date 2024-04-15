@@ -1,6 +1,7 @@
 import { config } from "./bot_config";
 import { cmd_bot } from "./src/command/bot";
 import { cmd_chat } from "./src/command/chat";
+import { cmd_dcp } from "./src/command/dcp";
 import { cmd_help } from "./src/command/help";
 import { cmd_lobby } from "./src/command/lobby";
 import { cmd_mod } from "./src/command/mod/mod";
@@ -28,6 +29,7 @@ export const cmd_list = [
     cmd_skill,
     cmd_me,
     // cmd_play,
+    cmd_dcp,
     cmdx_info,
     cmdx_unsend
 ]

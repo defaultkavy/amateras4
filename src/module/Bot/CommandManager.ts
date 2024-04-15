@@ -42,7 +42,7 @@ export class CommandManager {
                 if (option1.type === ApplicationCommandOptionType.Subcommand) {
                     const subcmd = command.getSubcommand(option1.name);
                     if (!subcmd) throw 'subcommand not found';
-                    i.respond(await autocomplete(subcmd, option1.options));
+                    i.respond((await autocomplete(subcmd, option1.options)).slice(0, 25));
                 }
                 // cmd subgroup subcmd [options]
                 else if (option1.type === ApplicationCommandOptionType.SubcommandGroup) {
@@ -52,10 +52,10 @@ export class CommandManager {
                     const option2 = option1.options[0];
                     const subcmd = subgroup.getSubcommand(option2.name);
                     if (!subcmd) throw 'subcommand not found';
-                    i.respond(await autocomplete(subcmd, option2.options));
+                    i.respond((await autocomplete(subcmd, option2.options)).slice(0, 25));
                 }
                 // cmd [options]
-                else i.respond(await autocomplete(command, [...i.options.data]))
+                else i.respond((await autocomplete(command, [...i.options.data])).slice(0, 25));
 
                 async function autocomplete(subcmd: ExecutableCommand | Command, options: CommandInteractionOption[] | undefined) {
                     if (!options) throw 'option is undefined';

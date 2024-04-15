@@ -90,7 +90,6 @@ export abstract class ExecutableCommand {
         this.options.set(name, option);
         return this as unknown as this & {_options: Options & Record<Name, Required extends true ? CommandOptionTypesMap[Type] : CommandOptionTypesMap[Type] | undefined>};
     }
-    
     string = this.setInput(ApplicationCommandOptionType.String);
     boolean = this.setInput(ApplicationCommandOptionType.Boolean);
     user = this.setInput(ApplicationCommandOptionType.User);

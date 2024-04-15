@@ -1,4 +1,4 @@
-import { Collection } from "mongodb";
+import { BSON, Collection } from "mongodb";
 import { Data, DataOptions } from "./Data";
 
 export class DbMethod {

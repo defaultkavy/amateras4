@@ -53,8 +53,8 @@ export class Embed {
         return this;
     }
 
-    color(color: ColorResolvable) {
-        this.data.color = resolveColor(color);
+    color(color?: ColorResolvable | null) {
+        this.data.color = color ? resolveColor(color) : undefined;
         return this;
     }
 
