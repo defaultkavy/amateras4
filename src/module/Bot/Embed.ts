@@ -6,8 +6,8 @@ export class Embed {
         this.data = config ?? {};
     }
 
-    title(text: string) {
-        this.data.title = text;
+    title(text?: string | null) {
+        if (text) this.data.title = text;
         return this;
     }
 

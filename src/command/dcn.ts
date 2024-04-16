@@ -23,8 +23,8 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
                         userId: i.user.id
                     })
                 : undefined;
-            const send_channel = await DCN.SendChannel.fetch(i.channelId, i.user.id).catch(err => undefined) ?? await DCN.SendChannel.create({
-                channelId: i.channelId,
+            const send_channel = await DCN.SendChannel.fetch(options.channel.id, i.user.id).catch(err => undefined) ?? await DCN.SendChannel.create({
+                channelId: options.channel.id,
                 clientId: i.client.user.id,
                 collectionIdList: collection ? [collection.id] : [],
                 guildId: i.guildId,

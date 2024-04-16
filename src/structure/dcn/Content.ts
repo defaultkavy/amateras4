@@ -17,6 +17,7 @@ export interface ContentOptions extends InGuildDataOptions {
         id: string,
         webhookId: string
     }[];
+    title?: string;
 }
 export interface ContentDB extends ContentOptions {}
 export interface Content extends ContentDB {}
@@ -85,36 +86,41 @@ export class Content extends InGuildData {
         this.content = content;
         await Content.collection.updateOne({id: this.id}, {$set: {content}})
     }
+
+    static async send(channelId: string, message: Message<true>, title?: string) {
+        const send_channel = await SendChannel.fetch(channelId, message.author.id).catch(err => undefined);
+        if (!send_channel) return;
+        const dcn_content = await Content.create({
+            channelId: message.channelId,
+            clientId: message.client.user.id,
+            content: message.content,
+            guildId: message.guildId,
+            messageId: message.id,
+            receiveMessageList: [],
+            userId: message.author.id,
+            title
+        })
+        const followList = await Follow.fetchFromTarget(message.author.id, send_channel.collectionIdList);
+        followList.forEach(async follow => {
+            const receive_channel_list = await ReceiveChannel.fetchFromList(follow.listId)
+            receive_channel_list.forEach(async receiveChannel => {
+                const receive_message = await receiveChannel.send(message);
+                if (!receive_message) return;
+                dcn_content.addMessage({
+                    webhookId: receive_message.webhook_id as string,
+                    id: receive_message.id
+                });
+            })
+        })
+        message.react('✅').catch(err => undefined);
+    }
 }
 
 addListener('messageCreate', async message => {
     if (!Content.isValid(message)) return;
     const channel = message.channel;
     if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) return;
-    const send_channel = await SendChannel.fetch(channel.id, message.author.id).catch(err => undefined);
-    if (!send_channel) return;
-    const dcn_content = await Content.create({
-        channelId: message.channelId,
-        clientId: message.client.user.id,
-        content: message.content,
-        guildId: message.guildId,
-        messageId: message.id,
-        receiveMessageList: [],
-        userId: message.author.id
-    })
-    const followList = await Follow.fetchFromTarget(message.author.id, send_channel.collectionIdList);
-    followList.forEach(async follow => {
-        const receive_channel_list = await ReceiveChannel.fetchFromList(follow.listId)
-        receive_channel_list.forEach(async receiveChannel => {
-            const receive_message = await receiveChannel.send(message);
-            if (!receive_message) return;
-            dcn_content.addMessage({
-                webhookId: receive_message.webhook_id as string,
-                id: receive_message.id
-            });
-        })
-    })
-    message.react('✅').catch(err => undefined);
+    Content.send(channel.id, message);
 })
 
 addListener('messageDelete', async message => {
@@ -143,4 +149,12 @@ addListener('messageUpdate', async (_, message) => {
         const webhook = new WebhookClient({id: data.webhookId, token: data.webhookToken});
         await webhook.editMessage(rm.id, ReceiveChannel.messageBuilder(message).data).catch(err => undefined);
     })
+})
+
+addListener('threadCreate', async (thread) => {
+    if (!thread.parent) return;
+    if (thread.parent.type !== ChannelType.GuildForum) return;
+    const message = await thread.fetchStarterMessage();
+    if (!message) return;
+    Content.send(thread.parent.id, message, thread.name);
 })

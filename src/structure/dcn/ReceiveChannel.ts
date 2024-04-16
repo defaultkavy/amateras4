@@ -113,11 +113,11 @@ export class ReceiveChannel extends InGuildData {
         if (!webhookUsed) this.webhook.delete();
     }
 
-    async send(message: Message<true>) {
-        return await this.webhook.send(ReceiveChannel.messageBuilder(message).data).catch(err => undefined);
+    async send(message: Message<true>, title?: string) {
+        return await this.webhook.send(ReceiveChannel.messageBuilder(message, title).data).catch(err => undefined);
     }
 
-    static messageBuilder(message: Message<true>) {
+    static messageBuilder(message: Message<true>, title?: string) {
         const images = message.attachments.filter(att => att.contentType?.startsWith('image/')).map((img) => img);
         const image0 = images.splice(0, 1)[0];
         const embed0 = new Embed()
@@ -128,6 +128,7 @@ export class ReceiveChannel extends InGuildData {
             .footer(message.guild.name, message.guild.iconURL())
             .timestamp(new Date(message.createdTimestamp).toISOString())
             .color(message.member?.displayColor)
+            .title(title)
 
         const embeds = images.map((img, i) => {
             const embed = new Embed()
