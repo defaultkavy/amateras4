@@ -100,8 +100,9 @@ export class Content extends InGuildData {
             userId: message.author.id,
             title
         })
-        const followList = await Follow.fetchFromTarget(message.author.id, send_channel.collectionIdList);
-        followList.forEach(async follow => {
+        const followCollectionList = await Follow.fetchFromTarget(message.author.id, send_channel.collectionIdList);
+        const followList = await Follow.fetchFromTarget(message.author.id, []);
+        [...followList, ...followCollectionList].forEach(async follow => {
             const receive_channel_list = await ReceiveChannel.fetchFromList(follow.listId)
             receive_channel_list.forEach(async receiveChannel => {
                 const receive_message = await receiveChannel.send(message);

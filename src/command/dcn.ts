@@ -67,7 +67,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
         })
         .execute(async (i, options) => {
             await i.deferSlient();
-            const user_permissions = i.channel?.permissionsFor(i.user)
+            const user_permissions = options.channel.permissionsFor(i.user)
             if (!user_permissions?.has(PermissionFlagsBits.ManageChannels)) throw `你没有管理该频道的权限`
             const list = options.list 
                 ? await DCN.List.fetch(options.list).catch(err => undefined) 
@@ -78,7 +78,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
                         default: false
                     })
                 : await DCN.List.fetchDefault(i.user.id);
-            const receive_channel = await DCN.ReceiveChannel.fetch(i.channelId, i.user.id).catch(err => undefined) ?? await DCN.ReceiveChannel.create({
+            const receive_channel = await DCN.ReceiveChannel.fetch(options.channel.id, i.user.id).catch(err => undefined) ?? await DCN.ReceiveChannel.create({
                 channelId: options.channel.id,
                 clientId: i.client.user.id,
                 guildId: i.guildId,
