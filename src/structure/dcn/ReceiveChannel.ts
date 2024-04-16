@@ -19,7 +19,7 @@ export interface ReceiveChannelDB extends ReceiveChannelOptions {
 }
 export interface ReceiveChannel extends ReceiveChannelDB {}
 export class ReceiveChannel extends InGuildData {
-    static collection = db.collection<ReceiveChannelDB>('dcp-receive-channel');
+    static collection = db.collection<ReceiveChannelDB>('dcn-receive-channel');
     constructor(data: ReceiveChannelDB) {
         super(data);
     }
@@ -40,7 +40,7 @@ export class ReceiveChannel extends InGuildData {
 
     static async fetch(id: string, userId: string) {
         const data = await this.collection.findOne({id, userId});
-        if (!data) throw 'DCP receive channel not exist';
+        if (!data) throw 'DCN receive channel not exist';
         const instance = new this(data);
         return instance;
     }

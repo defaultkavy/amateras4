@@ -9,8 +9,8 @@ export interface ListOptions extends DataOptions {
 export interface ListDB extends ListOptions {}
 export interface List extends ListDB {}
 export class List extends Data {
-    static collection = db.collection<ListDB>('dcp-list');
-    static snowflake = snowflakes.dcp_list;
+    static collection = db.collection<ListDB>('dcn-list');
+    static snowflake = snowflakes.dcn_list;
     constructor(data: ListDB) {
         super(data);
     }
@@ -28,7 +28,7 @@ export class List extends Data {
 
     static async fetch(id: string) {
         const data = await this.collection.findOne({id});
-        if (!data) throw 'DCP list not exist';
+        if (!data) throw 'DCN list not exist';
         const instance = new this(data);
         return instance;
     }
@@ -45,7 +45,7 @@ export class List extends Data {
 
     static async fetchName(userId: string, name: string) {
         const data = await this.collection.findOne({userId, name});
-        if (!data) throw 'DCP list not exist';
+        if (!data) throw 'DCN list not exist';
         const instance = new this(data);
         return instance;
     }

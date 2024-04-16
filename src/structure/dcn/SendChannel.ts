@@ -1,15 +1,9 @@
-import { ChannelType } from "discord.js";
 import { db } from "../../method/db";
 import { Embed } from "../../module/Bot/Embed";
 import { DataCreateOptions } from "../../module/DB/Data";
-import { addClientListener, addListener } from "../../module/Util/listener";
 import { $ } from "../../module/Util/text";
 import { InGuildDataOptions, InGuildData } from "../InGuildData";
 import { Collection } from "./Collection";
-import { ReceiveChannel } from "./ReceiveChannel";
-import { List } from "./List";
-import { Follow } from "./Follow";
-import { Content } from "./Content";
 
 export interface SendChannelOptions extends InGuildDataOptions {
     userId: string;
@@ -19,7 +13,7 @@ export interface SendChannelOptions extends InGuildDataOptions {
 export interface SendChannelDB extends SendChannelOptions {}
 export interface SendChannel extends SendChannelDB {}
 export class SendChannel extends InGuildData {
-    static collection = db.collection<SendChannelDB>('dcp-send-channel');
+    static collection = db.collection<SendChannelDB>('dcn-send-channel');
     constructor(data: SendChannelDB) {
         super(data);
     }
@@ -37,7 +31,7 @@ export class SendChannel extends InGuildData {
 
     static async fetch(id: string, userId: string) {
         const data = await this.collection.findOne({id, userId});
-        if (!data) throw 'DCP send channel not exist';
+        if (!data) throw 'DCN send channel not exist';
         const instance = new this(data);
         return instance;
     }

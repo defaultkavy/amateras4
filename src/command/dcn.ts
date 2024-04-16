@@ -1,10 +1,10 @@
 import { AutocompleteFocusedOption, AutocompleteInteraction, ChannelType, ChatInputCommandInteraction, PermissionFlagsBits, createChannel } from "discord.js";
 import { Command } from "../module/Bot/Command";
-import * as DCP from "../structure/dcp/_DCP";
+import * as DCN from "../structure/dcn/_DCN";
 import { Reply } from "../module/Bot/Reply";
 import { OptionMap } from "../module/Bot/CommandManager";
 import { BotClient } from "../structure/BotClient";
-export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord Content Publisher）')
+export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Content Network')
 .subGroup('send', '发布设定', group => {
     group
     .subCommand('add', '增加频道/收藏集', subcmd => {
@@ -16,14 +16,14 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
         .execute(async (i, options) => {
             await i.deferSlient();
             const collection = options.collection 
-                ? await DCP.Collection.fetch(options.collection).catch(err => undefined) 
-                    ?? await DCP.Collection.fetchName(i.user.id, options.collection).catch(err => undefined) 
-                    ?? await DCP.Collection.create({
+                ? await DCN.Collection.fetch(options.collection).catch(err => undefined) 
+                    ?? await DCN.Collection.fetchName(i.user.id, options.collection).catch(err => undefined) 
+                    ?? await DCN.Collection.create({
                         name: options.collection,
                         userId: i.user.id
                     })
                 : undefined;
-            const send_channel = await DCP.SendChannel.fetch(i.channelId, i.user.id).catch(err => undefined) ?? await DCP.SendChannel.create({
+            const send_channel = await DCN.SendChannel.fetch(i.channelId, i.user.id).catch(err => undefined) ?? await DCN.SendChannel.create({
                 channelId: i.channelId,
                 clientId: i.client.user.id,
                 collectionIdList: collection ? [collection.id] : [],
@@ -43,10 +43,10 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
         .execute(async (i, options) => {
             await i.deferSlient();
             const collection = options.collection 
-                ? await DCP.Collection.fetch(options.collection).catch(err => undefined) 
-                    ?? await DCP.Collection.fetchName(i.user.id, options.collection).catch(err => undefined) 
+                ? await DCN.Collection.fetch(options.collection).catch(err => undefined) 
+                    ?? await DCN.Collection.fetchName(i.user.id, options.collection).catch(err => undefined) 
                 : undefined;
-            const send_channel = await DCP.SendChannel.fetch(i.channelId, i.user.id).catch(err => undefined)
+            const send_channel = await DCN.SendChannel.fetch(i.channelId, i.user.id).catch(err => undefined)
             if (!send_channel) throw `频道${options.channel}并未设定为内容发送频道`;
             if (!options.collection) {
                 await send_channel.delete()
@@ -70,15 +70,15 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
             const user_permissions = i.channel?.permissionsFor(i.user)
             if (!user_permissions?.has(PermissionFlagsBits.ManageChannels)) throw `你没有管理该频道的权限`
             const list = options.list 
-                ? await DCP.List.fetch(options.list).catch(err => undefined) 
-                    ?? await DCP.List.fetchName(i.user.id, options.list).catch(err => undefined) 
-                    ?? await DCP.List.create({
+                ? await DCN.List.fetch(options.list).catch(err => undefined) 
+                    ?? await DCN.List.fetchName(i.user.id, options.list).catch(err => undefined) 
+                    ?? await DCN.List.create({
                         name: options.list,
                         userId: i.user.id,
                         default: false
                     })
-                : await DCP.List.fetchDefault(i.user.id);
-            const receive_channel = await DCP.ReceiveChannel.fetch(i.channelId, i.user.id).catch(err => undefined) ?? await DCP.ReceiveChannel.create({
+                : await DCN.List.fetchDefault(i.user.id);
+            const receive_channel = await DCN.ReceiveChannel.fetch(i.channelId, i.user.id).catch(err => undefined) ?? await DCN.ReceiveChannel.create({
                 channelId: options.channel.id,
                 clientId: i.client.user.id,
                 guildId: i.guildId,
@@ -98,10 +98,10 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
         .execute(async (i, options) => {
             await i.deferSlient();
             const list = options.list 
-                ? await DCP.List.fetch(options.list).catch(err => undefined) 
-                    ?? await DCP.List.fetchName(i.user.id, options.list).catch(err => undefined) 
+                ? await DCN.List.fetch(options.list).catch(err => undefined) 
+                    ?? await DCN.List.fetchName(i.user.id, options.list).catch(err => undefined) 
                 : undefined;
-            const receive_channel = await DCP.ReceiveChannel.fetch(options.channel.id, i.user.id).catch(err => undefined)
+            const receive_channel = await DCN.ReceiveChannel.fetch(options.channel.id, i.user.id).catch(err => undefined)
             if (!receive_channel) throw `频道${options.channel}并未设定为内容接收频道`;
             if (!options.list) {
                 await receive_channel.delete()
@@ -137,7 +137,7 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
     //     autocomplete: async (focused, options, i) => {
     //         const targetUser = BotClient.getUser(options.getString('user'));
     //         if (!targetUser) return [];
-    //         const collection = await DCP.Collection.fetchFromUser(targetUser.id);
+    //         const collection = await dcn.Collection.fetchFromUser(targetUser.id);
     //         return collection.filter(c => c.name.toLowerCase().includes(focused.value.toLowerCase())).map(collection => ({
     //             name: collection.name,
     //             value: collection.name
@@ -148,21 +148,21 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
         const targetUser = BotClient.getUser(options.user);
         if (!targetUser) throw `用户 ${options.user} 并不在天照网络当中`
         // const collection = options.collection 
-        //     ? await DCP.Collection.fetch(options.collection) .catch(err => undefined)
-        //         ?? await DCP.Collection.fetchName(targetUser.id, options.collection).catch(err => undefined)
+        //     ? await dcn.Collection.fetch(options.collection) .catch(err => undefined)
+        //         ?? await dcn.Collection.fetchName(targetUser.id, options.collection).catch(err => undefined)
         // : undefined; 
         // const list = options.list
-        //     ? await DCP.List.fetch(options.list).catch(err => undefined)
-        //         ?? await DCP.List.fetchName(i.user.id, options.list).catch(err => undefined)
-        //         ?? await DCP.List.create({
+        //     ? await dcn.List.fetch(options.list).catch(err => undefined)
+        //         ?? await dcn.List.fetchName(i.user.id, options.list).catch(err => undefined)
+        //         ?? await dcn.List.create({
         //             name: options.list,
         //             userId: i.user.id,
         //             default: false
         //         })
-        //     : await DCP.List.fetchDefault(i.user.id)
-        const list = await DCP.List.fetchDefault(i.user.id);
-        const follow = await DCP.Follow.fetchFromListWithTarget(list.id, targetUser.id).catch(err => undefined) 
-            ?? await DCP.Follow.create({
+        //     : await dcn.List.fetchDefault(i.user.id)
+        const list = await DCN.List.fetchDefault(i.user.id);
+        const follow = await DCN.Follow.fetchFromListWithTarget(list.id, targetUser.id).catch(err => undefined) 
+            ?? await DCN.Follow.create({
                 userId: i.user.id,
                 targetUserId: targetUser.id,
                 listId: list.id,
@@ -177,7 +177,7 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
     subcmd
     .string('user', '用户名', {required: true,
         autocomplete: async (focused, options, i) => {
-            const list = await DCP.Follow.fetchFromUser(i.user.id);
+            const list = await DCN.Follow.fetchFromUser(i.user.id);
             return [...new Set(list.map(follow => follow.targetUserId)).values()].map(id => BotClient.getUser(id)).filter(user => !!user).map(user => ({
                 name: user!.username,
                 value: user!.id
@@ -191,7 +191,7 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
     //     autocomplete: async (focused, options, i) => {
     //         const targetUser = BotClient.getUser(options.getString('user'));
     //         if (!targetUser) return [];
-    //         const collection = await DCP.Collection.fetchFromUser(targetUser.id);
+    //         const collection = await dcn.Collection.fetchFromUser(targetUser.id);
     //         return collection.filter(c => c.name.toLowerCase().includes(focused.value.toLowerCase())).map(collection => ({
     //             name: collection.name,
     //             value: collection.name
@@ -201,8 +201,8 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
     .execute(async (i, options) => {
         const targetUser = BotClient.getUser(options.user);
         if (!targetUser) throw `用户 ${options.user} 并不在天照网络当中`
-        const list = await DCP.List.fetchDefault(i.user.id);
-        const followList = await DCP.Follow.fetchFromUserWithTarget(i.user.id, targetUser.id);
+        const list = await DCN.List.fetchDefault(i.user.id);
+        const followList = await DCN.Follow.fetchFromUserWithTarget(i.user.id, targetUser.id);
         if (!followList.length) throw `你尚未关注 ${targetUser.username}`;
         for (const follow of followList) { await follow.delete()}
         return new Reply(`你已取消关注 ${targetUser.username}`)
@@ -210,7 +210,7 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
 })
 
 async function channel_collection_seletor(focused: AutocompleteFocusedOption, options: OptionMap, i: AutocompleteInteraction<'cached'>) {
-    const collection = await DCP.Collection.fetchFromUser(i.user.id);
+    const collection = await DCN.Collection.fetchFromUser(i.user.id);
     return collection.filter(c => c.name.toLowerCase().includes(focused.value.toLowerCase())).map(collection => ({
         name: collection.name,
         value: collection.name
@@ -218,7 +218,7 @@ async function channel_collection_seletor(focused: AutocompleteFocusedOption, op
 }
 
 async function list_selector(focused: AutocompleteFocusedOption, options: OptionMap, i: AutocompleteInteraction<'cached'>) {
-    const list = await DCP.List.fetchFromUser(i.user.id);
+    const list = await DCN.List.fetchFromUser(i.user.id);
     return list.filter(c => c.name.toLowerCase().includes(focused.value.toLowerCase())).map(list => ({
         name: list.name,
         value: list.name

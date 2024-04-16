@@ -15,8 +15,8 @@ export interface FollowOptions extends DataOptions {
 export interface FollowDB extends FollowOptions {}
 export interface Follow extends FollowDB {}
 export class Follow extends Data {
-    static collection = db.collection<FollowDB>('dcp-follow');
-    static snowflake = snowflakes.dcp_follow;
+    static collection = db.collection<FollowDB>('dcn-follow');
+    static snowflake = snowflakes.dcn_follow;
     constructor(data: FollowDB) {
         super(data);
     }
@@ -34,7 +34,7 @@ export class Follow extends Data {
 
     static async fetch(id: string) {
         const data = await this.collection.findOne({id});
-        if (!data) throw 'DCP follow not exist';
+        if (!data) throw 'DCN follow not exist';
         const instance = new this(data);
         return instance;
     }
@@ -47,7 +47,7 @@ export class Follow extends Data {
 
     static async fetchFromListWithTarget(listId: string, targetUserId: string) {
         const data = await this.collection.findOne({targetUserId, listId});
-        if (!data) throw 'DCP follow not exist';
+        if (!data) throw 'DCN follow not exist';
         const instance = new this(data);
         return instance;
     }

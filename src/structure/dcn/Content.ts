@@ -21,7 +21,7 @@ export interface ContentOptions extends InGuildDataOptions {
 export interface ContentDB extends ContentOptions {}
 export interface Content extends ContentDB {}
 export class Content extends InGuildData {
-    static collection = db.collection<ContentDB>('dcp-content');
+    static collection = db.collection<ContentDB>('dcn-content');
     constructor(data: ContentDB) {
         super(data);
     }
@@ -39,14 +39,14 @@ export class Content extends InGuildData {
 
     static async fetch(id: string) {
         const data = await this.collection.findOne({id});
-        if (!data) throw 'DCP content not exist';
+        if (!data) throw 'DCN content not exist';
         const instance = new this(data);
         return instance;
     }
 
     static async fetchFromReceiveMessage(id: string) {
         const data = await this.collection.findOne({'receiveMessageList.id': id});
-        if (!data) throw 'DCP receive message not exist';
+        if (!data) throw 'DCN receive message not exist';
         const instance = new this(data);
         return instance;
     }
@@ -93,7 +93,7 @@ addListener('messageCreate', async message => {
     if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) return;
     const send_channel = await SendChannel.fetch(channel.id, message.author.id).catch(err => undefined);
     if (!send_channel) return;
-    const dcp_content = await Content.create({
+    const dcn_content = await Content.create({
         channelId: message.channelId,
         clientId: message.client.user.id,
         content: message.content,
@@ -108,7 +108,7 @@ addListener('messageCreate', async message => {
         receive_channel_list.forEach(async receiveChannel => {
             const receive_message = await receiveChannel.send(message);
             if (!receive_message) return;
-            dcp_content.addMessage({
+            dcn_content.addMessage({
                 webhookId: receive_message.webhook_id as string,
                 id: receive_message.id
             });
@@ -118,9 +118,9 @@ addListener('messageCreate', async message => {
 })
 
 addListener('messageDelete', async message => {
-    const dcp_content = await Content.fetch(message.id).catch(err => undefined);
-    if (dcp_content) {
-        return await dcp_content.delete();
+    const dcn_content = await Content.fetch(message.id).catch(err => undefined);
+    if (dcn_content) {
+        return await dcn_content.delete();
     }
 
     const receive_message = await Content.fetchFromReceiveMessage(message.id).catch(err => undefined);
@@ -135,9 +135,9 @@ addListener('messageUpdate', async (_, message) => {
     if (channel.type !== ChannelType.GuildText && channel.type !== ChannelType.GuildAnnouncement) return;
     const send_channel = await SendChannel.fetch(channel.id, message.author.id).catch(err => undefined);
     if (!send_channel) return;
-    const dcp_content = await Content.fetch(message.id);
-    await dcp_content.update(message.content);
-    dcp_content.receiveMessageList.forEach(async rm => {
+    const dcn_content = await Content.fetch(message.id);
+    await dcn_content.update(message.content);
+    dcn_content.receiveMessageList.forEach(async rm => {
         const data = await ReceiveChannel.collection.findOne({webhookId: rm.webhookId});
         if (!data) return;
         const webhook = new WebhookClient({id: data.webhookId, token: data.webhookToken});

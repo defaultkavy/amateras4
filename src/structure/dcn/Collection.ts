@@ -8,8 +8,8 @@ export interface CollectionOptions extends DataOptions {
 export interface CollectionDB extends CollectionOptions {}
 export interface Collection extends CollectionDB {}
 export class Collection extends Data {
-    static collection = db.collection<CollectionDB>('dcp-collection');
-    static snowflake = snowflakes.dcp_collection;
+    static collection = db.collection<CollectionDB>('dc-collection');
+    static snowflake = snowflakes.dcn_collection;
     constructor(data: CollectionDB) {
         super(data);
     }
