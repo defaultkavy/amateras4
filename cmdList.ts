@@ -29,7 +29,7 @@ export const cmd_list = [
     cmd_skill,
     cmd_me,
     // cmd_play,
-    cmd_dcn,
+    // cmd_dcn,
     cmdx_info,
     cmdx_unsend
 ]
