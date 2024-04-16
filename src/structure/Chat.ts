@@ -7,6 +7,7 @@ import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { addClientListener, addInteractionListener } from "../module/Util/listener";
 import { snowflakes } from "../method/snowflake";
+import { Embed } from "../module/Bot/Embed";
 
 export interface ChatOptions extends InGuildDataOptions {
     userId: string;
@@ -55,8 +56,9 @@ export class Chat extends InGuildData {
     async send(message: Message) {
         const attachmentsUrl = message.attachments.map(att => att.url)
         this.channel.send(new MessageBuilder()
-        .content(`${message.content}\n${attachmentsUrl.toString().replaceAll(',', '\n')}`)
-        .data)
+            .content(`${message.content}\n${attachmentsUrl.toString().replaceAll(',', '\n')}`)
+            .sticker(message.stickers.map(s => s.id))
+            .data).catch(err => message.reply(new MessageBuilder().embed(new Embed().description(`${err}`)).data))
         this.updateInfo();
     }
 

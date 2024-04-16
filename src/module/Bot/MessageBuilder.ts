@@ -1,4 +1,4 @@
-import { APIEmbed, ActionRowData, MessageComponentInteraction, MessageType, RepliableInteraction, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
+import { APIEmbed, ActionRowData, MessageComponentInteraction, MessageType, RepliableInteraction, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
 import { MessageActionRow } from "./ActionRow";
 import { Embed } from "./Embed";
 import { multipleResolver } from "../Util/util";
@@ -7,6 +7,7 @@ export interface MessageBuilderData {
     components?: ActionRowData<any>[],
     embeds?: APIEmbed[];
     ephemeral?: boolean;
+    stickers?: StickerResolvable[]
 }
 export class MessageBuilder {
     actionRowList: MessageActionRow[] = [];
@@ -66,6 +67,13 @@ export class MessageBuilder {
 
     ephemeral(enable: boolean | undefined) {
         this.data.ephemeral = enable;
+        return this;
+    }
+
+    sticker(stickers?: (StickerResolvable | null | undefined)[]) {
+        stickers?.forEach(sticker => {
+            if (sticker) this.data.stickers ? this.data.stickers.push(sticker) : this.data.stickers = [sticker];
+        })
         return this;
     }
 

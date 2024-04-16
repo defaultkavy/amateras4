@@ -1,4 +1,4 @@
-import { AutocompleteFocusedOption, AutocompleteInteraction, ChannelType, ChatInputCommandInteraction, createChannel } from "discord.js";
+import { AutocompleteFocusedOption, AutocompleteInteraction, ChannelType, ChatInputCommandInteraction, PermissionFlagsBits, createChannel } from "discord.js";
 import { Command } from "../module/Bot/Command";
 import * as DCP from "../structure/dcp/_DCP";
 import { Reply } from "../module/Bot/Reply";
@@ -67,6 +67,8 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
         })
         .execute(async (i, options) => {
             await i.deferSlient();
+            const user_permissions = i.channel?.permissionsFor(i.user)
+            if (!user_permissions?.has(PermissionFlagsBits.ManageChannels)) throw `你没有管理该频道的权限`
             const list = options.list 
                 ? await DCP.List.fetch(options.list).catch(err => undefined) 
                     ?? await DCP.List.fetchName(i.user.id, options.list).catch(err => undefined) 
@@ -99,7 +101,7 @@ export const cmd_dcp = new Command('dcp', 'Discord 内容发布管理（Discord 
                 ? await DCP.List.fetch(options.list).catch(err => undefined) 
                     ?? await DCP.List.fetchName(i.user.id, options.list).catch(err => undefined) 
                 : undefined;
-            const receive_channel = await DCP.ReceiveChannel.fetch(i.channelId, i.user.id).catch(err => undefined)
+            const receive_channel = await DCP.ReceiveChannel.fetch(options.channel.id, i.user.id).catch(err => undefined)
             if (!receive_channel) throw `频道${options.channel}并未设定为内容接收频道`;
             if (!options.list) {
                 await receive_channel.delete()
