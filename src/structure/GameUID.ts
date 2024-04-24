@@ -29,8 +29,8 @@ export class GameUid extends Data {
     async init() {}
 
     static async create(options: DataCreateOptions<GameUidOptions>) {
-        const duplicate = await this.collection.findOne({name: options.name});
-        if (duplicate) throw `该游戏名字已被占用`;
+        const duplicate = await this.collection.findOne({gameId: options.gameId, userId: options.userId});
+        if (duplicate) throw `UID exists`;
         const snowflake = this.snowflake.generate(true);
         const data: GameUidDB = {
             ...options,
