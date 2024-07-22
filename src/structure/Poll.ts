@@ -124,7 +124,8 @@ export class Poll extends Data {
             return builder
     }
 
-    async sendPollMessage(i: ChatInputCommandInteraction<'cached'>) {
+    async sendPollMessage(i: ChatInputCommandInteraction) {
+        if (!i.inGuild()) return;
         await i.reply(this.panelMessage().data);
         const message = await i.fetchReply();
         const data = {messageId: message.id, channelId: i.channelId, guildId: i.guildId, clientId: i.client.user.id};
@@ -287,7 +288,7 @@ addInteractionListener('poll_panel_select', async i => {
     if (!pollId) throw 'poll id missing';
     const poll = await Poll.fetch(pollId);
     await poll.select(i.user.id, i.values)
-    i.deferUpdate();
+    i.update(poll.panelMessage().data)
 })
 
 addInteractionListener('poll_panel_close', async i => {
@@ -297,7 +298,7 @@ addInteractionListener('poll_panel_close', async i => {
     const poll = await Poll.fetch(pollId);
     if (poll.ownerUserId !== i.user.id) throw '你不是投票创建者'
     await poll.close(true);
-    i.deferUpdate();
+    i.update(poll.panelMessage().data)
 })
 
 addInteractionListener('poll_panel_start', async i => {
@@ -307,5 +308,5 @@ addInteractionListener('poll_panel_start', async i => {
     const poll = await Poll.fetch(pollId);
     if (poll.ownerUserId !== i.user.id) throw '你不是投票创建者'
     await poll.start();
-    i.deferUpdate();
+    i.update(poll.panelMessage().data)
 })

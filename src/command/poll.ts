@@ -1,11 +1,13 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { Command } from "../module/Bot/Command";
+import { Command, CommandContexts, CommandIntegrationTypes } from "../module/Bot/Command";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Reply } from "../module/Bot/Reply";
 import { codeBlock, substringWith } from "../module/Util/util";
 import { Poll } from "../structure/Poll";
 
-export const cmd_poll = new Command('poll', '投票指令')
+export const cmd_poll = new Command('poll', '投票指令', true)
+.integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
+.contexts([CommandContexts.GUILD])
 .subCommand('create', '建立投票', subcmd => {
     subcmd
     .string('title', '投票标题', {required: true, maxLength: 100})
@@ -13,7 +15,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     .integer('min', '最小需选项', {required: false, maxValue: 25, minValue: 1})
     .integer('max', '最大可选项', {required: false, maxValue: 25, minValue: 1})
     .boolean('send', '是否发送到频道', {required: false})
-    .executeInGuild(async (i, options) => {
+    .execute(async (i, options) => {
         if (!options.send) await i.deferSlient();
         const poll = await Poll.create({
             ownerUserId: i.user.id,
@@ -37,7 +39,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     .subCommand('add', '添加选项', subcmd => {
         pollSelector(subcmd)
         .string('label', '选项内容（使用中英文分号 ; 可添加复数个选项内容）', {required: true})
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             await i.deferSlient();
             const poll = await pollOwnerFetch(i, options.poll)
             const labelList = options.label.split(/[;；]/).map(label => label.trim()).filter(label => label.length);
@@ -50,7 +52,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 
     .subCommand('remove', '移除选项', subcmd => {
         pollOptionSelector(pollSelector(subcmd))
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             const poll = await pollOwnerFetch(i, options.poll)
             await poll.removeOption(options.option);
             return new Reply(`选项已移除`)
@@ -60,7 +62,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     .subCommand('edit', '修改选项内容', subcmd => {
         pollOptionSelector(pollSelector(subcmd))
         .string('label', '内容', {required: true})
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             const poll = await pollOwnerFetch(i, options.poll)
             await poll.editOption(options.option, options.label);
             return new Reply(`选项内容已更改`)
@@ -71,7 +73,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     .subCommand('min', '最小选择数量（预设为1）', subcmd => {
         pollSelector(subcmd, false)
         .integer('value', '最小值', {required: true, maxValue: 25, minValue: 1})
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             const poll = await pollOwnerFetch(i, options.poll);
             await poll.setMin(options.value);
             return new Reply(`已设定投票最小选项数量：${poll.minVotes}`)
@@ -81,7 +83,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     .subCommand('max', '最大选择数量（预设为1）', subcmd => {
         pollSelector(subcmd, false)
         .integer('value', '最大值', {required: true, maxValue: 25, minValue: 1})
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             const poll = await pollOwnerFetch(i, options.poll);
             await poll.setMax(options.value);
             return new Reply(`已设定投票最大选项数量：${poll.maxVotes}`)
@@ -91,7 +93,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 
 .subCommand('send', '发送投票讯息', subcmd => {
     pollSelector(subcmd)
-    .executeInGuild(async (i, options) => {
+    .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll)
         poll.sendPollMessage(i);
     })
@@ -100,7 +102,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('title', '修改投票标题', subcmd => {
     pollSelector(subcmd)
     .string('title', '标题', {required: true, maxLength: 100})
-    .executeInGuild(async (i, options) => {
+    .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll)
         await poll.setTitle(options.title);
         return new Reply(`投票标题已更改：${poll.title}`)
@@ -110,7 +112,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 .subCommand('close', '结算投票', subcmd => {
     pollSelector(subcmd)
     .boolean('annouce', '是否发布结算讯息（预设为是）', {required: false})
-    .executeInGuild(async (i, options) => {
+    .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll)
         await poll.close(options.annouce)
         return new Reply(`投票已关闭：**${poll.title}**`)
@@ -122,7 +124,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     .subCommand('set', '设定缩图', subcmd => {
         pollSelector(subcmd)
         .string('url', '缩图网址', {required: true})
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             const poll = await pollOwnerFetch(i, options.poll);
             await poll.setThumbnail(options.url)
             return new Reply(`已设定投票缩图`);
@@ -130,7 +132,7 @@ export const cmd_poll = new Command('poll', '投票指令')
     })
     .subCommand('remove', '移除缩图', subcmd => {
         pollSelector(subcmd)
-        .executeInGuild(async (i, options) => {
+        .execute(async (i, options) => {
             const poll = await pollOwnerFetch(i, options.poll);
             await poll.removeThumbnail();
             return new Reply(`已移除投票缩图`);
@@ -140,7 +142,7 @@ export const cmd_poll = new Command('poll', '投票指令')
 
 .subCommand('start', '开始投票', subcmd => {
     pollSelector(subcmd, false)
-    .executeInGuild(async (i, options) => {
+    .execute(async (i, options) => {
         const poll = await pollOwnerFetch(i, options.poll);
         await poll.start();
         return new Reply(`投票已开启`);
@@ -173,7 +175,7 @@ function pollOptionSelector(subcmd: ExecutableCommand & {_options: Record<'poll'
     })
 }
 
-async function pollOwnerFetch(i: ChatInputCommandInteraction<'cached'>, pollId: string) {
+async function pollOwnerFetch(i: ChatInputCommandInteraction, pollId: string) {
     const poll = await Poll.fetch(pollId);
     if (poll.ownerUserId !== i.user.id) throw '你不是投票创建者';
     return poll
