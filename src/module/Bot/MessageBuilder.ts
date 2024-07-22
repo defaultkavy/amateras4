@@ -1,4 +1,4 @@
-import { APIEmbed, ActionRowData, MessageComponentInteraction, MessageType, RepliableInteraction, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
+import { APIEmbed, ActionRowData, InteractionReplyOptions, MessageComponentInteraction, MessageCreateOptions, MessagePayload, MessageType, RepliableInteraction, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
 import { MessageActionRow } from "./ActionRow";
 import { Embed } from "./Embed";
 import { multipleResolver } from "../Util/util";
@@ -29,8 +29,8 @@ export class MessageBuilder {
         return this;
     }
 
-    send(channel: TextBasedChannel) {
-        return channel.send(this.data)
+    send(channel: TextBasedChannel, options?: MessageCreateOptions) {
+        return channel.send({...this.data, ...options})
     }
 
     embed(resolver: ((embed: Embed) => void) | Multiple<Embed>) {
@@ -77,12 +77,11 @@ export class MessageBuilder {
         return this;
     }
 
-    async reply(i: RepliableInteraction | MessageComponentInteraction, ephemeral?: boolean) {
+    async reply(i: RepliableInteraction | MessageComponentInteraction, options?: InteractionReplyOptions) {
         this.clean();
-        const data = {...this.data}
-        if (ephemeral !== undefined) data.ephemeral = ephemeral;
+        const data = {...this.data, ...options}
         if (i.isMessageComponent()) {
-            if (i.message.type === MessageType.Reply) await i[i.deferred ? 'followUp' : 'update'](data).catch(console.error)
+            if (i.message.type === MessageType.Reply) await i[i.deferred ? 'followUp' : 'update'](data as any).catch(console.error)
             else await i[i.deferred ? 'followUp' : 'reply'](data).catch(console.error)
         }
         else {

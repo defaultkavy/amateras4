@@ -8,7 +8,7 @@ export class $Text {
     }
 }
 export class $Block extends $Text {
-    type: 'blockquote' | 'codeblock' | 'none' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'ordered-list' | 'unordered-list';
+    type: 'blockquote' | 'codeblock' | 'none' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'ordered-list' | 'unordered-list' | 'subtext';
     constructor(str: TextComponent, type: $Block['type']) {
         super(str);
         this.type = type;
@@ -25,7 +25,8 @@ export class $Block extends $Text {
             case 'h5': return `##### ${this.content}`;
             case 'h6': return `###### ${this.content}`;
             case 'ordered-list': return `1. ${this.content}`;
-            case 'unordered-list': return `- ${this.content}`
+            case 'unordered-list': return `- ${this.content}`;
+            case 'subtext': return `-# ${this.content}`;
         }
     }
 }
@@ -105,6 +106,7 @@ export namespace $ {
     export function H4(...text: TextComponent[]) { return new $Block(text, 'h4') }
     export function H5(...text: TextComponent[]) { return new $Block(text, 'h5') }
     export function H6(...text: TextComponent[]) { return new $Block(text, 'h6') }
+    export function Subtext(...text: TextComponent[]) { return new $Block(text, 'subtext')}
     export function Bold(...text: TextComponent[]) { return new $Inline(text, 'bold') }
     export function Underline(...text: TextComponent[]) { return new $Inline(text, 'underline') }
     export function Code(...text: TextComponent[]) { return new $Inline(text, 'code') }
