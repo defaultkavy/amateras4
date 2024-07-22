@@ -7,7 +7,7 @@ export function mod_post() {
     subcmd
         .channel('channel', '选择文字频道', {channelTypes: [ChannelType.GuildText]})
         .boolean('enable', '是否开启')
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const channel = options.channel ?? i.channel;
             if (!channel) throw 'Channel Error';

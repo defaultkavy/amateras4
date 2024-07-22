@@ -13,6 +13,7 @@ import { cmd_test } from "./src/command/test";
 import { cmd_uid } from "./src/command/uid";
 import { cmd_me } from "./src/command/user";
 import { cmd_vid } from "./src/command/vid";
+import { cmd_x } from "./src/command/x";
 import { cmdx_info } from "./src/context/info";
 import { cmdx_unsend } from "./src/context/unsend";
 
@@ -28,10 +29,11 @@ export const cmd_list = [
     cmd_uid,
     cmd_skill,
     cmd_me,
+    cmd_x,
     // cmd_play,
     // cmd_dcn,
     cmdx_info,
-    cmdx_unsend
+    cmdx_unsend,
 ]
 
 if (config.dev) {cmd_list.push(cmd_test)}

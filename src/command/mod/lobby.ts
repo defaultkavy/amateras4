@@ -9,7 +9,7 @@ export function mod_lobby() {
         group
         .subCommand('close', '强制关闭房间', subcmd => {
             adminLobbySelect(subcmd)
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const lobby = await Lobby.fetch(options.lobby);
                 lobby.delete(i.user.id);
                 return new Reply(`房间【${lobby.name}】已强制关闭`)

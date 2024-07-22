@@ -6,7 +6,7 @@ import { Reply } from "../module/Bot/Reply";
 
 export const cmd_play = new Command('play', '播放音乐')
 .string('url', 'YouTube 链接', {required: true})
-.execute(async (i, options) => {
+.executeInGuild(async (i, options) => {
     await i.deferSlient()
     const voice_channel = i.member.voice.channel;
     if (!voice_channel) throw '你需要先加入语音频道';

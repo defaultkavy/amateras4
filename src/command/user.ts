@@ -9,7 +9,7 @@ import { $Member } from "../structure/$Member";
 export const cmd_me = new Command('user', '用户指令')
 .subCommand('send', '发送你的名片', subcmd => {
     serverSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const player = await $Member.fetchFromMember(options.server ?? i.guildId, i.user.id);
         return await player.cardMessage();
     })
@@ -17,7 +17,7 @@ export const cmd_me = new Command('user', '用户指令')
 
 .subCommand('view', '查看你的名片', subcmd => {
     serverSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const player = await $Member.fetchFromMember(options.server ?? i.guildId, i.user.id)
         return (await player.cardMessage()).ephemeral(true);
     })
@@ -25,7 +25,7 @@ export const cmd_me = new Command('user', '用户指令')
 
 .subCommand('intro', '编辑你的简介', subcmd => {
     subcmd
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const player = await $Member.fetchFromMember(i.guildId, i.user.id);
         i.showModal(
             new Modal(`Edit User Intro`, `user-intro@${player.id}`)
@@ -37,7 +37,7 @@ export const cmd_me = new Command('user', '用户指令')
 
 .subCommand('skill', '查看你的技能信息', subcmd => {
     subcmd
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const player = await $Member.fetchFromMember(i.guildId, i.user.id);
         return new Reply().embed(await player.skillEmbed())
     })

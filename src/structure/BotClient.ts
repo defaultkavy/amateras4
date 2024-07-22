@@ -94,6 +94,11 @@ export class BotClient extends Data {
         const guilds = await $Guild.init(this.client, debug);
         if (debug) return;
         // commands deploy
+        if (!config.debug) {
+            new Log('Deploying Global Commands');
+            await this.cmd_manager.deployGlobal()
+            new Log('Global Commands Deployed');
+        }
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds.filter(guild => !System.servers.includes(guild.id)));
         this.cmd_manager.add(cmd_sys)
         const adminGuilds = guilds.filter(guild => System.servers.includes(guild.id))

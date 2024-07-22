@@ -24,7 +24,7 @@ export const cmd_help = new Command('help', '天照系统指南')
         value: data.value
     })),
 })
-.execute(async (i, options) => {
+.executeInGuild(async (i, options) => {
     if (options.cmd) return helpContent(options.cmd);
     return textContent('./help/help.md', [help_row]);
 })

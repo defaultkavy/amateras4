@@ -10,7 +10,7 @@ export const cmd_post = new Command('post', '贴文')
 .subCommand('create', '创建贴文', subcmd => {
     subcmd
     .channel('forum', '选择论坛频道', {channel_types: [ChannelType.GuildForum], required: true})
-    .execute(async (i, {forum}) => {
+    .executeInGuild(async (i, {forum}) => {
         if (forum.type !== ChannelType.GuildForum) return;
         i.showModal(
             new Modal('Forum Post Create', `forum-post-create@${forum.id}`)
@@ -24,7 +24,7 @@ export const cmd_post = new Command('post', '贴文')
 
 .subCommand('edit', '编辑贴文', subcmd => {
     subcmd
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const channel = i.channel;
         if (channel?.type !== ChannelType.PublicThread) throw '必须在指定的贴文中使用';
         if (channel.ownerId !== i.client.user.id) throw `只能编辑 ${i.client.user} 创建的贴文`;

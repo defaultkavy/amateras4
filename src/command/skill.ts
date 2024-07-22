@@ -11,7 +11,7 @@ export const cmd_skill = new Command('skill', '技能设定')
     .string('name', '技能名字', {required: true})
     .string('channels', '增加技能经验的频道', {required: false})
     .number('threshold', '技能等级阈值（预设为10）', {required: false, minValue: 1})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const channelIdList = options.channels ? channelIdExtract(options.channels) : []
         const skill = await Skill.create({
             name: options.name,
@@ -27,7 +27,7 @@ export const cmd_skill = new Command('skill', '技能设定')
 
 .subCommand('info', '技能详情', subcmd => {
     skillSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const skill = await Skill.fetch(options.skill);
         return new Reply().embed(skill.infoEmbed())
     })
@@ -38,7 +38,7 @@ export const cmd_skill = new Command('skill', '技能设定')
     .subCommand('add', '增加频道', subcmd => {
         skillSelector(subcmd)
         .string('channels', '增加技能经验的频道', {required: true})
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             const channelIdList = channelIdExtract(options.channels) ?? [];
             const skill = await Skill.fetch(options.skill);
             const addedChannelIdList = await skill.addChannel(channelIdList);
@@ -48,7 +48,7 @@ export const cmd_skill = new Command('skill', '技能设定')
     .subCommand('remove', '移除频道', subcmd => {
         skillSelector(subcmd)
         .string('channels', '增加技能经验的频道', {required: true})
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             const channelIdList = channelIdExtract(options.channels) ?? [];
             const skill = await Skill.fetch(options.skill);
             const removedChannelIdList = await skill.removeChannel(channelIdList);
@@ -60,7 +60,7 @@ export const cmd_skill = new Command('skill', '技能设定')
 .subCommand('rename', '重命名', subcmd => {
     skillSelector(subcmd)
     .string('name', '技能名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const skill = await Skill.fetch(options.skill);
         const oldName = skill.name;
         skill.rename(options.name);
@@ -70,7 +70,7 @@ export const cmd_skill = new Command('skill', '技能设定')
 
 .subCommand('intro', '编辑技能介绍', subcmd => {
     skillSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const skill = await Skill.fetch(options.skill);
         i.showModal(
             new Modal('Edit Skill Intro', `skill-intro@${skill.id}`)
@@ -83,7 +83,7 @@ export const cmd_skill = new Command('skill', '技能设定')
 .subCommand('threshold', '编辑阈值', subcmd => {
     skillSelector(subcmd)
     .number('threshold', '技能阈值', {required: true, minValue: 1})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const skill = await Skill.fetch(options.skill);
         const oldValue = skill.threshold;
         await skill.editThreshold(options.threshold);

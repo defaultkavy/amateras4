@@ -3,8 +3,14 @@ import { ApplicationCommandOptionData, ApplicationCommandOptionType, Application
 
 export class Command<Options = {}> extends ExecutableCommand {
     map = new Map<string, ExecutableCommand | SubcommandGroup>;
-    constructor(name: string, description: string) {
+    global: boolean;
+    data = {
+        integration_types: [CommandIntegrationTypes.GUILD_INSTALL],
+        contexts: [CommandContexts.GUILD, CommandContexts.BOT_DM, CommandContexts.PRIVATE_CHANNEL] 
+    }
+    constructor(name: string, description: string, global = false) {
         super(name, description);
+        this.global = global;
     }
 
     subCommand(name: string, description: string, callback: (subcmd: ExecutableCommand) => void) {
@@ -26,10 +32,21 @@ export class Command<Options = {}> extends ExecutableCommand {
         callback!(group);
         return this;
     }
+
+    integrationTypes(types: CommandIntegrationTypes[]) {
+        this.data.integration_types = types;
+        return this;
+    }
+
+    contexts(contexts: CommandContexts[]) {
+        this.data.contexts = contexts;
+        return this;
+    }
     
     //@ts-expect-error
     toJSON() {
         const data: ChatInputApplicationCommandData = {
+            ...this.data,
             name: this.name,
             type: ApplicationCommandType.ChatInput,
             description: this.description,
@@ -45,6 +62,17 @@ export class Command<Options = {}> extends ExecutableCommand {
     getSubcommand(name: string) {
         return this.map.get(name) as ExecutableCommand | undefined;
     }
+}
+
+export enum CommandIntegrationTypes {
+    GUILD_INSTALL,
+    USER_INSTALL
+}
+
+export enum CommandContexts {
+    GUILD,
+    BOT_DM,
+    PRIVATE_CHANNEL
 }
 
 export class Subcommand extends ExecutableCommand {}

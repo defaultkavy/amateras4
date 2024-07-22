@@ -12,9 +12,11 @@ export abstract class MenuCommand<Type extends ContextMenuInteraction> {
     }
     name: string
     _executeFn?: ExecuteFn<Type>;
-    constructor(type: CommandTypes.User | CommandTypes.Message, name: string) {
+    global: boolean;
+    constructor(type: CommandTypes.User | CommandTypes.Message, name: string, global = false) {
         this.data = {name, type}
         this.name = name;
+        this.global = global;
     }
 
     execute(fn: ExecuteFn<Type>) {

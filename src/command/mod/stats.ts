@@ -7,7 +7,7 @@ export function mod_stats() {
         group
         .subCommand('send', '发送伺服器资讯', subcmd => {
             subcmd
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 await i.reply((await GuildStats.infoMessage(i.guild)).data)
                 const message = await i.fetchReply();
                 GuildStats.create({
@@ -20,7 +20,7 @@ export function mod_stats() {
         })
         .subCommand('view', '显示伺服器资讯', subcmd => {
             subcmd
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 return (await GuildStats.infoMessage(i.guild)).ephemeral(true)
             })
         })

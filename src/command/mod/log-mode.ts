@@ -8,7 +8,7 @@ export function mod_log() {
         subcmd
         .channel('channel', '选择文字频道', {required: true, channelTypes: [ChannelType.GuildText]})
         .boolean('enable', '是否开启')
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             if (typeof options.enable === 'boolean') {
                 if (options.enable) {
                     if (options.channel.type !== ChannelType.GuildText) throw '请选择文字频道';

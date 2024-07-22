@@ -20,7 +20,7 @@ export function sys_vid() {
         .subCommand('create', 'Create Vid for user', subcmd => {
             subcmd
             .user('user', '选择用户', {required: true})
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 if (await VId.safeFetch(options.user.id)) throw '用户已注册';
     
                 i.showModal(new Modal('V-ID Create', `mod_vid_create@${options.user.id}`)
@@ -34,7 +34,7 @@ export function sys_vid() {
         .subCommand('proxy', 'Manage Vid as user', subcmd =>[
             subcmd
             .user('user', 'userID')
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const admin = Admin.get(i.user.id);
                 if (options.user) {
                     admin.proxyUser(options.user.id);

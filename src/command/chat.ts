@@ -5,7 +5,7 @@ import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
 
 export const cmd_chat = new Command('chat', '在这个频道中启用/关闭机器人聊天模式')
-.execute(async (i, options) => {
+.executeInGuild(async (i, options) => {
     if (i.channel?.type !== ChannelType.GuildText) throw '必须是文字频道';
     await i.deferSlient()
     const duplicate = await Chat.collection.findOne({clientId: i.client.user.id, userId: i.user.id, channelId: i.channelId});

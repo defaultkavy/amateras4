@@ -15,7 +15,7 @@ export function sys_game() {
             .string('name', 'Game name', {required: true})
             .string('icon', 'Game icon URL', {required: true})
             .string('alias', 'Game alias name, use semicolon to separate names', {required: false})
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const aliasNameList = options.alias?.split(/[;；]/).map(label => label.trim()).filter(label => label.length);
                 const game = await Game.create({
                     name: options.name,
@@ -27,7 +27,7 @@ export function sys_game() {
         })
         .subCommand('delete', 'Delete game', subcmd => {
             gameSelector(subcmd)
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const game = await Game.fetch(options.game);
                 await game.delete();
                 return new Reply(`游戏已移除：${game.name}`)
@@ -36,7 +36,7 @@ export function sys_game() {
 
         .subCommand('edit', 'Edit game profile', subcmd => {
             gameSelector(subcmd)
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const game = await Game.fetch(options.game);
                 i.showModal(
                     new Modal('Edit Game Profile', `sys-game-edit@${game.id}`)

@@ -8,10 +8,12 @@ export interface CommandExecuteInteraction {
     /** Same as method defferReply(), but is ephemeral */
     deferSlient: () => Promise<InteractionResponse<true>>
 }
-type ExecuteFn<Options> = (interaction: ChatInputCommandInteraction<'cached'> & CommandExecuteInteraction, options: Options) => OrPromise<void | any | Error | Reply>;
+type ExecuteFnInGuild<Options> = (interaction: ChatInputCommandInteraction<'cached'> & CommandExecuteInteraction, options: Options) => OrPromise<void | any | Error | Reply>;
+type ExecuteFn<Options> = (interaction: ChatInputCommandInteraction & CommandExecuteInteraction, options: Options) => OrPromise<void | any | Error | Reply>;
 
 export abstract class ExecutableCommand {
     options = new Map<string, CommandOption>;
+    _executeFnInGuild?: ExecuteFnInGuild<this['_options']>;
     _executeFn?: ExecuteFn<this['_options']>;
     _options!: {};
     name: string;
@@ -21,7 +23,7 @@ export abstract class ExecutableCommand {
         this.description = description;
     }
 
-    async run(i: ChatInputCommandInteraction<'cached'>, options: Readonly<CommandInteractionOption<'cached'>[] | undefined>) {
+    async run(i: ChatInputCommandInteraction, options: Readonly<CommandInteractionOption[] | undefined>) {
         const data = options ? options.map(option => {
             switch (option.type) {
                 case ApplicationCommandOptionType.String: 
@@ -44,25 +46,35 @@ export abstract class ExecutableCommand {
                     throw '';
             }
         }) : undefined;
-        if (this._executeFn) {
-            const feedback = (reply: any) => {
-                if (!reply) return;
-                if (reply instanceof Error) {
-                    i[i.deferred ? 'followUp' : 'reply' ]({content: reply.message, ephemeral: true})
-                } else if (reply instanceof Reply) reply.reply(i);
-                else if (reply instanceof MessageBuilder) reply.reply(i);
-                else {
-                    i[i.deferred ? 'followUp' : 'reply' ]({content: `${reply}`, ephemeral: true})
+        
+        const feedback = (reply: any) => {
+            if (!reply) return;
+            if (reply instanceof Error) {
+                i[i.deferred ? 'followUp' : 'reply' ]({content: reply.message, ephemeral: true})
+            } else if (reply instanceof Reply) reply.reply(i);
+            else if (reply instanceof MessageBuilder) reply.reply(i);
+            else {
+                i[i.deferred ? 'followUp' : 'reply' ]({content: `${reply}`, ephemeral: true})
+            }
+        }
+        const additional: CommandExecuteInteraction = { deferSlient: async () => await i.deferReply({ephemeral: true})}
+        Object.assign(i, additional)
+        try {
+            if (i.inCachedGuild()) {
+                if (this._executeFnInGuild) {
+                    const reply = await this._executeFnInGuild(i as CommandExecuteInteraction & ChatInputCommandInteraction<'cached'>, Object.fromEntries(data ?? []));
+                    feedback(reply);
+                } else if (this._executeFn) {
+                    const reply = await this._executeFn(i as CommandExecuteInteraction & ChatInputCommandInteraction, Object.fromEntries(data ?? []))
+                    feedback(reply);
                 }
-            }
-            const additional: CommandExecuteInteraction = { deferSlient: async () => await i.deferReply({ephemeral: true})}
-            Object.assign(i, additional)
-            try {
-                const reply = await this._executeFn(i as CommandExecuteInteraction & ChatInputCommandInteraction<'cached'>, Object.fromEntries(data ?? []));
+            } else {
+                if (!this._executeFn) return;
+                const reply = await this._executeFn(i as CommandExecuteInteraction & ChatInputCommandInteraction, Object.fromEntries(data ?? []))
                 feedback(reply);
-            } catch(err) {
-                feedback(err);
             }
+        } catch(err) {
+            feedback(err);
         }
     }
 
@@ -73,6 +85,11 @@ export abstract class ExecutableCommand {
      * @param fn Command execute function. When command is trigger, will execute this function for response.
      * @returns 
      */
+    executeInGuild(fn: ExecuteFnInGuild<this['_options']>) {
+        this._executeFnInGuild = fn;
+        return this;
+    }
+
     execute(fn: ExecuteFn<this['_options']>) {
         this._executeFn = fn;
         return this;

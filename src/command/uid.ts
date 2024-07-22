@@ -11,7 +11,7 @@ import { gameSelector } from "./sys/game";
 export const cmd_uid = new Command('uid', '游戏账号设定')
 .subCommand('set', '设定游戏名片', subcmd => {
     gameSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const game = await Game.fetch(options.game);
         const uid = await GameUid.fetch(i.user.id, game.id);
         i.showModal(
@@ -26,7 +26,7 @@ export const cmd_uid = new Command('uid', '游戏账号设定')
 
 .subCommand('delete', '删除你的游戏名片', subcmd => {
     uidSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const uid = await GameUid.fetch(i.user.id, options.game);
         if (!uid) throw `你尚未创建该游戏名片`
         await uid.delete();
@@ -36,7 +36,7 @@ export const cmd_uid = new Command('uid', '游戏账号设定')
 
 .subCommand('send', '发送你的游戏名片', subcmd => {
     uidSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const uid = await GameUid.fetch(i.user.id, options.game);
         if (!uid) throw '该游戏名片不存在';
         return new MessageBuilder().embed(uid.cardEmbed())
@@ -45,7 +45,7 @@ export const cmd_uid = new Command('uid', '游戏账号设定')
 
 .subCommand('view', '查查看你的游戏名片', subcmd => {
     uidSelector(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const uid = await GameUid.fetch(i.user.id, options.game);
         if (!uid) throw '该游戏名片不存在';
         return new MessageBuilder().embed(uid.cardEmbed()).ephemeral(true)

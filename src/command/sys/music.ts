@@ -8,7 +8,7 @@ export function sys_music() {
         group
         .subCommand('panel', 'Music panel message', subcmd => {
             subcmd
-            .execute(async (i) => {
+            .executeInGuild(async (i) => {
                 await i.deferSlient();
                 if (!i.channel) return;
                 const message = await i.channel.send((await MusicPlayerPanel.infoMessage()).data)

@@ -13,7 +13,6 @@ export class CommandManager {
     listen() {
         this.client.on('interactionCreate', async i => {
             if (i.isChatInputCommand()) {
-                if (!i.inCachedGuild()) return;
                 const command = this.cache.get(i.commandName);
                 if (command instanceof MenuCommand) return;
                 if (!command) return;
@@ -57,14 +56,14 @@ export class CommandManager {
                 // cmd [options]
                 else i.respond((await autocomplete(command, [...i.options.data])).slice(0, 25));
 
-                async function autocomplete(subcmd: ExecutableCommand | Command, options: CommandInteractionOption[] | undefined) {
+                async function autocomplete(subcmd: ExecutableCommand | Command, options: readonly CommandInteractionOption[] | undefined) {
                     if (!options) throw 'option is undefined';
                     const focused = options.find(option => option.focused);
                     if (!focused) throw 'autocomplete focused option is undefined';
-                    options.splice(options.indexOf(focused));
+                    const mutable_options = [...options].splice(options.indexOf(focused));
                     const focused_option = subcmd.options.get(focused.name);
                     if (!focused_option) throw 'focused option not found';
-                    const optionMap = new OptionMap(options)
+                    const optionMap = new OptionMap(mutable_options)
                     try {
                         if (focused_option.autocompleteFn) return focused_option.autocompleteFn(focused as AutocompleteFocusedOption, optionMap, i as AutocompleteInteraction<'cached'>)
                     } catch(err) {
@@ -89,11 +88,19 @@ export class CommandManager {
             guilds.forEach(async guild => {
                 await rest.put(
                     Routes.applicationGuildCommands(this.client.user.id, guild.id),
-                    { body: [...this.cache.values()].map(command => command.toJSON()) }
+                    { body: [...this.cache.values()].filter(cmd => cmd.global === false).map(command => command.toJSON()) }
                 )
             })
             resolve();
         })
+    }
+
+    async deployGlobal() {
+        const rest = new REST().setToken(this.client.token);
+        await rest.put(
+            Routes.applicationCommands(this.client.user.id),
+            { body: [...this.cache.values()].filter(cmd => cmd.global === true).map(command => command.toJSON()) }
+        )
     }
 
     add(command: Multiple<Command | UserMenuCommand | MessageMenuCommand>) {

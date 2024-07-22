@@ -13,7 +13,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
         .string('collection', '频道内容将收录到收藏集（若名字不匹配现有的收藏集，将会创建新的收藏集）', {required: false,
             autocomplete: channel_collection_seletor
         })
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const collection = options.collection 
                 ? await DCN.Collection.fetch(options.collection).catch(err => undefined) 
@@ -40,7 +40,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
         .string('collection', '从频道移除收藏集', {required: false,
             autocomplete: channel_collection_seletor
         })
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const collection = options.collection 
                 ? await DCN.Collection.fetch(options.collection).catch(err => undefined) 
@@ -65,7 +65,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
         .string('list', '该频道只显示被加入列表中的发布者内容（留空为预设列表）', {required: false,
             autocomplete: list_selector
         })
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const user_permissions = options.channel.permissionsFor(i.user)
             if (!user_permissions?.has(PermissionFlagsBits.ManageChannels)) throw `你没有管理该频道的权限`
@@ -95,7 +95,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
         .string('list', '从频道移除列表', {required: false,
             autocomplete: list_selector
         })
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const list = options.list 
                 ? await DCN.List.fetch(options.list).catch(err => undefined) 
@@ -144,7 +144,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
     //         }))
     //     }
     // })
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const targetUser = BotClient.getUser(options.user);
         if (!targetUser) throw `用户 ${options.user} 并不在天照网络当中`
         // const collection = options.collection 
@@ -198,7 +198,7 @@ export const cmd_dcn = new Command('dcn', 'Discord 内容网络（Discord Conten
     //         }))
     //     }
     // })
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const targetUser = BotClient.getUser(options.user);
         if (!targetUser) throw `用户 ${options.user} 并不在天照网络当中`
         const list = await DCN.List.fetchDefault(i.user.id);

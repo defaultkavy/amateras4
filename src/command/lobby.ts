@@ -9,7 +9,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 .subCommand('open', '创建房间', subcmd => {
     subcmd
     .string('name', '房间名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         await i.deferSlient();
         const lobby = await Lobby.create({
             guildId: i.guildId,
@@ -23,7 +23,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 
 .subCommand('close', '关闭房间', subcmd => {
     lobbySelect(subcmd)
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         await i.deferSlient();
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
@@ -35,7 +35,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 .subCommand('invite', '邀请用户', subcmd => {
     lobbySelect(subcmd)
     .string('users', '输入用户@名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId_list = getUserIdFromText(options.users)
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
@@ -49,7 +49,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 .subCommand('kick', '移除用户', subcmd => {
     lobbySelect(subcmd)
     .string('users', '输入用户@名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId_list = getUserIdFromText(options.users)
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
@@ -63,7 +63,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 .subCommand('leave', '离开房间', subcmd => {
     lobbySelect(subcmd)
     .string('users', '输入用户@名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId_list = getUserIdFromText(options.users)
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
@@ -77,7 +77,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 .subCommand('transfer', '移交房主权限', subcmd => {
     lobbySelect(subcmd)
     .user('user', '输入用户@名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
         if (!lobby.memberIdList.includes(options.user.id)) throw '对象不在房间内';
@@ -89,7 +89,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
 .subCommand('rename', '重命名房间', subcmd => {
     lobbySelect(subcmd)
     .string('name', '房间名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const lobby = await Lobby.fetch(options.lobby);
         if (lobby.ownerUserId !== i.user.id) throw '你不是房主';
         await lobby.rename(options.name)
@@ -101,7 +101,7 @@ export const cmd_lobby = new Command('lobby', '房间指令集')
     group
     .subCommand('asset', '开启/关闭素材频道', subcmd => {
         lobbySelect(subcmd)
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             const lobby = await Lobby.fetch(options.lobby);
             if (!lobby.assetChannelId) await lobby.setAssetChannel();
             else await lobby.removeAssetChannel();

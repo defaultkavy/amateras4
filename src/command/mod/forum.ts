@@ -24,7 +24,7 @@ export function mod_forum() {
                 }
             })
             .boolean('enable', '是否开启', {required: true})
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const forum = options.forum;
                 if (forum.type !== ChannelType.GuildForum) return;
                 if (!forum.availableTags.find(tag => tag.id === options.tag)) throw '请输入有效的标签'

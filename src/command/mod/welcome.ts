@@ -9,7 +9,7 @@ export function mod_welcome() {
             subcmd
             .channel('channel', '选择发送讯息的频道', {required: true})
             .string('content', '讯息内容 | $member: mention member', {required: true})
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 if (!options.channel.isTextBased()) throw `${options.channel} 不是文字类型的频道`
                 const duplicate = await WelcomeMessage.fetch(i.guildId);
                 if (duplicate) duplicate.delete();
@@ -25,7 +25,7 @@ export function mod_welcome() {
         })
         .subCommand('remove', '移除', subcmd => {
             subcmd
-            .execute(async (i, options) => {
+            .executeInGuild(async (i, options) => {
                 const welcome = await WelcomeMessage.fetch(i.guildId)
                 if (!welcome) throw `尚未设定新成员讯息`;
                 await welcome.delete();

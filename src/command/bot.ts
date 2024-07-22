@@ -6,7 +6,7 @@ export const cmd_bot = new Command('bot', 'Bot 系统指令')
 .subCommand('login', '让天照系统登入 Bot 账号', subcmd => {
     subcmd
     .string('token', 'Bot Token', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         await i.deferSlient()
         const bot = await BotClient.create({
             token: options.token,
@@ -28,7 +28,7 @@ export const cmd_bot = new Command('bot', 'Bot 系统指令')
             }))
         }
     })
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const bot = BotClient.get(options.bot);
         if (i.user.id !== bot.ownerUserId) throw '你不是该机器人的拥有者';
         bot.delete(async () => {

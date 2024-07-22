@@ -9,7 +9,7 @@ export const cmd_vid = new Command('vid', 'V身份')
 .subCommand('register', 'V身份注册', subcmd => {
     subcmd
     .string('name', 'V身份全名', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
         if (await VId.safeFetch(userId)) throw `你已注册过V身份`
         const vid = await VId.create({
@@ -23,7 +23,7 @@ export const cmd_vid = new Command('vid', 'V身份')
 .subCommand('info', 'V身份资讯', subcmd => {
     subcmd
     .boolean('share', '是否分享你的身份卡（留空为否）')
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
         const vid = await VId.fetch(userId);
         return (await vid.infoMessage(i.client, {ephemeral: !options.share, asset: !options.share}));
@@ -43,7 +43,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             }
         })
         .string('url', '链接', {required: true})
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
             const vid = await VId.fetch(userId)
@@ -65,7 +65,7 @@ export const cmd_vid = new Command('vid', 'V身份')
                 }))
             }
         })
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
             const vid = await VId.fetch(userId)
             const link = await vid.removeLink(options.link);
@@ -77,7 +77,7 @@ export const cmd_vid = new Command('vid', 'V身份')
 
 .subCommand('destroy', '删除V身份资讯', subcmd => {
     subcmd
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
         const vid = await VId.fetch(userId);
         await vid.delete();
@@ -86,7 +86,7 @@ export const cmd_vid = new Command('vid', 'V身份')
 })
 
 .subCommand('intro', '设定介绍', subcmd => {
-    subcmd.execute(async (i, options) => {
+    subcmd.executeInGuild(async (i, options) => {
         const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
         const vid = await VId.fetch(userId);
         i.showModal(
@@ -103,7 +103,7 @@ export const cmd_vid = new Command('vid', 'V身份')
     group
     .subCommand('set', '设定链接', subcmd => {
         subcmd
-        .string('name', '链接名称', {required: true, max_length: 10,
+        .string('name', '链接名称', {required: true, maxLength: 10,
             autocomplete: (focused, i) => {
                 const link_list = ['跳图', '立绘', '封面立绘']
                 return link_list.filter(link => link.toLowerCase().includes(focused.value.toLowerCase())).map(link => ({
@@ -112,7 +112,7 @@ export const cmd_vid = new Command('vid', 'V身份')
             }
         })
         .string('url', '链接', {required: true})
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             await i.deferSlient();
             const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
             const vid = await VId.fetch(userId)
@@ -134,7 +134,7 @@ export const cmd_vid = new Command('vid', 'V身份')
                 }))
             }
         })
-        .execute(async (i, options) => {
+        .executeInGuild(async (i, options) => {
             const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
             const vid = await VId.fetch(userId)
             const link = await vid.removeAsset(options.link);
@@ -147,7 +147,7 @@ export const cmd_vid = new Command('vid', 'V身份')
 .subCommand('rename', '重命名', subcmd => {
     subcmd
     .string('name', '名字', {required: true})
-    .execute(async (i, options) => {
+    .executeInGuild(async (i, options) => {
         const userId = Admin.safeGet(i.user.id)?.vid_proxyUserId ?? i.user.id
         const vid = await VId.fetch(userId);
         await vid.rename(options.name);
