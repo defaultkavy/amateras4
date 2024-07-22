@@ -1,4 +1,4 @@
-import { Command } from "../module/Bot/Command";
+import { Command, CommandIntegrationTypes } from "../module/Bot/Command";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Modal } from "../module/Bot/Modal";
@@ -9,6 +9,7 @@ import { GameUid } from "../structure/GameUID";
 import { gameSelector } from "./sys/game";
 
 export const cmd_uid = new Command('uid', '游戏账号设定', true)
+.integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
 .subCommand('set', '设定游戏名片', subcmd => {
     gameSelector(subcmd)
     .execute(async (i, options) => {
