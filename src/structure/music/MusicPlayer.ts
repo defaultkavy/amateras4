@@ -2,7 +2,7 @@ import { VoiceBasedChannel, VoiceChannel } from "discord.js";
 import { db } from "../../method/db";
 import { DataCreateOptions } from "../../module/DB/Data";
 import { InGuildData, InGuildDataOptions } from "../InGuildData";
-import { AudioPlayer, AudioPlayerStatus, AudioResource, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus, createAudioPlayer, createAudioResource, joinVoiceChannel } from "@discordjs/voice";
+import { AudioPlayer, AudioPlayerStatus, AudioResource, NoSubscriberBehavior, StreamType, VoiceConnection, VoiceConnectionStatus, createAudioPlayer, createAudioResource, generateDependencyReport, joinVoiceChannel } from "@discordjs/voice";
 import { Music } from "./Music";
 import { snowflakes } from "../../method/snowflake";
 import { MusicPlayerPanel } from "./MusicPlayerPanel";
@@ -103,8 +103,13 @@ export class MusicPlayer extends InGuildData {
         this.musicId = music.id;
         this.resource = createAudioResource(music.stream());
         this.resourceDuration = this.resource.playbackDuration;
-        connection.subscribe(player);
         player.play(this.resource);
+        connection.subscribe(player);
+        console.debug('play')
+        setInterval(() => {
+            console.debug(connection.state, this.resource?.audioPlayer?.state.status, this.resource?.playbackDuration, this.resource?.readable)
+
+        }, 2000)
     }
 
     pause() {
@@ -165,8 +170,12 @@ export class MusicPlayer extends InGuildData {
                         return;
                     }
                 }
+                console.debug(state.status)
                 this.status = player.state.status;
                 this.update();
+            })
+            player.on('error', err => {
+                console.error(err)
             })
             this.audio_player = player;
             return player;
