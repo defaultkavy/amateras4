@@ -12,17 +12,13 @@ export interface $MessageDB {
     parentChannelId: string | null;
     contentLength: number;
     bot: boolean;
-    reactions: $EmojiData[];
+    reactions: $MessageEmojiData[];
     parentChannelType: ChannelType | null;
     channelType: ChannelType;
     stickers: string[];
-    attachments: {
-        id: string;
-        contentType: string | null;
-        name: string;
-        url: string;
-    }[],
-    emojis: $EmojiData[]
+    attachments: $MessageAttachmentData[],
+    emojis: $MessageEmojiData[]
+    interaction?: $MessageInteractionData;
 }
 export interface $Message extends $MessageDB {}
 
@@ -88,21 +84,26 @@ export class $Message {
                 url: attachment.url,
                 name: attachment.name
             })),
-            emojis: this.getEmojiFromContent(message.content)
+            emojis: this.getEmojiFromContent(message.content),
+            interaction: message.interaction ? {
+                id: message.interaction.id,
+                userId: message.interaction.user.id,
+                commandName: message.interaction.commandName
+            } : undefined
         }
     }
 
     static isValid(message: Message | PartialMessage): message is Message<true> {
-        if (message.system) return false;
-        if (message.interaction) return false;
-        if (message.inGuild() === false) return false;
-        if (!message.author) return false;
-        if (message.author.bot) return false;
+        if (message.flags.has("Ephemeral")) return false; // skip ephemeral message
+        if (message.system) return false; // skip system message
+        if (message.inGuild() === false) return false; // skip private message
+        if (!message.author) return false; // skip if author is null
+        if (message.author.bot && !message.interaction) return false; // skip bot message with not interaction object
         return true
     }
 
-    static getEmojiFromContent(str: string): $EmojiData[] {
-        const emojiMap = new Map<string, $EmojiData>();
+    static getEmojiFromContent(str: string): $MessageEmojiData[] {
+        const emojiMap = new Map<string, $MessageEmojiData>();
         for (const [emojiIdentifier] of str.matchAll(emojiRegex())) {
             const data = emojiMap.get(emojiIdentifier) ?? {name: null, count: 0, identifier: emojiIdentifier, id: null, animated: null}
             if (emojiMap.has(emojiIdentifier) === false) emojiMap.set(emojiIdentifier, data)
@@ -116,12 +117,25 @@ export class $Message {
         return Array.from(emojiMap.values());
     }
 }
-export interface $EmojiData {
+export interface $MessageEmojiData {
     count: number;
     identifier: string;
     id: string | null;
     name: string | null;
     animated: boolean | null;
+}
+
+export interface $MessageAttachmentData {
+    id: string;
+    contentType: string | null;
+    name: string;
+    url: string;
+}
+
+export interface $MessageInteractionData {
+    userId: string;
+    commandName: string;
+    id: string;
 }
 
 addListener('messageCreate', async message => $Message.create(message))

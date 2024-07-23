@@ -102,7 +102,12 @@ export class Skill extends InGuildData {
                     {channelId: {$in: this.channelIdList}},
                     {parentChannelId: {$in: this.channelIdList}, parentChannelType: ChannelType.GuildForum}
                 ],
-                $and: [{authorId: userId}]
+                $and: [{
+                    $or: [
+                        {authorId: userId},
+                        {bot: true, "interaction.userId": userId}
+                    ]
+                }]
             }},
             {$group: {
                 _id: null,
