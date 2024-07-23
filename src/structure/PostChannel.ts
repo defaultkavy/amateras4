@@ -67,7 +67,7 @@ export class PostChannel extends InGuildData {
 
 addClientListener('messageCreate', async message => {
     if (!message.inGuild()) return;
-    if (message.type === MessageType.ChatInputCommand || message.type === MessageType.ContextMenuCommand) return;
+    // if (message.type === MessageType.ChatInputCommand || message.type === MessageType.ContextMenuCommand) return;
     const postChannel = PostChannel.manager.get(message.channelId);
     if (!postChannel) return;
     if (message.client.user.id !== postChannel.clientId) return;
