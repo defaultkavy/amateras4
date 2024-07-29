@@ -15,32 +15,72 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
     {name: 'long date with day of week and short time', value: 'long-date-time'},
 ]})
 .string('date', '输入日期，预设为今日日期（格式：2000-12-31）', {
-    autocomplete: async () => {
-        const [today, yesterday, tomorrow, after_tomorrow] = Array(4).fill(undefined).map(() => new Date());
-        yesterday.setDate(today.getDate() - 1);
-        tomorrow.setDate(today.getDate() + 1);
-        after_tomorrow.setDate(today.getDate() + 2);
-        const getDateString = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-        const date_data = [
-            getDateString(yesterday),
-            getDateString(tomorrow),
-            getDateString(after_tomorrow)
-        ]
-        return date_data.map((date_string) => ({
-            name: date_string,
-            value: date_string
-        }))
+    autocomplete: async (f, options) => {
+        const input = options.getString('date');
+        if (input.length === 0) {
+            const [today, yesterday, tomorrow, after_tomorrow] = Array(4).fill(undefined).map(() => new Date());
+            yesterday.setDate(today.getDate() - 1);
+            tomorrow.setDate(today.getDate() + 1);
+            after_tomorrow.setDate(today.getDate() + 2);
+            const getDateString = (date: Date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+            const date_data = [
+                getDateString(yesterday),
+                getDateString(tomorrow),
+                getDateString(after_tomorrow)
+            ]
+            return date_data.map((date_string) => ({
+                name: date_string,
+                value: date_string
+            }))
+        } else {
+            const now = new Date();
+            const date_arr = input.split('-');
+            const year = (() => {
+                let y = +date_arr[0];
+                let valid = !isNaN(y);
+                let value = valid ? y : now.getFullYear();
+                return {
+                    valid, value,
+                    str: value.toString()
+                } 
+            })()
+            const month = (() => {
+                let m = +date_arr[1];
+                let valid = !isNaN(m);
+                let value = valid && m > 0 && m < 13 ? m : now.getMonth() + 1;
+                return {
+                    valid, value,
+                    str: value.toString().padStart(2, '0')
+                }
+            })()
+            const date = (() => {
+                let maxDate = new Date(year.value, month.value, 0).getDate();
+                let d = +date_arr[2]
+                let valid = !isNaN(d);
+                let value = valid && d > 0 && d <= maxDate ? d : maxDate;
+                return {
+                    valid, value, str: value.toString().padStart(2, '0')
+                }
+            })()
+            const t = `${year.str}-${month.str}-${date.str}`
+            return [{name: t, value: t}]
+        }
     }
 })
 .string('time', '输入时间，预设为现在时间（格式：12:34:56）', {
     autocomplete: async (focused, options, i) => {
         const input = options.getString('time')
+        if (!input) return time_list;
         if (!input.length) return time_list;
         if (input.match(/[^0-9:]/)) return time_list;
-        if (input[0].match(/[0-9]/)) {
-            if (+input > 23) return time_list;
-            else return [`${input}:00`, `${input}:15`, `${input}:30`, `${input}:45`].map(time => ({name: time, value: time}))
-        } else return time_list;
+        const [hour, minute, second] = input.split(':').map(str => ({number: +str, string: str}));
+        let s = '', m = '', h = '';
+        if (second) if (second.number > 59) s = '00'; else s = second.string.padStart(2, '0');
+        if (minute) if (minute.number > 59) m = '00'; else m = minute.string.padStart(2, '0');
+        if (hour) if (hour.number > 23) return time_list; else h = hour.string.padStart(2, '0');
+        let t = `${h}:${m}${s? `:${s}`:''}`
+        if (hour.string.length && (!minute || !minute.string.length)) return [`${h}:00`, `${h}:15`, `${h}:30`, `${h}:45`].map(time => ({name: time, value: time}))
+        return [{name: t, value: t}]
     }
 })
 .boolean('send', '发送到频道让所有人可见，预设为否', {required: false})
