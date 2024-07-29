@@ -2,7 +2,7 @@ import { Command, CommandIntegrationTypes } from "../module/Bot/Command";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
 import { $ } from "../module/Util/text";
-const time_list = Array(24).fill(undefined).map((_, i) => `${i.toString().padStart(2, '0')}:00`)
+const time_list = Array(24).fill(undefined).map((_, i) => `${i.toString().padStart(2, '0')}:00`).map(time => ({name: time, value: time}))
 export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
 .integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
 .string('format', '日期显示格式', {required: true, choices: [
@@ -32,13 +32,23 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
         }))
     }
 })
-.string('time', '输入时间', {choices: time_list.map(time => ({name: time, value: time}))})
+.string('time', '输入时间，预设为现在时间（格式：12:34:56）', {
+    autocomplete: async (focused, options, i) => {
+        const input = options.getString('time')
+        if (!input.length) return time_list;
+        if (input.match(/[^0-9:]/)) return time_list;
+        if (input[0].match(/[0-9]/)) {
+            if (+input > 23) return time_list;
+            else return [`${input}:00`, `${input}:15`, `${input}:30`, `${input}:45`].map(time => ({name: time, value: time}))
+        } else return time_list;
+    }
+})
 .boolean('send', '发送到频道让所有人可见，预设为否', {required: false})
 .execute(async (i, options) => {
     const now = new Date();
     const date = options.date && options.time ? new Date(`${options.date}, ${options.time}`)
-    : options.date ? new Date(`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}, ${options.time}`)
-    : options.time ? new Date(options.time)
+    : options.date ? new Date(`${options.date}, ${now.getHours}:${now.getMinutes()}:${now.getSeconds()}`)
+    : options.time ? new Date(`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}, ${options.time}`)
     : now;
     if (!date.toJSON()) return new Reply(`日期格式错误`)
     return new MessageBuilder()
