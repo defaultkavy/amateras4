@@ -11,6 +11,7 @@ import { cmd_post } from "./src/command/post";
 import { cmd_quote } from "./src/command/quote";
 import { cmd_skill } from "./src/command/skill";
 import { cmd_test } from "./src/command/test";
+import { cmd_time } from "./src/command/time";
 import { cmd_uid } from "./src/command/uid";
 import { cmd_me } from "./src/command/user";
 import { cmd_vid } from "./src/command/vid";
@@ -33,6 +34,7 @@ export const cmd_list = [
     cmd_me,
     cmd_x,
     cmd_quote,
+    cmd_time,
     // cmd_play,
     // cmd_dcn,
     cmdx_info,
