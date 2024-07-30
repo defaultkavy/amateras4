@@ -3,6 +3,8 @@ import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
 import { $ } from "../module/Util/text";
 const time_list = Array(24).fill(undefined).map((_, i) => `${i.toString().padStart(2, '0')}:00`).map(time => ({name: time, value: time}))
+const timezone_list = Array(25).fill(undefined).map((_, i) => `GMT${i >= 12 ? '+' : ''}${(i - 12).toString().padStart(2, '0')}:00`).map(timezone => ({name: timezone, value: timezone}))
+
 export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
 .integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
 .string('format', '日期显示格式', {required: true, choices: [
@@ -36,7 +38,7 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
             const now = new Date();
             const date_arr = input.split('-');
             const year = (() => {
-                let y = +date_arr[0];
+                let y = date_arr[0]?.length ? +date_arr[0] : NaN;
                 let valid = !isNaN(y);
                 let value = valid ? y : now.getFullYear();
                 return {
@@ -45,7 +47,7 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
                 } 
             })()
             const month = (() => {
-                let m = +date_arr[1];
+                let m = date_arr[1]?.length ? +date_arr[1] : NaN;
                 let valid = !isNaN(m);
                 let value = valid && m > 0 && m < 13 ? m : now.getMonth() + 1;
                 return {
@@ -55,9 +57,9 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
             })()
             const date = (() => {
                 let maxDate = new Date(year.value, month.value, 0).getDate();
-                let d = +date_arr[2]
+                let d = date_arr[2]?.length ? +date_arr[2] : NaN;
                 let valid = !isNaN(d);
-                let value = valid && d > 0 && d <= maxDate ? d : maxDate;
+                let value = valid && d > 0 && d <= maxDate ? d : now.getDate() > maxDate ? maxDate : now.getDate();
                 return {
                     valid, value, str: value.toString().padStart(2, '0')
                 }
@@ -83,15 +85,58 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
         return [{name: t, value: t}]
     }
 })
+.string('timezone', '输入当前时区，预设为 GMT+08:00（格式：GMT-11:30）', {
+    autocomplete: async (focused, options) => {
+        let input = options.getString('timezone');
+        if (!input) return timezone_list;
+        input = input.replaceAll(/[^0-9:-]/g, '');
+        const input_arr = input.split(':');
+        const hour = (() => {
+            let h = input_arr[0]?.length ? +input_arr[0] : NaN;
+            let value = isNaN(h) ? 0 
+                        : h < -12 ? -12
+                        : h > 12 ? 12
+                        : h;
+            return { value, str: value.toString().padStart(2, '0')}
+        })()
+        const minute = (() => {
+            let m = input_arr[1]?.length ? +input_arr[1] : NaN;
+            let value = isNaN(m) ? 0
+                        : m === 0 ? 0 : 30;
+            return { value, str: value.toString().padStart(2, '0')}
+        })()
+        const z = `GMT${hour.value >= 0 ? "+" : ''}${hour.str}:${minute.str}`;
+        return [{name: z, value: z}]
+    }
+})
 .boolean('send', '发送到频道让所有人可见，预设为否', {required: false})
 .execute(async (i, options) => {
-    const now = new Date();
-    const date = options.date && options.time ? new Date(`${options.date}, ${options.time}`)
-    : options.date ? new Date(`${options.date}, ${now.getHours}:${now.getMinutes()}:${now.getSeconds()}`)
-    : options.time ? new Date(`${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}, ${options.time}`)
-    : now;
+    let offset = 0;
+    if (options.timezone) {
+        options.timezone = options.timezone.replaceAll(/[^0-9:-]/g, '');
+        const timezone_arr = options.timezone.split(':');
+        if (timezone_arr.length !== 2) throw `时区格式错误`;
+        const negative = timezone_arr[0].startsWith('-');
+        const hour = Math.abs(+timezone_arr[0]);
+        const minute = +timezone_arr[1];
+        offset = (hour * 60_000 * 60 + minute * 60_000) * (negative ? -1 : 1);
+    } else offset = 8 * 60_000 * 60;
+    const timezone_date = TimezoneDate(offset, UTCDate())
+    let date = options.date && options.time ? TimezoneDate(offset, UTCDate(`${options.date}, ${options.time}`))
+    : options.date ? TimezoneDate(offset, UTCDate(`${options.date}, ${timezone_date.getHours()}:${timezone_date.getMinutes()}:${timezone_date.getSeconds()}`))
+    : options.time ? TimezoneDate(offset, UTCDate(`${timezone_date.getFullYear()}-${timezone_date.getMonth() + 1}-${timezone_date.getDate()}, ${options.time}`))
+    : timezone_date;
+    const timestamp = +date;
     if (!date.toJSON()) return new Reply(`日期格式错误`)
     return new MessageBuilder()
-        .content($([$.Timestamp(+date, options.format as any), $.CodeBlock([$.Timestamp(+date, options.format as any)])]))
+        .content($([$.Timestamp(timestamp, options.format as any), $.CodeBlock([$.Timestamp(timestamp, options.format as any)])]))
         .ephemeral(!options.send)
 })
+
+function UTCDate(str?: string) {
+    return new Date(+new Date(str ?? new Date) - 8 * 60_000 * 60);
+}
+
+function TimezoneDate(offset: number, date: Date = new Date) {
+    return new Date(+date + offset)
+}
