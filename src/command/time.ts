@@ -134,7 +134,9 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
 })
 
 function UTCDate(str?: string) {
-    return new Date(+new Date(str ?? new Date) - 8 * 60_000 * 60);
+    const date = new Date();
+    const offset = (-date.getTimezoneOffset() / 60) * 60_000 * 60
+    return new Date(+new Date(str ?? date) - offset);
 }
 
 function TimezoneDate(offset: number, date: Date = new Date) {
