@@ -124,10 +124,10 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
     const timezone_date = TimezoneDate(offset, UTCDate())
     console.debug(timezone_date)
     let date = options.date && options.time ? TimezoneDate(offset, UTCDate(`${options.date}, ${options.time}`))
-    : options.date ? TimezoneDate(offset, UTCDate(`${options.date}, ${timezone_date.getHours()}:${timezone_date.getMinutes()}:${timezone_date.getSeconds()}`))
-    : options.time ? TimezoneDate(offset, UTCDate(`${timezone_date.getFullYear()}-${timezone_date.getMonth() + 1}-${timezone_date.getDate()}, ${options.time}`))
+    : options.date ? UTCDate(`${options.date}, ${timezone_date.getHours()}:${timezone_date.getMinutes()}:${timezone_date.getSeconds()}`)
+    : options.time ? UTCDate(`${timezone_date.getFullYear()}-${timezone_date.getMonth() + 1}-${timezone_date.getDate()}, ${options.time}`)
     : timezone_date;
-    const timestamp = +date;
+    const timestamp = +date - offset;
     console.debug(date)
     if (!date.toJSON()) return new Reply(`日期格式错误`)
         return new MessageBuilder()
