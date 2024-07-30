@@ -122,8 +122,8 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
         offset = (hour * 60_000 * 60 + minute * 60_000) * (negative ? -1 : 1);
     } else offset = 8 * 60_000 * 60;
     const timezone_date = TimezoneDate(offset, UTCDate())
-    let date = options.date && options.time ? TimezoneDate(offset, UTCDate(`${options.date}, ${options.time}`))
-    : options.date ? UTCDate(`${options.date}, ${timezone_date.getHours()}:${timezone_date.getMinutes()}:${timezone_date.getSeconds()}`)
+    let date = options.date && options.time ? UTCDate(`${options.date}, ${options.time}`)
+    : options.date ? UTCDate(`${options.date}, 00:00`)
     : options.time ? UTCDate(`${timezone_date.getFullYear()}-${timezone_date.getMonth() + 1}-${timezone_date.getDate()}, ${options.time}`)
     : timezone_date;
     const timestamp = +date - offset;
