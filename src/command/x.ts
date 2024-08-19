@@ -7,6 +7,6 @@ export const cmd_x = new Command('x', 'X（Twitter）链接转换指令', true)
 .execute(async (i, options) => {
     options.url = options.url.trim();
     if (!options.url.startsWith('https://x.com') && !options.url.startsWith('https://twitter.com') && !options.url.match(/\s/)) throw 'Not a valid Twitter link'
-    const url = options.url.replace('x.com', 'vxtwitter.com')
+    const url = options.url.replace(/x\.com|twitter\.com/, 'vxtwitter.com')
     return new MessageBuilder().content(url)
 })
