@@ -106,10 +106,10 @@ export class MusicPlayer extends InGuildData {
         player.play(this.resource);
         connection.subscribe(player);
         console.debug('play')
-        setInterval(() => {
-            console.debug(connection.state, this.resource?.audioPlayer?.state.status, this.resource?.playbackDuration, this.resource?.readable)
+        // setInterval(() => {
+        //     console.debug(connection.state, this.resource?.audioPlayer?.state.status, this.resource?.playbackDuration, this.resource?.readable)
 
-        }, 2000)
+        // }, 2000)
     }
 
     pause() {
@@ -128,17 +128,17 @@ export class MusicPlayer extends InGuildData {
                 guildId: this.guildId,
                 adapterCreator: this.guild.voiceAdapterCreator
             })
-                .addListener(VoiceConnectionStatus.Signalling, (oldState, newState) => {
+                .on(VoiceConnectionStatus.Signalling, (oldState, newState) => {
                     console.debug(newState.status)
                 })
-                .addListener(VoiceConnectionStatus.Ready, (oldState, newState) => {
+                .on(VoiceConnectionStatus.Ready, (oldState, newState) => {
                     console.debug(newState.status)
                 })
-                .addListener(VoiceConnectionStatus.Disconnected, () => {
+                .on(VoiceConnectionStatus.Disconnected, () => {
                     connection.destroy()
                     this.connection = null;
                 })
-                .addListener(VoiceConnectionStatus.Destroyed, () => {
+                .on(VoiceConnectionStatus.Destroyed, () => {
                     this.connection = null;
                 })
                 this.connection = connection;
