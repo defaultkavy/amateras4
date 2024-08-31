@@ -1,3 +1,4 @@
+import { config } from "../../bot_config";
 import { Command, CommandIntegrationTypes } from "../module/Bot/Command";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Reply } from "../module/Bot/Reply";
@@ -111,7 +112,10 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
 })
 .boolean('send', '发送到频道让所有人可见，预设为否', {required: false})
 .execute(async (i, options) => {
-    let offset = 0;
+    let utc_req_date: Date;
+    let USER_TIMEZONE_MS: number;
+
+    // handle user timezone
     if (options.timezone) {
         options.timezone = options.timezone.replaceAll(/[^0-9:-]/g, '');
         const timezone_arr = options.timezone.split(':');
@@ -119,26 +123,44 @@ export const cmd_time = new Command('time', '获取 Discord 日期格式', true)
         const negative = timezone_arr[0].startsWith('-');
         const hour = Math.abs(+timezone_arr[0]);
         const minute = +timezone_arr[1];
-        offset = (hour * 60_000 * 60 + minute * 60_000) * (negative ? -1 : 1);
-    } else offset = 8 * 60_000 * 60;
-    const timezone_date = TimezoneDate(offset, UTCDate())
-    let date = options.date && options.time ? UTCDate(`${options.date}, ${options.time}`)
-    : options.date ? UTCDate(`${options.date}, 00:00`)
-    : options.time ? UTCDate(`${timezone_date.getFullYear()}-${timezone_date.getMonth() + 1}-${timezone_date.getDate()}, ${options.time}`)
-    : timezone_date;
-    const timestamp = +date - offset;
-    if (!date.toJSON()) return new Reply(`日期格式错误`)
+        USER_TIMEZONE_MS = (hour * 60_000 * 60 + minute * 60_000) * (negative ? -1 : 1);
+    } else USER_TIMEZONE_MS = serverTimezoneOffset_ms(); // if timezone not specified, set as server timezone
+
+    // handle user request, turn user timezone into utc timezone
+    if (options.date && options.time) {
+        const USER_TIMEZONE_REQUEST_DATE = new Date(`${options.date}, ${options.time}`); // set Date with user input
+        utc_req_date = UTC_date(USER_TIMEZONE_REQUEST_DATE);
+    } else if (options.date) {
+        const USER_TIMEZONE_REQUEST_DATE = new Date(`${options.date}, 00:00`); // set time to 00:00 if only date required
+        utc_req_date = UTC_date(USER_TIMEZONE_REQUEST_DATE);
+    } else if (options.time) {
+        const USER_TIMEZONE_DATE = User_TZ_date(USER_TIMEZONE_MS); 
+        const [YEAR, MONTH, DATE] = [USER_TIMEZONE_DATE.getFullYear(), USER_TIMEZONE_DATE.getMonth() + 1, USER_TIMEZONE_DATE.getDate()];
+        const USER_TIMEZONE_REQUEST_DATE = new Date(`${YEAR}-${MONTH}-${DATE}, ${options.time}`); // set date as user's today if only time specified
+        utc_req_date = UTC_date(USER_TIMEZONE_REQUEST_DATE);
+    } else utc_req_date = UTC_date(); // no timezone, date, time required
+    // check if user date/time input error
+    if (!utc_req_date.toJSON()) return new Reply(`日期格式错误`);
+    // recover simulate timezone Date to User Timezone Date
+    const recovery_date_ms = +new Date(+utc_req_date + USER_TIMEZONE_MS);
         return new MessageBuilder()
-        .content($([$.Timestamp(timestamp, options.format as any), $.CodeBlock([$.Timestamp(timestamp, options.format as any)])]))
+        .content($([$.Timestamp(recovery_date_ms, options.format as any), $.CodeBlock([$.Timestamp(recovery_date_ms, options.format as any)])]))
         .ephemeral(!options.send)
 })
 
-function UTCDate(str?: string) {
-    const date = new Date();
-    const offset = (-date.getTimezoneOffset() / 60) * 60_000 * 60
-    return new Date(+new Date(str ?? date) - offset);
+function UTC_date(date: Date = new Date) {
+    return new Date(+date - serverTimezoneOffset_ms());
 }
 
-function TimezoneDate(offset: number, date: Date = new Date) {
-    return new Date(+date + offset)
+function User_TZ_date(client_timezone_ms: number) {
+    return new Date(+UTC_date() + client_timezone_ms)
+}
+
+function serverTimezoneOffset_ms() {
+    const date = new Date();
+    return timezone_ms(-date.getTimezoneOffset() / 60);
+}
+
+function timezone_ms(tz: number) {
+    return tz * 60_000 * 60;
 }
