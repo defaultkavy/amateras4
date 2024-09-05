@@ -72,11 +72,11 @@ addClientListener('messageCreate', async message => {
     if (!postChannel) return;
     if (message.client.user.id !== postChannel.clientId) return;
     try {
-        message.react('❤️')
-        message.react('🥰')
-        message.react('🤣')
-        message.react('😡')
-        message.react('😥')
+        message.react('❤️').catch(err => undefined);
+        message.react('🥰').catch(err => undefined);
+        message.react('🤣').catch(err => undefined);
+        message.react('😡').catch(err => undefined);
+        message.react('😥').catch(err => undefined);
         if (!message.hasThread) {
             const thread = await message.startThread({
                 name: `${message.member!.displayName}的贴文留言`,
