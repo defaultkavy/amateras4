@@ -6,6 +6,7 @@ import { AudioPlayer, AudioPlayerStatus, AudioResource, NoSubscriberBehavior, St
 import { Music } from "./Music";
 import { snowflakes } from "../../method/snowflake";
 import { MusicPlayerPanel } from "./MusicPlayerPanel";
+import { Readable } from "stream";
 
 export interface MusicPlayerOptions extends InGuildDataOptions {
     channelId: string;
@@ -92,33 +93,38 @@ export class MusicPlayer extends InGuildData {
         player.play(music)
     }
 
+    static async stop(channel: VoiceBasedChannel) {
+        const player = this.getFromGuild(channel.client.user.id, channel.guildId);
+        if (!player) throw '当前没有播放的音乐';
+        if (player.channelId !== channel.id) throw '你不在音乐播放的频道';
+        player.stop();
+    }
+
     async delete() {
         MusicPlayer.manager.delete(this.id);
         await MusicPlayer.collection.deleteOne({id: this.id});
     }
 
-    play(music: Music) {
+    async play(music: Music) {
         const connection = this.getConnection();
         const player = this.getAudioPlayer();
         this.musicId = music.id;
-        this.resource = createAudioResource(music.stream());
+        this.resource = this.createResource(music.stream());
         this.resourceDuration = this.resource.playbackDuration;
         player.play(this.resource);
         connection.subscribe(player);
-        console.debug('play')
-        // setInterval(() => {
-        //     console.debug(connection.state, this.resource?.audioPlayer?.state.status, this.resource?.playbackDuration, this.resource?.readable)
-
-        // }, 2000)
     }
 
     pause() {
         this.audio_player?.pause();
+        this.panels.forEach(panel => panel.updateInfo())
     }
 
-    stop() {
+    async stop() {
         this.audio_player?.stop();
         this.connection?.destroy();
+        await this.delete();
+        this.panels.forEach(panel => panel.updateInfo())
     }
 
     private getConnection(): VoiceConnection {
@@ -132,6 +138,7 @@ export class MusicPlayer extends InGuildData {
                     console.debug(newState.status)
                 })
                 .on(VoiceConnectionStatus.Ready, (oldState, newState) => {
+                    this.panels.forEach(panel => panel.updateInfo())
                     console.debug(newState.status)
                 })
                 .on(VoiceConnectionStatus.Disconnected, () => {
@@ -163,14 +170,18 @@ export class MusicPlayer extends InGuildData {
                 switch (state.status) {
                     case AudioPlayerStatus.Idle: {
                         this.playbackDuration = 0;
-                        return;
+                        break;
                     }
                     case AudioPlayerStatus.Paused: {
                         this.playbackDuration = state.playbackDuration;
-                        return;
+                        break;
+                    }
+                    case AudioPlayerStatus.Playing: {
+                        this.panels.forEach(panel => panel.updateInfo());
+                        break;
                     }
                 }
-                console.debug(state.status)
+                console.debug(`audio player: ${state.status}`)
                 this.status = player.state.status;
                 this.update();
             })
@@ -182,6 +193,16 @@ export class MusicPlayer extends InGuildData {
         } else {
             return this.audio_player;
         }
+    }
+
+    private createResource(stream: Readable) {
+        const resource = createAudioResource(stream, {
+            inlineVolume: true,
+            inputType: StreamType.WebmOpus
+        });
+        // resource.volume?.setVolume(0.2);
+        // resource.encoder?.setBitrate(48000);
+        return resource;
     }
 
     async update() {
@@ -198,6 +219,6 @@ export class MusicPlayer extends InGuildData {
     }
 
     get panels() {
-        return [...MusicPlayerPanel.manager.values()].filter(panel => panel.playerId === this.id)
+        return [...MusicPlayerPanel.manager.values()].filter(panel => panel.clientId === this.clientId)
     }
 }

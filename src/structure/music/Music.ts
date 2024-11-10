@@ -1,12 +1,12 @@
-import ytdl from "ytdl-core";
+import ytdl from "@distube/ytdl-core";
 import { db } from "../../method/db";
 import { Data, DataCreateOptions, DataOptions } from "../../module/DB/Data";
 import { MusicAuthor, ytdlAuthor, ytdlThumbnail } from "./MusicAuthor";
+import { Readable } from "stream";
 
 export interface MusicOptions extends DataOptions {
     id: string;
     likes: number | null;
-    dislikes: number | null;
     authorId: string;
     description: string | null;
     url: string;
@@ -30,7 +30,6 @@ export class Music extends Data {
         const data: MusicDB = {
             id: detail.videoId,
             likes: detail.likes,
-            dislikes: detail.dislikes,
             authorId: detail.author.id,
             description: detail.description,
             url: detail.video_url,
@@ -64,15 +63,20 @@ export class Music extends Data {
         return instance;
     }
 
+    static async validURL(url: string) {
+        const IS_VALID = ytdl.validateURL(url);
+        if (!IS_VALID) throw '请输入有效的 YouTube 链接';
+    }
+
     async fetchAuthor() {
         return await MusicAuthor.fetch(this.authorId);
     }
 
     stream() {
-        return ytdl('https://music.youtube.com/watch?v=PuuAxqEK6Iw&si=qJQdk0chlurIMUnu', {
+        return ytdl(this.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
-            highWaterMark: 1 << 25
+            highWaterMark: 1 << 25,
         })
     }
 }
@@ -93,7 +97,6 @@ export interface ytdlVideoDetails {
     video_url: string;
     age_restricted: boolean;
     likes: number | null;
-    dislikes: number | null;
     description: string | null;
     author: ytdlAuthor;
 }
