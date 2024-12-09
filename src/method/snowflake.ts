@@ -18,4 +18,5 @@ export const snowflakes = {
     dcn_follow: new Snowflake({epoch: config.epoch, workerId: 13}),
     dcn_collection: new Snowflake({epoch: config.epoch, workerId: 14}),
     dcn_list: new Snowflake({epoch: config.epoch, workerId: 15}),
+    auto_role: new Snowflake({epoch: config.epoch, workerId: 16}),
 }

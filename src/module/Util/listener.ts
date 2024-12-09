@@ -9,6 +9,8 @@ export const __CLIENT_EVENT_LISTENERS__: {
 export const __EVENT_LISTENERS__: {
     [key in keyof ClientEvents]?: Set<(...args: ClientEvents[key]) => void>
 } = {}
+
+// Each bot will be triggered
 export function addClientListener<E extends keyof ClientEvents>(event: E, callback: (...args: ClientEvents[E]) => OrPromise<void> ) {
     const set = __CLIENT_EVENT_LISTENERS__[event];
     if (set instanceof Set) {
@@ -17,6 +19,8 @@ export function addClientListener<E extends keyof ClientEvents>(event: E, callba
         Object.assign(__CLIENT_EVENT_LISTENERS__, {[event]: new Set().add(callback)});
     }
 }
+
+// Trigger once even multiple bot triggered event
 export function addListener<E extends keyof ClientEvents>(event: E, callback: (...args: ClientEvents[E]) => OrPromise<void> ) {
     const set = __EVENT_LISTENERS__[event];
     if (set instanceof Set) {

@@ -4,9 +4,14 @@ import { ApplicationCommandOptionData, ApplicationCommandOptionType, Application
 export class Command<Options = {}> extends ExecutableCommand {
     map = new Map<string, ExecutableCommand | SubcommandGroup>;
     global: boolean;
-    data = {
+    data: {
+        integration_types: CommandIntegrationTypes[],
+        contexts: CommandContexts[],
+        default_member_permissions: undefined | string
+    } = {
         integration_types: [CommandIntegrationTypes.GUILD_INSTALL],
-        contexts: [CommandContexts.GUILD, CommandContexts.BOT_DM, CommandContexts.PRIVATE_CHANNEL] 
+        contexts: [CommandContexts.GUILD, CommandContexts.BOT_DM, CommandContexts.PRIVATE_CHANNEL],
+        default_member_permissions: undefined
     }
     constructor(name: string, description: string, global = false) {
         super(name, description);
@@ -61,6 +66,11 @@ export class Command<Options = {}> extends ExecutableCommand {
 
     getSubcommand(name: string) {
         return this.map.get(name) as ExecutableCommand | undefined;
+    }
+
+    defaultMemberPermissions(bitwise: string) {
+        this.data.default_member_permissions = bitwise;
+        return this;
     }
 }
 

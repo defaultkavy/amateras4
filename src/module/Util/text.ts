@@ -24,8 +24,8 @@ export class $Block extends $Text {
             case 'h4': return `#### ${this.content}`;
             case 'h5': return `##### ${this.content}`;
             case 'h6': return `###### ${this.content}`;
-            case 'ordered-list': return `1. ${this.content}`;
-            case 'unordered-list': return `- ${this.content}`;
+            case 'ordered-list': return `1. ${this.content.replaceAll('\n', '\n ')}`;
+            case 'unordered-list': return `- ${this.content.replaceAll('\n', '\n ')}`;
             case 'subtext': return `-# ${this.content}`;
         }
     }

@@ -13,6 +13,7 @@ import { cmd_list } from "../../cmdList";
 import { startListen, addClientListener } from "../module/Util/listener";
 import { $Member } from "./$Member";
 import { snowflakes } from "../method/snowflake";
+import { AutoRole } from "./AutoRole";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -105,6 +106,7 @@ export class BotClient extends Data {
         if (adminGuilds && !config.debug) await this.cmd_manager.deployGuilds(adminGuilds)
         // function init
         await Chat.init(this.client.user.id);
+        await AutoRole.init(this.client.user.id);
         //
         startListen(this.client);
         this.cmd_manager.listen();

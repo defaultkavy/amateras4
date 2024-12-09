@@ -9,6 +9,7 @@ import { cmd_play } from "./src/command/play";
 import { cmd_poll } from "./src/command/poll";
 import { cmd_post } from "./src/command/post";
 import { cmd_quote } from "./src/command/quote";
+import { cmd_role } from "./src/command/role";
 import { cmd_skill } from "./src/command/skill";
 import { cmd_stop } from "./src/command/stop";
 import { cmd_test } from "./src/command/test";
@@ -37,6 +38,7 @@ export const cmd_list = [
     cmd_x,
     cmd_quote,
     cmd_time,
+    cmd_role,
     // cmd_play,
     // cmd_stop,
     // cmd_ttt,
