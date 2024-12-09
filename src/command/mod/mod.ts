@@ -7,6 +7,7 @@ import { mod_stats } from "./stats";
 import { mod_welcome } from "./welcome";
 
 export const cmd_mod = new Command('mod', '管理指令')
+    .defaultMemberPermissions('0')
 mod_lobby();
 mod_welcome();
 mod_post();
