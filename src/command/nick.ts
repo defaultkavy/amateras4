@@ -61,10 +61,11 @@ export function nickSelector(subcmd: ExecutableCommand, started: boolean | undef
     })
 }
 
-addListener('guildMemberUpdate', async (oldMember, newMember) => {
-    if (oldMember.voice.mute && !newMember.voice.mute) {
-        const nick = await Nick.collection.findOne({ownerId: newMember.id, default: true})
+addListener('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
+    if (!newVoiceState.member) return;
+    if (oldVoiceState.mute && !newVoiceState.mute) {
+        const nick = await Nick.collection.findOne({ownerId: newVoiceState.member.id, default: true})
         if (!nick) return;
-        await newMember.setNickname(nick.nick)
+        await newVoiceState.member.setNickname(nick.nick)
     } 
 })
