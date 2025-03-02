@@ -5,6 +5,7 @@ import { Data, DataOptions } from "../module/DB/Data";
 export interface NickOptions extends DataOptions {
     nick: string;
     ownerId: string;
+    default: boolean;
 }
 export interface NickDB extends NickOptions {}
 export interface Nick extends NickDB {}
