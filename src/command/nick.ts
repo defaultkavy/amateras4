@@ -5,18 +5,18 @@ import { addListener } from "../module/Util/listener";
 import { Nick } from "../structure/Nick";
 
 export const cmd_nick = new Command('nick', '快捷设定保存过的昵称，可用于状态设置。')
-.subCommand('default', '设置预设的昵称', subcmd => subcmd
-    .string('nick', '昵称', {required: true})
-    .executeInGuild(async (i, options) => {
-        await Nick.collection.findOneAndDelete({ownerId: i.user.id, default: true})
-        const nick = await Nick.create({
-            ownerId: i.user.id,
-            nick: options.nick,
-            default: true
-        })
-        return new Reply(`已设置预设昵称：${nick.nick}`)
-    })
-)
+// .subCommand('default', '设置预设的昵称', subcmd => subcmd
+//     .string('nick', '昵称', {required: true})
+//     .executeInGuild(async (i, options) => {
+//         await Nick.collection.findOneAndDelete({ownerId: i.user.id, default: true})
+//         const nick = await Nick.create({
+//             ownerId: i.user.id,
+//             nick: options.nick,
+//             default: true
+//         })
+//         return new Reply(`已设置预设昵称：${nick.nick}`)
+//     })
+// )
 
 .subCommand('add', '新增快捷昵称', subcmd => subcmd
     .string('nick', '昵称', {required: true})
@@ -61,11 +61,11 @@ export function nickSelector(subcmd: ExecutableCommand, started: boolean | undef
     })
 }
 
-addListener('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
-    if (!newVoiceState.member) return;
-    if (oldVoiceState.mute && !newVoiceState.mute) {
-        const nick = await Nick.collection.findOne({ownerId: newVoiceState.member.id, default: true})
-        if (!nick) return;
-        await newVoiceState.member.setNickname(nick.nick)
-    } 
-})
+// addListener('voiceStateUpdate', async (oldVoiceState, newVoiceState) => {
+//     if (!newVoiceState.member) return;
+//     if (oldVoiceState.mute && !newVoiceState.mute) {
+//         const nick = await Nick.collection.findOne({ownerId: newVoiceState.member.id, default: true})
+//         if (!nick) return;
+//         await newVoiceState.member.setNickname(nick.nick)
+//     } 
+// })
