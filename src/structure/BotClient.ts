@@ -14,6 +14,7 @@ import { startListen, addClientListener } from "../module/Util/listener";
 import { $Member } from "./$Member";
 import { snowflakes } from "../method/snowflake";
 import { AutoRole } from "./AutoRole";
+import { AutoTweet } from "./AutoTweet";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
@@ -87,6 +88,8 @@ export class BotClient extends Data {
             this.manager.set(bot.id, bot);
             return await bot.init(debug);
         }))
+        // Function Init
+        await AutoTweet.init();
     }
 
     async init(debug = false) {
