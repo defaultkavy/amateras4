@@ -26,7 +26,7 @@ export const cmd_help = new Command('help', '天照系统指南')
 })
 .executeInGuild(async (i, options) => {
     if (options.cmd) return helpContent(options.cmd);
-    return textContent('./help/help.md', [help_row]);
+    return textContent('./help/intro.md', [help_row]);
 })
 
 addInteractionListener('help_cmd_select', async i => {
