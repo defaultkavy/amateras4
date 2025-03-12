@@ -76,7 +76,7 @@ export class Music extends Data {
         return ytdl(this.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
-            highWaterMark: 1 << 25,
+            highWaterMark: 1 << 25
         })
     }
 }

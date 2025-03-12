@@ -1,7 +1,5 @@
-import ytdl from "ytdl-core";
 import { db } from "../../method/db";
 import { Data, DataCreateOptions, DataOptions } from "../../module/DB/Data";
-import { Music } from "./Music";
 
 export interface MusicAuthorOptions extends DataOptions {
     id: string;

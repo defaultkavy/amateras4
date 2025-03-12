@@ -1,4 +1,4 @@
-import { BaseGuildTextChannel, Message, TextBasedChannel } from "discord.js";
+import { BaseGuildTextChannel, ButtonStyle, Message, TextBasedChannel } from "discord.js";
 import { db } from "../../method/db";
 import { InGuildData, InGuildDataOptions } from "../InGuildData";
 import { DataCreateOptions } from "../../module/DB/Data";
@@ -6,7 +6,7 @@ import { Embed } from "../../module/Bot/Embed";
 import { MusicPlayer } from "./MusicPlayer";
 import { AudioPlayerStatus } from "@discordjs/voice";
 import { MessageBuilder } from "../../module/Bot/MessageBuilder";
-import { addClientListener } from "../../module/Util/listener";
+import { addClientListener, addInteractionListener } from "../../module/Util/listener";
 import { Music } from "./Music";
 import { $Message } from "../$Message";
 
@@ -108,11 +108,24 @@ export class MusicPlayerPanel extends InGuildData {
     }
 
     static async infoMessage(player?: MusicPlayer) {
-        return new MessageBuilder().embed(await this.infoEmbed(player))
+        return new MessageBuilder()
+            .embed(await this.infoEmbed(player))
+            .actionRow(row => {
+                if (player && player.status !== 'idle') {
+                    console.debug('actionrow', player.status)
+                    if (player.status === 'paused') row.button('Play', 'music_play', {emoji: '▶️', style: ButtonStyle.Primary})
+                    else row.button('Pause', 'music_pause', {emoji: '⏸️', style: ButtonStyle.Primary})
+                    row.button('Stop', 'music_stop', {emoji: '⏹️', style: ButtonStyle.Danger});
+                    row.button('Prev', 'music_prev', {emoji: '⏮️', disabled: !player.history.length});
+                    row.button('Next', 'music_next', {emoji: '⏭️', disabled: !player.queue.at(1)});
+                } else {
+                    row.button('Play', 'music_play', {emoji: '▶️', style: ButtonStyle.Primary})
+                }
+            })
     }
 
     static async infoEmbed(player?: MusicPlayer) {
-        const music = await player?.fetchMusic();
+        const music = player ? player.queue[0] ? await Music.fetch(player.queue[0].musicId) : null : null;
         const embed = new Embed()
             .max()
             .footer('天照系统 | 音乐播放器')
@@ -121,8 +134,7 @@ export class MusicPlayerPanel extends InGuildData {
             return embed
                 .title('请输入 YouTube 音乐链接')
                 .color('Grey')
-        }
-        else {
+        } else {
             const author = await music.fetchAuthor();
             return embed
                 .author(author.name, {url: author.channel_url, icon_url: author.thumbnailUrl})
@@ -172,12 +184,44 @@ addClientListener('messageCreate', async message => {
         .content('正在加载音乐')
         .data)
     const music = await Music.fetchYouTubeMusic(url);
-    MusicPlayer.play(message.member.voice.channel, music);
-    reply.edit(new MessageBuilder()
-        .content('正在播放音乐')
-        .data)
+    const player = await MusicPlayer.get(message.member.voice.channel);
+    player.controller.addMusic(message.member.voice.channel, music);
+    reply.edit(new MessageBuilder().content('已将歌曲加入播放清单').data).catch(e => undefined)
     setTimeout(() => {
         message.delete().catch(e => undefined);
         reply.delete().catch(e => undefined);
     }, 10_000);
+})
+
+addInteractionListener('music', async (i) => {
+    if (!i.inCachedGuild()) return;
+    if (!i.channel) return;
+    if (!i.isButton()) return;
+    const panel = MusicPlayerPanel.getFromChannel(i.channel.id);
+    const player = panel?.player;
+    if (!player) return;
+    switch (i.customId) {
+        case 'music_play': {
+            await player.controller.unpause();
+            break;
+        }
+        case 'music_stop': {
+            await player.controller.stop();
+            break;
+        }
+        case 'music_pause': {
+            player.controller.pause();
+            break;
+        }
+        case 'music_next': {
+            await player.controller.next();
+            break;
+        }
+        case 'music_prev': {
+            await player.controller.prev();
+            break;
+        }
+    }
+    const messageBuilder = await MusicPlayerPanel.infoMessage(player);
+    i.update(messageBuilder.data)
 })

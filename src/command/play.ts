@@ -11,6 +11,7 @@ export const cmd_play = new Command('play', '播放音乐')
     if (!voice_channel) throw '你需要先加入语音频道';
     Music.validURL(options.url);
     const music = await Music.fetchYouTubeMusic(options.url);
-    MusicPlayer.play(voice_channel, music);
-    return new Reply('已播放')
+    const player = await MusicPlayer.get(voice_channel);
+    player.controller.addMusic(voice_channel, music);
+    return new Reply('已将歌曲加入播放清单')
 })

@@ -7,6 +7,9 @@ export const cmd_stop = new Command('stop', '停止音乐')
     await i.deferSlient()
     const voice_channel = i.member.voice.channel;
     if (!voice_channel) throw '你需要先加入正在播放音乐的语音频道';
-    MusicPlayer.stop(voice_channel);
+    const player = MusicPlayer.getFromGuild(i.client.user.id, voice_channel.guildId);
+    if (!player) throw '当前没有播放的音乐';
+    if (player.channelId !== voice_channel.id) throw '你不在音乐播放的频道';
+    player.stop();
     return new Reply('已停止')
 })
