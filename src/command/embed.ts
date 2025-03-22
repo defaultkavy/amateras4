@@ -8,7 +8,7 @@ import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Embed } from "../module/Bot/Embed";
 import { Reply } from "../module/Bot/Reply";
 
-export const cmd_embed = new Command('embed', '发送 Embed 讯息至该频道')
+export const cmd_embed = new Command('embed', '发送 Embed 讯息至该频道', true)
 .subCommand('create', '创建 Embed 讯息', subcmd => subcmd
     .execute(async (i, options) => {
         const $embed = await $Embed.create({userId: i.user.id});
