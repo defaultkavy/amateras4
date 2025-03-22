@@ -53,6 +53,7 @@ addInteractionListener('embed', async (i) => {
     const [customId, embedId] = i.customId.split('@');
     const $embed = await $Embed.collection.findOne({id: embedId});
     if (!$embed) throw 'Embed 404';
+    if ($embed.userId !== i.user.id) throw `只有指令使用者才能编辑内容`
     switch (customId) {
         case 'embed-basic':
             i.showModal(new Modal('编辑标题|注释|链接', `edit-embed-basic@${$embed.id}`)
