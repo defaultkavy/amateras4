@@ -24,6 +24,7 @@ import { cmdx_info } from "./src/context/info";
 import { cmdx_quote } from "./src/context/quote";
 import { cmdx_unsend } from "./src/context/unsend";
 import { cmd_tweet } from "./src/command/tweet";
+import { cmd_embed } from "./src/command/embed";
 
 export const cmd_list = [
     cmd_lobby,
@@ -43,6 +44,7 @@ export const cmd_list = [
     cmd_role,
     cmd_nick,
     cmd_tweet,
+    cmd_embed,
     // cmd_play,
     // cmd_stop,
     // cmd_ttt,

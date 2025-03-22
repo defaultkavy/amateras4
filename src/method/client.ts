@@ -9,4 +9,4 @@ export const client = new Client(CLIENT_OPTIONS) as Client<true>
 
 new Log('Discord connecting...');
 await client.login(config.bot.token);
-// new Log(`Discord connected: ${client.user?.username}`
+new Log(`Discord connected: ${client.user?.username}`)
