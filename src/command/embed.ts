@@ -1,5 +1,4 @@
-import { MessageFlags } from "discord.js";
-import { Command } from "../module/Bot/Command";
+import { Command, CommandIntegrationTypes } from "../module/Bot/Command";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { Modal } from "../module/Bot/Modal";
 import { addInteractionListener } from "../module/Util/listener";
@@ -9,6 +8,7 @@ import { Embed } from "../module/Bot/Embed";
 import { Reply } from "../module/Bot/Reply";
 
 export const cmd_embed = new Command('embed', '发送 Embed 讯息至该频道', true)
+.integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
 .subCommand('create', '创建 Embed 讯息', subcmd => subcmd
     .execute(async (i, options) => {
         const $embed = await $Embed.create({userId: i.user.id});
