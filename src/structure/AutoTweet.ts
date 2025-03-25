@@ -87,7 +87,9 @@ export class AutoTweet {
                         }
                     })
                     this.collection.updateOne({id: autoTweet.id}, {$set: {tweetedIds: tweets.data.map(t => t.id)}})
-                } catch(err) { }
+                } catch(err) {
+                    console.error(err)
+                }
             })
         )
         this.updated_timestamp = +new Date();
