@@ -66,14 +66,16 @@ export class AutoTweet {
                 const x_client = new Client(auth_client);
                 try {
                     const tweets = await x_client.tweets.usersIdTweets(autoTweet.twitterUserId, {exclude: ['replies']});
+                    console.debug(autoTweet.twitterUsername, 'tweets', tweets.data?.map(data => data.id));
                     if (!tweets?.data) return;
                     const untweeted: typeof tweets.data = [];
                     for (const tweet of tweets.data) {
                         if (autoTweet.tweetedIds.includes(tweet.id)) break;
                         untweeted.push(tweet);
                     }
+                    console.debug(autoTweet.twitterUsername, 'untweeted', untweeted)
                     untweeted.reverse();
-                    autoTweet.channels.forEach(channelDetail => {
+                    autoTweet.channels.forEach(async channelDetail => {
                         const bot = BotClient.manager.get(channelDetail.clientId);
                         if (!bot) return;
                         const guild = bot.client.guilds.cache.get(channelDetail.guildId);
@@ -81,7 +83,7 @@ export class AutoTweet {
                         const channel = guild.channels.cache.get(channelDetail.channelId);
                         if (!channel?.isTextBased()) return;
                         for (const tweet of untweeted) {
-                            channel.send(`https://vxtwitter.com/${autoTweet.twitterUserId}/status/${tweet.id}`);
+                            await channel.send(`https://vxtwitter.com/${autoTweet.twitterUserId}/status/${tweet.id}`);
                         }
                     })
                     this.collection.updateOne({id: autoTweet.id}, {$set: {tweetedIds: tweets.data.map(t => t.id)}})
