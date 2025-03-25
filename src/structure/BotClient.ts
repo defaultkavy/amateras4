@@ -89,7 +89,7 @@ export class BotClient extends Data {
             return await bot.init(debug);
         }))
         // Function Init
-        await AutoTweet.init();
+        // await AutoTweet.init();
     }
 
     async init(debug = false) {
