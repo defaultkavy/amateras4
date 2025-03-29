@@ -129,7 +129,7 @@ export class Skill extends InGuildData {
             currentExp -= threshold_lvl;
             threshold_lvl *= 2;
         }
-        return {exp, level, currentExp}
+        return {exp, level, currentExp, threshold_lvl}
     }
 
     async rankingList(limit: number) {

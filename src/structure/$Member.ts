@@ -156,7 +156,7 @@ export class $Member extends InGuildData {
         const skillDetailList = await Promise.all(this.skills.map(async skill => ({...await skill.detailFromUser(this.userId), name: skill.name, threshold: skill.threshold})))
         const description = `${
             codeBlock(
-                skillDetailList.sort((a, b) => b.level - a.level).map(pSkill => `${pSkill.name} LV${pSkill.level} EXP(${pSkill.currentExp}/${pSkill.threshold})`).toString().replaceAll(',', '\n')
+                skillDetailList.sort((a, b) => b.level - a.level).map(pSkill => `${pSkill.name} LV${pSkill.level} EXP(${pSkill.currentExp}/${pSkill.threshold_lvl})`).toString().replaceAll(',', '\n')
             )
         }`
         return new Embed()
