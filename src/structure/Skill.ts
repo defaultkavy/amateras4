@@ -121,11 +121,15 @@ export class Skill extends InGuildData {
     }
 
     calcDetail(exp: number) {
-        return {
-            exp: exp,
-            level: exp === 0 ? 0 : 1 + Math.floor(exp / this.threshold),
-            currentExp: exp % this.threshold
+        let currentExp = exp;
+        let threshold_lvl = this.threshold;
+        let level = 0;
+        while (currentExp > threshold_lvl) {
+            level++;
+            currentExp -= threshold_lvl;
+            threshold_lvl *= 2;
         }
+        return {exp, level, currentExp}
     }
 
     async rankingList(limit: number) {
