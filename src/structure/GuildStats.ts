@@ -103,7 +103,7 @@ export class GuildStats extends InGuildData {
             .actionRow(row => 
                 row
                 .button('查看名片', 'guild-stats-member', {style: ButtonStyle.Primary})
-                .button('技能排行', 'guild-stats-skill-ranking', {style: ButtonStyle.Primary})
+                // .button('技能排行', 'guild-stats-skill-ranking', {style: ButtonStyle.Primary})
                 .button('更新资讯', 'guild-stats-update', {style: ButtonStyle.Secondary})
             )
     }
