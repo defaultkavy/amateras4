@@ -11,10 +11,8 @@ import { cmd_sys } from "../command/sys/sys";
 import { $Guild } from "./$Guild";
 import { cmd_list } from "../../cmdList";
 import { startListen, addClientListener } from "../module/Util/listener";
-import { $Member } from "./$Member";
 import { snowflakes } from "../method/snowflake";
 import { AutoRole } from "./AutoRole";
-import { AutoTweet } from "./AutoTweet";
 
 export interface BotClientOptions extends DataOptions {
     token: string;
