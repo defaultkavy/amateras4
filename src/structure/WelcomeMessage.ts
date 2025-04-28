@@ -1,11 +1,9 @@
-import { TextBasedChannel } from "discord.js";
+import { SendableChannels } from "discord.js";
 import { db } from "../method/db";
-import { Snowflake } from "../module/Snowflake";
 import { InGuildData, InGuildDataOptions } from "./InGuildData";
 import { ErrLog } from "../module/Log/Log";
 import { MessageBuilder } from "../module/Bot/MessageBuilder";
 import { addClientListener } from "../module/Util/listener";
-import { config } from "../../bot_config";
 import { snowflakes } from "../method/snowflake";
 
 export interface WelcomeMessageOptions extends InGuildDataOptions {
@@ -49,10 +47,10 @@ export class WelcomeMessage extends InGuildData {
         await WelcomeMessage.collection.deleteOne({id: this.id});
     }
 
-    async channel(): Promise<TextBasedChannel> {
+    async channel(): Promise<SendableChannels> {
         const channel = await this.guild.channels.fetch(this.channelId);
         if (!channel) throw new ErrLog('WelcomeMessage: channel undefined');
-        if (!channel.isTextBased()) throw new ErrLog('WelcomeMessage: channel not text base');
+        if (!channel.isSendable()) throw new ErrLog('WelcomeMessage: Channel is not sendable');
         return channel;
     }
 }

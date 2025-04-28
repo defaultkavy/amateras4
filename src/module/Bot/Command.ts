@@ -55,7 +55,8 @@ export class Command<Options = {}> extends ExecutableCommand {
             name: this.name,
             type: ApplicationCommandType.ChatInput,
             description: this.description,
-            options: [...[...this.map.values()].map(cmd => cmd.toJSON()), ...[...this.options.values()].map(option => option.data)]
+            options: [...[...this.map.values()].map(cmd => cmd.toJSON()), ...[...this.options.values()].map(option => option.data)],
+            contexts: [0, ...(this.global ? [1, 2] : [])]
         }
         return data;
     }

@@ -1,4 +1,4 @@
-import { APIEmbed, ActionRowData, InteractionReplyOptions, MessageComponentInteraction, MessageCreateOptions, MessagePayload, MessageType, RepliableInteraction, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
+import { APIEmbed, ActionRowData, InteractionReplyOptions, MessageComponentInteraction, MessageCreateOptions, MessagePayload, MessageType, RepliableInteraction, SendableChannels, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
 import { MessageActionRow } from "./ActionRow";
 import { Embed } from "./Embed";
 import { multipleResolver } from "../Util/util";
@@ -29,7 +29,7 @@ export class MessageBuilder {
         return this;
     }
 
-    send(channel: TextBasedChannel, options?: MessageCreateOptions) {
+    send(channel: SendableChannels, options?: MessageCreateOptions) {
         return channel.send({...this.data, ...options})
     }
 

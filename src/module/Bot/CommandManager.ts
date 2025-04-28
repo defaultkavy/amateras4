@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionAllowedChannelTypes, ApplicationCommandOptionType, AutocompleteFocusedOption, AutocompleteInteraction, BaseChannel, Client, CommandInteractionOption, Guild, GuildBasedChannel, GuildChannel, REST, Routes } from "discord.js";
+import { ApplicationCommandOptionType, AutocompleteFocusedOption, AutocompleteInteraction, BaseChannel, Client, CommandInteractionOption, Guild, REST, Routes } from "discord.js";
 import { Command, SubcommandGroup } from "./Command";
 import { ExecutableCommand } from "./ExecutableCommand";
 import { MenuCommand, MessageMenuCommand, UserMenuCommand } from "./MenuCommand";

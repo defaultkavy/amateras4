@@ -20,6 +20,6 @@ export async function roleInit(options: RoleCreateOptions & {
         role instanceof Role ? role : await create()) 
     : await create();
 
-    if (options.name && role.name !== options.name) role.setName(options.name).catch(log);
+    if (options.name && role.name !== options.name) role.setName(options.name).catch(err => undefined);
     return role;
 }

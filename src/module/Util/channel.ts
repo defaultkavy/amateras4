@@ -108,6 +108,7 @@ export async function messageInit(options: {
     messageId?: string;
 }) {
     const {channel, builder, messageId} = options
+    if (!channel.isSendable()) throw 'messageInit: Channel is not sendable'
     const send = async () => builder.send(channel);
     const message = messageId
         ? await channel.messages.fetch(messageId).catch(err => undefined).then(async message => 
