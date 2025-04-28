@@ -5,8 +5,6 @@ import { BotClient } from "./BotClient";
 import { GuildStats } from "./GuildStats";
 import { setIntervalAbsolute } from "../module/Util/util";
 import { $Member } from "./$Member";
-import { MusicPlayer } from "./music/MusicPlayer";
-import { MusicPlayerPanel } from "./music/MusicPlayerPanel";
 
 export class $Guild {
     id: string;
