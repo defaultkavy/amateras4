@@ -152,6 +152,7 @@ export class Article extends Data {
 addInteractionListener('article-component-delete', async i => {
     if (!i.isButton()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     if (article.data.components.length === 1) throw 'Article component delete: last component';
     article.data.components.splice(+index, 1);
     i.update(Article.editorMessage(article, { components: {index: 0} }).data)
@@ -164,6 +165,7 @@ addInteractionListener('article-component-select', async i => {
     if (!articleId) throw 'Article id missing';
     const article = await Article.collection.findOne({id: articleId});
     if (!article) throw 'Article not found';
+    if (article.userId !== i.user.id) throw '无权限操作';
     const indexOrAdd = i.values.at(0);
     if (indexOrAdd === undefined) throw 'Component index missing';
     i.update(Article.editorMessage(article, { components: indexOrAdd === 'add' ? indexOrAdd : {index: +indexOrAdd} }).data );
@@ -171,7 +173,8 @@ addInteractionListener('article-component-select', async i => {
 
 addInteractionListener('article-component-open-edit', async i => {
     if (!i.isButton()) return;
-    const { articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     const modal = new Modal(`编辑${Article.componentName(selectedComponent)}`, `article-component-edit@${articleId}$${index}`);
     switch (selectedComponent.type) {
         case ComponentType.TextDisplay:
@@ -199,6 +202,7 @@ addInteractionListener('article-component-open-edit', async i => {
 addInteractionListener('article-component-edit', async i => {
     if (!i.isModalSubmit()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     switch (selectedComponent.type) {
         case ComponentType.TextDisplay:
             const content = i.fields.getTextInputValue('content');
@@ -235,6 +239,7 @@ addInteractionListener('article-component-edit', async i => {
 addInteractionListener('article-component-add-select', async i => {
     if (!i.isStringSelectMenu()) return;
     const { article, articleId } = await Article.getFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     const type = i.values.at(0);
     if (!type) throw 'Article component add type not found';
     const modal = new Modal(`新增${Article.componentName({type: +type})}`, `article-component-add-edit@${article.id}$${type}`);
@@ -277,6 +282,7 @@ addInteractionListener('article-component-add-edit', async i => {
     const [_, articleId, type] = match;
     const article = await Article.fetch(articleId);
     if (!article) throw 'Article not found';
+    if (article.userId !== i.user.id) throw '无权限操作';
     const container = new Container(article.data);
     switch (+type) {
         case ComponentType.TextDisplay: {
@@ -317,6 +323,7 @@ addInteractionListener('article-component-add-edit', async i => {
 addInteractionListener('article-component-media-select', async i => {
     if (!i.isStringSelectMenu()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     const indexOrAdd = i.values.at(0);
     if (indexOrAdd === undefined) throw 'Media item index missing';
     if (indexOrAdd === 'add') {
@@ -339,6 +346,7 @@ addInteractionListener('article-component-media-select', async i => {
 addInteractionListener('article-component-media-add', async i => {
     if (!i.isModalSubmit()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     const mediaData = article.data.components.at(+index);
     if (!mediaData) throw 'Article component media add media gallery not found'
     if (mediaData.type !== ComponentType.MediaGallery) throw 'Article component media add type error';
@@ -357,6 +365,7 @@ addInteractionListener('article-component-media-add', async i => {
 addInteractionListener('article-component-media-edit', async i => {
     if (!i.isModalSubmit()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     const mediaIndex = i.customId.match(/[a-z-]+@([0-9]+)\$([0-9]+)%([0-9]+)/)?.at(-1);
     if (!mediaIndex) throw 'Article component media edit: media index is missing';
     if (selectedComponent.type !== ComponentType.MediaGallery) throw 'Article component media add type error';
@@ -380,6 +389,7 @@ addInteractionListener('article-component-media-edit', async i => {
 addInteractionListener('article-component-separator-select', async i => {
     if (!i.isStringSelectMenu()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     const spacing = i.values.at(0);
     if (spacing === undefined) throw 'Article component separator select: spacing missing';
     const separator = article.data.components[+index] as SeparatorComponentData;
