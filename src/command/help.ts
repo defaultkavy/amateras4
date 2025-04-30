@@ -4,16 +4,16 @@ import { MessageActionRow } from "../module/Bot/ActionRow";
 import { Command } from "../module/Bot/Command";
 import { addInteractionListener } from "../module/Util/listener";
 const cmd_data_list = [
-    {label: '关于天照系统', value: 'intro', emoji: '⚙️'},
-    {label: '如何设定欢迎讯息', value: 'welcome', emoji: '👋'},
-    {label: '如何设定个人资料和发送名片', value: 'user', emoji: '🪪'},
-    {label: '如何设定技能', value: 'skill', emoji: '📖'},
-    {label: '如何设定游戏名片', value: 'uid', emoji: '🎮'},
-    {label: '如何创建投票问卷', value: 'poll', emoji: '🎫'},
-    {label: '如何创建个人房间', value: 'lobby', emoji: '🏠'},
-    {label: '如何创建系统贴文', value: 'post', emoji: '✉️'},
-    {label: '如何设定我的V身份', value: 'vid', emoji: '✨'},
-    {label: '如何自定义机器人', value: 'bot', emoji: '🤖'},
+    {label: '关于天照系统', value: 'intro', emoji: {name: '⚙️'}},
+    {label: '如何设定欢迎讯息', value: 'welcome', emoji: {name: '👋'}},
+    {label: '如何设定个人资料和发送名片', value: 'user', emoji: {name: '🪪'}},
+    {label: '如何设定技能', value: 'skill', emoji: {name: '📖'}},
+    {label: '如何设定游戏名片', value: 'uid', emoji: {name: '🎮'}},
+    {label: '如何创建投票问卷', value: 'poll', emoji: {name: '🎫'}},
+    {label: '如何创建个人房间', value: 'lobby', emoji: {name: '🏠'}},
+    {label: '如何创建系统贴文', value: 'post', emoji: {name: '✉️'}},
+    {label: '如何设定我的V身份', value: 'vid', emoji: {name: '✨'}},
+    {label: '如何自定义机器人', value: 'bot', emoji: {name: '🤖'}},
 ]
 const help_row = new MessageActionRow().stringSelect('help_cmd_select', cmd_data_list, {placeholder: '选择你需要了解的功能'})
 

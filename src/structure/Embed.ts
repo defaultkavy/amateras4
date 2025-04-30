@@ -42,15 +42,15 @@ export class $Embed extends Data {
             )
             .actionRow(row => row
                 .stringSelect(`edit-embed-color-select@${$embed.id}`, [
-                    {label: 'Red', value: Colors.Red.toString().toUpperCase(), emoji: '🔴'},
-                    {label: 'Blue', value: Colors.Blue.toString().toUpperCase(), emoji: '🔵'},
-                    {label: 'Yellow', value: Colors.Yellow.toString().toUpperCase(), emoji: '🟡'},
-                    {label: 'Green', value: Colors.Green.toString().toUpperCase(), emoji: '🟢'},
-                    {label: 'Orange', value: Colors.Orange.toString().toUpperCase(), emoji: '🟠'},
-                    {label: 'Purple', value: Colors.Purple.toString().toUpperCase(), emoji: '🟣'},
-                    {label: 'Brown', value: 'b4624a'.toUpperCase(), emoji: '🟤'},
-                    {label: 'White', value: Colors.White.toString().toUpperCase(), emoji: '⚪'},
-                    {label: 'Black', value: '2f353b'.toUpperCase(), emoji: '⚫'},
+                    {label: 'Red', value: Colors.Red.toString().toUpperCase(), emoji: {name: '🔴'}},
+                    {label: 'Blue', value: Colors.Blue.toString().toUpperCase(), emoji: {name: '🔵'}},
+                    {label: 'Yellow', value: Colors.Yellow.toString().toUpperCase(), emoji: {name: '🟡'}},
+                    {label: 'Green', value: Colors.Green.toString().toUpperCase(), emoji: {name: '🟢'}},
+                    {label: 'Orange', value: Colors.Orange.toString().toUpperCase(), emoji: {name: '🟠'}},
+                    {label: 'Purple', value: Colors.Purple.toString().toUpperCase(), emoji: {name: '🟣'}},
+                    {label: 'Brown', value: 'b4624a'.toUpperCase(), emoji: {name: '🟤'}},
+                    {label: 'White', value: Colors.White.toString().toUpperCase(), emoji: {name: '⚪'}},
+                    {label: 'Black', value: '2f353b'.toUpperCase(), emoji: {name: '⚫'}},
                 ], {
                     placeholder: '预设颜色选择'
                 })
