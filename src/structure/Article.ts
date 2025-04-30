@@ -1,4 +1,4 @@
-import { ComponentType, LinkButtonComponentData, MessageFlags, SelectMenuComponentOptionData } from "discord.js";
+import { ActionRow, ComponentType, LinkButtonComponentData, MessageFlags, SelectMenuComponentOptionData, SeparatorComponentData } from "discord.js";
 import { db } from "../method/db";
 import { snowflakes } from "../method/snowflake";
 import { Container, ContainerComponentData, ContainerData } from "../module/Bot/Container";
@@ -60,6 +60,7 @@ export class Article extends Data {
             );
 
         if (resolver?.components && typeof resolver.components === 'object') {
+            const index = resolver.components.index;
             if (!selectedComponent) throw 'Selected Component missing';
             if (selectedComponent.type === ComponentType.MediaGallery) {
                 const mediaList = selectedComponent.items.map((item, i) => {
@@ -68,13 +69,19 @@ export class Article extends Data {
                     return { label: `${i + 1}. ${filename}`, value: i.toString() }
                 })
                 if (mediaList.length < 10) mediaList.push({label: '新增图片', value: 'add'});
-                message.actionRow(row => {
-                    if (typeof resolver.components === 'object')
-                    row
-                    .stringSelect(`article-component-media-select@${article.id}$${resolver.components.index}`, mediaList, {
+                message.actionRow(row => row
+                    .stringSelect(`article-component-media-select@${article.id}$${index}`, mediaList, {
                         placeholder: `选择图片`
                     })
-                })
+                )
+            }
+            else if (selectedComponent.type === ComponentType.Separator) {
+                message.actionRow(row => row
+                    .stringSelect(`article-component-separator-select@${article.id}$${index}`, [
+                        {label: '行距：1', value: '1'},
+                        {label: '行距：2', value: '2'},
+                    ], { placeholder: `已选择行距：${selectedComponent.spacing ?? '1'}` })
+                )
             }
             message
             .actionRow(row => {
@@ -86,7 +93,7 @@ export class Article extends Data {
                 .button('编辑段落', `article-component-open-edit@${article.id}$${resolver.components.index}`, {disabled: selectedComponent.type === ComponentType.MediaGallery})
             })
         } else if (resolver?.components === 'add') {
-            const addComponentList: SelectMenuComponentOptionData[] = [10, 12, 9, 99].map(i => ({label: this.componentName({type: i}), value: i.toString()}));
+            const addComponentList: SelectMenuComponentOptionData[] = [10, 12, 14, 9, 99].map(i => ({label: this.componentName({type: i}), value: i.toString()}));
             message.actionRow(row => row
                 .stringSelect(`article-component-add-select@${article.id}`, addComponentList , {
                     placeholder: '选择新增的段落类型'
@@ -227,7 +234,7 @@ addInteractionListener('article-component-edit', async i => {
 
 addInteractionListener('article-component-add-select', async i => {
     if (!i.isStringSelectMenu()) return;
-    const { article } = await Article.getFromCustomId(i.customId);
+    const { article, articleId } = await Article.getFromCustomId(i.customId);
     const type = i.values.at(0);
     if (!type) throw 'Article component add type not found';
     const modal = new Modal(`新增${Article.componentName({type: +type})}`, `article-component-add-edit@${article.id}$${type}`);
@@ -238,21 +245,29 @@ addInteractionListener('article-component-add-select', async i => {
             modal
             .short('图片链接', 'url', {required: true})
             .short('防止剧透', 'spoiler', {required: true, value: '0'})
+            i.showModal(modal.data);
             break;
         case ComponentType.Section: // thumbnail section
             modal
             .paragraph('文字内容', 'content', {required: true, min_length: 1})
             .short('缩略图链接', 'url', {required: true})
             .short('防止剧透', 'spoiler', {required: true, value: '0'})
+            i.showModal(modal.data);
             break;
         case 99: // link button section
             modal
             .paragraph('文字内容', 'content', {required: true, min_length: 1})
             .short('按钮文字', 'label', {required: true, value: 'Open'})
             .short('按钮链接', 'url', {required: true})
+            i.showModal(modal.data);
+            break;
+        case ComponentType.Separator:
+            const container = new Container(article.data).separator();
+            article.data = container.data;
+            i.update(Article.editorMessage(article, {components: {index: container.data.components.length - 1} }).data)
+            await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
             break;
     }
-    i.showModal(modal.data);
 })
 
 addInteractionListener('article-component-add-edit', async i => {
@@ -360,4 +375,16 @@ addInteractionListener('article-component-media-edit', async i => {
     i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
+})
+
+addInteractionListener('article-component-separator-select', async i => {
+    if (!i.isStringSelectMenu()) return;
+    const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    const spacing = i.values.at(0);
+    if (spacing === undefined) throw 'Article component separator select: spacing missing';
+    const separator = article.data.components[+index] as SeparatorComponentData;
+    if (!separator) throw 'Article component separator select: separactor not found';
+    separator.spacing = +spacing;
+    i.update(Article.editorMessage(article, {components: {index: +index} }).data)
+    await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
 })
