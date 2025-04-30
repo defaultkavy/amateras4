@@ -245,7 +245,10 @@ addInteractionListener('article-component-add-select', async i => {
     const modal = new Modal(`新增${Article.componentName({type: +type})}`, `article-component-add-edit@${article.id}$${type}`);
     switch (+type) {
         case ComponentType.TextDisplay: 
-            modal.actionRow(row => row.paragraph('内容', 'content', {required: true, min_length: 1})); break;
+            modal
+            .paragraph('内容', 'content', {required: true, min_length: 1});
+            i.showModal(modal.data);
+            break;
         case ComponentType.MediaGallery:
             modal
             .short('图片链接', 'url', {required: true})
