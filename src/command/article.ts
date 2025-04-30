@@ -1,9 +1,8 @@
-import { ButtonStyle, ComponentType, MessageFlags } from "discord.js";
 import { Command } from "../module/Bot/Command";
 import { Article } from "../structure/Article";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 
-export const cmd_article = new Command('article', '文章')
+export const cmd_article = new Command('article', '文章', true)
 .subCommand('create', '创建文章', subcmd => subcmd
     .string('title', '文章标题', { required: false })
     .execute(async (i, options) => {
