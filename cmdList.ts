@@ -20,6 +20,7 @@ import { cmdx_info } from "./src/context/info";
 import { cmdx_quote } from "./src/context/quote";
 import { cmdx_unsend } from "./src/context/unsend";
 import { cmd_embed } from "./src/command/embed";
+import { cmd_article } from "./src/command/article";
 
 export const cmd_list = [
     cmd_lobby,
@@ -39,10 +40,8 @@ export const cmd_list = [
     cmd_role,
     cmd_nick,
     cmd_embed,
-    // cmd_play,
-    // cmd_stop,
-    // cmd_ttt,
-    // cmd_dcn,
+    cmd_article,
+    //
     cmdx_info,
     cmdx_unsend,
     cmdx_quote

@@ -1,4 +1,4 @@
-import { APIModalActionRowComponent, APITextInputComponent, ActionRowComponentOptions, BaseSelectMenuComponentData, ButtonComponentData, ButtonStyle, ComponentType, InteractionButtonComponentData, LinkButtonComponentData, SelectMenuComponentOptionData, StringSelectMenuComponentData, TextInputStyle } from "discord.js";
+import { APIComponentInModalActionRow, APITextInputComponent, ActionRowComponentOptions, BaseSelectMenuComponentData, ButtonComponentData, ButtonStyle, ComponentType, InteractionButtonComponentData, LinkButtonComponentData, SelectMenuComponentOptionData, StringSelectMenuComponentData, TextInputStyle } from "discord.js";
 
 export class MessageActionRow {
     components: ActionRowComponentOptions[] = []
@@ -38,7 +38,10 @@ export class MessageActionRow {
         return this;
     }
 
-    objectSelect(customId: string, type: Exclude<keyof typeof ComponentType, 'ActionRow' | 'TextInput' | 'Button' | 'SelectMenu' | 'StringSelect'>, config?: Omit<BaseSelectMenuComponentData, 'type' | 'customId' | 'custom_id'>) {
+    objectSelect(customId: string, 
+        type: Exclude<keyof typeof ComponentType, 'ActionRow' | 'TextInput' | 'Button' | 'SelectMenu' | 'StringSelect' | 'Section' | 'TextDisplay' | 'Thumbnail' | 'MediaGallery' | 'File' | 'Separator' | 'ContentInventoryEntry' | 'Container'>, 
+        config?: Omit<BaseSelectMenuComponentData, 'type' | 'customId' | 'custom_id'>
+    ) {
         this.components.push({
             type: ComponentType[type],
             customId: customId,
@@ -61,7 +64,7 @@ type OmittedButtonComponentData = Omit<InteractionButtonComponentData, 'label' |
 export class ModalActionRow {
     data: {
         type: ComponentType.ActionRow
-        components: APIModalActionRowComponent[]
+        components: APIComponentInModalActionRow[]
     } = {
         type : ComponentType.ActionRow,
         components: []

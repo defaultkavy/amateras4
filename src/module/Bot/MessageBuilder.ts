@@ -1,7 +1,8 @@
-import { APIEmbed, ActionRowData, InteractionReplyOptions, MessageComponentInteraction, MessageCreateOptions, MessagePayload, MessageType, RepliableInteraction, SendableChannels, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
+import { APIEmbed, ActionRowData, BitFieldResolvable, InteractionReplyOptions, MessageComponentInteraction, MessageCreateOptions, MessageFlags, MessagePayload, MessageType, RepliableInteraction, SendableChannels, StickerResolvable, TextBasedChannel, ThreadMemberFlagsBitField } from "discord.js";
 import { MessageActionRow } from "./ActionRow";
 import { Embed } from "./Embed";
 import { multipleResolver } from "../Util/util";
+import { Container, ContainerData } from "./Container";
 export interface MessageBuilderData {
     content?: string;
     components?: ActionRowData<any>[],
@@ -13,8 +14,8 @@ export class MessageBuilder {
     actionRowList: MessageActionRow[] = [];
     embedList: Embed[] = [];
     data: MessageBuilderData;
-    constructor(options?: MessageBuilderData) {
-        this.data = options ?? {};
+    constructor(options: MessageBuilderData = {}) {
+        this.data = {components: [], ...options};
     }
 
     content(text: string) {
@@ -23,7 +24,7 @@ export class MessageBuilder {
     }
 
     clean() {
-        this.data.content = this.data.content ? this.data.content : '';
+        this.data.content = this.data.content ?? '';
         this.data.components = this.data.components ? this.data.components : [];
         this.data.embeds = this.data.embeds ? this.data.embeds : [];
         return this;
@@ -45,6 +46,16 @@ export class MessageBuilder {
         for (const resolved of resolver) {
             this.embedList.push(resolved)
             this.data.embeds ? this.data.embeds.push(resolved.data) : this.data.embeds = [resolved.data]
+        }
+        return this;
+    }
+
+    container(resolver: ((container: Container) => Container) | ContainerData) {
+        if (resolver instanceof Function) {
+            const container = resolver(new Container());
+            this.data.components?.push(container.data);
+        } else {
+            this.data.components?.push(resolver);
         }
         return this;
     }

@@ -22,4 +22,5 @@ export const snowflakes = {
     nick: new Snowflake({epoch: config.epoch, workerId: 17}),
     autoTweet: new Snowflake({epoch: config.epoch, workerId: 18}),
     embed: new Snowflake({epoch: config.epoch, workerId: 19}),
+    article: new Snowflake({epoch: config.epoch, workerId: 20})
 }
