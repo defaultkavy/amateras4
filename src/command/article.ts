@@ -10,7 +10,7 @@ export const cmd_article = new Command('article', '文章', true)
             title: options.title ?? 'Untitled',
             userId: i.user.id
         })
-        return Article.editorMessage(article);
+        return Article.editorMessage(article, {index: 0});
     })
 )
 
@@ -27,7 +27,7 @@ export const cmd_article = new Command('article', '文章', true)
     articleSelector(subcmd)
     .execute(async (i, options) => {
         const article = await Article.fetch(options.article);
-        return Article.editorMessage(article);
+        return Article.editorMessage(article, {index: 0});
     })
 )
 

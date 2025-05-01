@@ -1,4 +1,4 @@
-import { ActionRow, ComponentType, LinkButtonComponentData, MessageFlags, SelectMenuComponentOptionData, SeparatorComponentData } from "discord.js";
+import { ActionRow, ButtonStyle, ComponentType, LinkButtonComponentData, MessageFlags, SelectMenuComponentOptionData, SeparatorComponentData } from "discord.js";
 import { db } from "../method/db";
 import { snowflakes } from "../method/snowflake";
 import { Container, ContainerComponentData, ContainerData } from "../module/Bot/Container";
@@ -30,9 +30,7 @@ export class Article extends Data {
             return data;
     }
 
-    static editorMessage(article: ArticleDB, resolver?: {
-        components?: {index: number} | 'add', 
-    }) {
+    static editorMessage(article: ArticleDB, resolver: {index: number, add?: boolean}) {
         const getComponentName = (component: ContainerComponentData) => {
             if (!component) return '';
             if (component.type === ComponentType.Section) {
@@ -40,28 +38,25 @@ export class Article extends Data {
                 else return '文字与缩略图区块';
             } else return this.componentName(component);
         }
-        const selectedComponent = typeof resolver?.components === 'object' ? article.data.components.at(resolver.components.index) : undefined;
+        const selectedComponent = article.data.components.at(resolver.index) ?? undefined;
+        if (!selectedComponent) throw 'Article editor error: selectedComponent undefined';
         const componentList: SelectMenuComponentOptionData[] = article.data.components.map((component, i) => {
             return {
-                label: `${selectedComponent === component ? '🟢' : '⚫'} ${i + 1}. ${getComponentName(component)}`,
+                label: `${!resolver.add && selectedComponent === component ? '🟢' : '⚫'} ${i + 1}. ${getComponentName(component)}`,
                 value: i.toString(),
             }
         })
-        if (article.data.components.length < 10) componentList.push({label: `${resolver?.components === 'add' ? '🟢' : '⚫'} 新增段落`, value: 'add'})
+        if (article.data.components.length < 10) componentList.push({label: `${resolver.add ? '🟢' : '⚫'} 新增段落`, value: 'add'})
         const message = new MessageBuilder()
             .container({...article.data})
             .actionRow(row => row
                 .stringSelect(`article-component-select@${article.id}`, componentList, {
-                    placeholder: selectedComponent 
-                        ? `🟢 ${article.data.components.indexOf(selectedComponent) + 1}. ${getComponentName(selectedComponent)}`
-                        : resolver?.components === 'add' ? '🟢 新增段落'
-                        : '选择段落'
+                    placeholder: resolver.add ? '🟢 新增段落' 
+                        : `🟢 ${article.data.components.indexOf(selectedComponent) + 1}. ${getComponentName(selectedComponent)}`
                 })
             );
 
-        if (resolver?.components && typeof resolver.components === 'object') {
-            const index = resolver.components.index;
-            if (!selectedComponent) throw 'Selected Component missing';
+        if (!resolver.add) {
             if (selectedComponent.type === ComponentType.MediaGallery) {
                 const mediaList = selectedComponent.items.map((item, i) => {
                     const filename = new URL(item.media.url).pathname.match(/\/([^/]+)$/)?.at(1);
@@ -70,36 +65,37 @@ export class Article extends Data {
                 })
                 if (mediaList.length < 10) mediaList.push({label: '新增图片', value: 'add'});
                 message.actionRow(row => row
-                    .stringSelect(`article-component-media-select@${article.id}$${index}`, mediaList, {
+                    .stringSelect(`article-component-media-select@${article.id}$${resolver.index}`, mediaList, {
                         placeholder: `选择图片`
                     })
                 )
             }
             else if (selectedComponent.type === ComponentType.Separator) {
                 message.actionRow(row => row
-                    .stringSelect(`article-component-separator-select@${article.id}$${index}`, [
+                    .stringSelect(`article-component-separator-select@${article.id}$${resolver.index}`, [
                         {label: '行距：1', value: '1'},
                         {label: '行距：2', value: '2'},
                     ], { placeholder: `已选择行距：${selectedComponent.spacing ?? '1'}` })
                 )
             }
-            message
-            .actionRow(row => {
-                if (typeof resolver.components === 'object')
-                return row
-                .button('删除段落', `article-component-delete@${article.id}$${resolver.components.index}`, {disabled: article.data.components.length === 1})
-                .button('上移段落', `article-component-moveup@${article.id}$${resolver.components.index}`, {disabled: resolver.components.index === 0})
-                .button('下移段落', `article-component-movedown@${article.id}$${resolver.components.index}`, {disabled: resolver.components.index === article.data.components.length - 1})
-                .button('编辑段落', `article-component-open-edit@${article.id}$${resolver.components.index}`, {disabled: selectedComponent.type === ComponentType.MediaGallery || selectedComponent.type === ComponentType.Separator})
-            })
-        } else if (resolver?.components === 'add') {
+        }
+        if (resolver.add) {
             const addComponentList: SelectMenuComponentOptionData[] = [10, 12, 14, 9, 99].map(i => ({label: this.componentName({type: i}), value: i.toString()}));
             message.actionRow(row => row
-                .stringSelect(`article-component-add-select@${article.id}`, addComponentList , {
+                .stringSelect(`article-component-add-select@${article.id}$${resolver.index}`, addComponentList , {
                     placeholder: '选择新增的段落类型'
                 })
             )
         }
+        message
+        .actionRow(row => {
+            return row
+            .button('插入段落', `article-component-insert@${article.id}$${resolver.index}`, {style: ButtonStyle.Success, disabled: article.data.components.length === 10 || resolver.add})
+            .button('上移段落', `article-component-moveup@${article.id}$${resolver.index}`, {disabled: resolver.index === 0 || resolver.add})
+            .button('下移段落', `article-component-movedown@${article.id}$${resolver.index}`, {disabled: resolver.index === article.data.components.length - 1 || resolver.add})
+            .button('编辑段落', `article-component-open-edit@${article.id}$${resolver.index}`, {style: ButtonStyle.Primary, disabled: selectedComponent.type === ComponentType.MediaGallery || selectedComponent.type === ComponentType.Separator || resolver.add})
+            .button('删除段落', `article-component-delete@${article.id}$${resolver.index}`, {style: ButtonStyle.Danger, disabled: article.data.components.length === 1 || resolver.add})
+        })
         Object.assign(message.data, {flags: MessageFlags.IsComponentsV2});
         message.data.content = undefined;
         return message;
@@ -141,8 +137,9 @@ export class Article extends Data {
     }
 
     static async getFromCustomId(customId: string) {
-        const articleId = customId.split('@').at(1);
-        if (!articleId) throw 'Article id missing';
+        const match = customId.match(/[a-z-]+@([0-9]+)(?:\$([0-9]+))/);
+        if (!match) throw 'Article component custom id error';
+        const [_, articleId, index] = match;
         const article = await Article.fetch(articleId);
         if (!article) throw 'Article not found';
         return { articleId, article };
@@ -154,8 +151,9 @@ addInteractionListener('article-component-delete', async i => {
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
     if (article.userId !== i.user.id) throw '无权限操作';
     if (article.data.components.length === 1) throw 'Article component delete: last component';
+    const nextIndex = +index === article.data.components.length - 1 ? +index - 1 : +index;
     article.data.components.splice(+index, 1);
-    await i.update(Article.editorMessage(article, { components: {index: 0} }).data)
+    await i.update(Article.editorMessage(article, {index: nextIndex}).data);
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
 })
 
@@ -168,7 +166,8 @@ addInteractionListener('article-component-select', async i => {
     if (article.userId !== i.user.id) throw '无权限操作';
     const indexOrAdd = i.values.at(0);
     if (indexOrAdd === undefined) throw 'Component index missing';
-    i.update(Article.editorMessage(article, { components: indexOrAdd === 'add' ? indexOrAdd : {index: +indexOrAdd} }).data );
+    const index = indexOrAdd === 'add' ? article.data.components.length - 1: +indexOrAdd;
+    i.update(Article.editorMessage(article, {index, add: indexOrAdd === 'add'} ).data );
 })
 
 addInteractionListener('article-component-open-edit', async i => {
@@ -238,18 +237,18 @@ addInteractionListener('article-component-edit', async i => {
             break;
 
     }
-    await i.message?.edit(Article.editorMessage(article, { components: {index: +index} }).data)
+    await i.message?.edit(Article.editorMessage(article, {index: +index}).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
 
 addInteractionListener('article-component-add-select', async i => {
     if (!i.isStringSelectMenu()) return;
-    const { article, articleId } = await Article.getFromCustomId(i.customId);
+    const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
     if (article.userId !== i.user.id) throw '无权限操作';
     const type = i.values.at(0);
     if (!type) throw 'Article component add type not found';
-    const modal = new Modal(`新增${Article.componentName({type: +type})}`, `article-component-add-edit@${article.id}$${type}`);
+    const modal = new Modal(`新增${Article.componentName({type: +type})}`, `article-component-add-edit@${article.id}$${index}%${type}`);
     switch (+type) {
         case ComponentType.TextDisplay: 
             modal
@@ -278,8 +277,9 @@ addInteractionListener('article-component-add-select', async i => {
             break;
         case ComponentType.Separator:
             const container = new Container(article.data).separator();
+            container.data.components.splice(+index + 1, 0, container.data.components.splice(container.data.components.length - 1, 1)[0]);
             article.data = container.data;
-            i.update(Article.editorMessage(article, {components: {index: container.data.components.length - 1} }).data)
+            i.update(Article.editorMessage(article, {index: +index + 1 }).data)
             await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
             break;
         case ComponentType.File:
@@ -293,9 +293,9 @@ addInteractionListener('article-component-add-select', async i => {
 
 addInteractionListener('article-component-add-edit', async i => {
     if (!i.isModalSubmit()) return;
-    const match = i.customId.match(/[a-z-]+@([0-9]+)\$([0-9]+)/);
+    const match = i.customId.match(/[a-z-]+@([0-9]+)\$([0-9]+)%([0-9]+)/);
     if (!match) throw 'Article component open edit custom id error';
-    const [_, articleId, type] = match;
+    const [_, articleId, index, type] = match;
     const article = await Article.fetch(articleId);
     if (!article) throw 'Article not found';
     if (article.userId !== i.user.id) throw '无权限操作';
@@ -337,8 +337,9 @@ addInteractionListener('article-component-add-edit', async i => {
             break;
         }
     }
+    container.data.components.splice(+index + 1, 0, container.data.components.splice(container.data.components.length - 1, 1)[0]);
     article.data = container.data;
-    await i.message?.edit(Article.editorMessage(article, {components: {index: container.data.components.length - 1} }).data)
+    await i.message?.edit(Article.editorMessage(article, {index: +index + 1}).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -380,7 +381,7 @@ addInteractionListener('article-component-media-add', async i => {
         media: {url},
         spoiler: spoiler !== '0'
     })
-    await i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
+    await i.message?.edit(Article.editorMessage(article, {index: +index}).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -404,7 +405,7 @@ addInteractionListener('article-component-media-edit', async i => {
         item.media.url = url;
         item.spoiler = spoiler !== '0'
     }
-    await i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
+    await i.message?.edit(Article.editorMessage(article, {index: +index}).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -418,7 +419,7 @@ addInteractionListener('article-component-separator-select', async i => {
     const separator = article.data.components[+index] as SeparatorComponentData;
     if (!separator) throw 'Article component separator select: separactor not found';
     separator.spacing = +spacing;
-    await i.update(Article.editorMessage(article, {components: {index: +index} }).data)
+    await i.update(Article.editorMessage(article, {index: +index}).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
 })
 
@@ -428,16 +429,25 @@ addInteractionListener('article-component-moveup', async i => {
     if (+index < 0) throw 'Article component move up: position error';
     article.data.components.splice(+index, 1);
     article.data.components.splice(+index - 1, 0, selectedComponent);
-    await i.update(Article.editorMessage(article, {components: {index: +index - 1}}).data)
+    await i.update(Article.editorMessage(article, {index: +index - 1}).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
 })
 
 addInteractionListener('article-component-movedown', async i => {
     if (!i.isButton()) return;
     const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
     if (+index > article.data.components.length) throw 'Article component move down: position error';
     article.data.components.splice(+index, 1);
     article.data.components.splice(+index + 1, 0, selectedComponent);
-    await i.update(Article.editorMessage(article, {components: {index: +index + 1}}).data);
+    await i.update(Article.editorMessage(article, {index: +index + 1}).data);
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
+})
+
+addInteractionListener('article-component-insert', async i => {
+    if (!i.isButton()) return;
+    const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (article.userId !== i.user.id) throw '无权限操作';
+    if (article.data.components.length === 10) throw 'Article component insert: maximum length';
+    i.update(Article.editorMessage(article, { index: +index, add: true }).data );
 })
