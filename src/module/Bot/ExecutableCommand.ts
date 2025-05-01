@@ -107,16 +107,6 @@ export abstract class ExecutableCommand {
         this.options.set(name, option);
         return this as unknown as this & {_options: Options & Record<Name, Required extends true ? CommandOptionTypesMap[Type] : CommandOptionTypesMap[Type] | undefined>};
     }
-    
-    string = this.setInput(ApplicationCommandOptionType.String);
-    boolean = this.setInput(ApplicationCommandOptionType.Boolean);
-    user = this.setInput(ApplicationCommandOptionType.User);
-    attachment = this.setInput(ApplicationCommandOptionType.Attachment);
-    channel = this.setInput(ApplicationCommandOptionType.Channel);
-    mentionable = this.setInput(ApplicationCommandOptionType.Mentionable);
-    role = this.setInput(ApplicationCommandOptionType.Role);
-    integer = this.setInput(ApplicationCommandOptionType.Integer);
-    number = this.setInput(ApplicationCommandOptionType.Number);
 
     setInputs<Options extends this['_options'], O>(callback: (execmd: ExecutableCommand) => ExecutableCommand & {_options: O}) {
         return callback(this) as unknown as this & {_options: Options & O}
@@ -136,6 +126,15 @@ export abstract class ExecutableCommand {
         }
         return data;
     }
+    string = this.setInput(ApplicationCommandOptionType.String);
+    boolean = this.setInput(ApplicationCommandOptionType.Boolean);
+    user = this.setInput(ApplicationCommandOptionType.User);
+    attachment = this.setInput(ApplicationCommandOptionType.Attachment);
+    channel = this.setInput(ApplicationCommandOptionType.Channel);
+    mentionable = this.setInput(ApplicationCommandOptionType.Mentionable);
+    role = this.setInput(ApplicationCommandOptionType.Role);
+    integer = this.setInput(ApplicationCommandOptionType.Integer);
+    number = this.setInput(ApplicationCommandOptionType.Number);
 }
 
 export type ApplicationCommandValueOptionData = 

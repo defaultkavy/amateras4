@@ -16,6 +16,11 @@ export class Container {
         this.data = data ?? this.data;
     }
 
+    id(id: number) {
+        this.data.id = id;
+        return this;
+    }
+
     setComponent(...component: ContainerComponentData[]) {
         this.data.components.push(...component);
         return this;
@@ -34,8 +39,8 @@ export class Container {
         return this;
     }
 
-    file(...options: Omit<FileComponentTypedDate, 'type'>[]) {
-        this.setComponent(...options.map(opt => ({...opt, type: ComponentType.File} as FileComponentTypedDate)))
+    file(url: string, options: Omit<FileComponentTypedDate, 'type' | 'file'>) {
+        this.setComponent({type: ComponentType.File, file: {url}, ...options})
         return this;
     }
 

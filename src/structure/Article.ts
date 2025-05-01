@@ -41,20 +41,20 @@ export class Article extends Data {
             } else return this.componentName(component);
         }
         const selectedComponent = typeof resolver?.components === 'object' ? article.data.components.at(resolver.components.index) : undefined;
-        const componentList = article.data.components.map((component, i) => {
+        const componentList: SelectMenuComponentOptionData[] = article.data.components.map((component, i) => {
             return {
-                label: `${i + 1}. ${getComponentName(component)}`,
-                value: i.toString()
+                label: `${selectedComponent === component ? '🟢' : '⚫'} ${i + 1}. ${getComponentName(component)}`,
+                value: i.toString(),
             }
         })
-        if (article.data.components.length < 10) componentList.push({label: '新增段落', value: 'add'})
+        if (article.data.components.length < 10) componentList.push({label: `${resolver?.components === 'add' ? '🟢' : '⚫'} 新增段落`, value: 'add'})
         const message = new MessageBuilder()
             .container({...article.data})
             .actionRow(row => row
                 .stringSelect(`article-component-select@${article.id}`, componentList, {
                     placeholder: selectedComponent 
-                        ? `已选择：${article.data.components.indexOf(selectedComponent) + 1}. ${getComponentName(selectedComponent)}`
-                        : resolver?.components === 'add' ? '已选择：新增段落'
+                        ? `🟢 ${article.data.components.indexOf(selectedComponent) + 1}. ${getComponentName(selectedComponent)}`
+                        : resolver?.components === 'add' ? '🟢 新增段落'
                         : '选择段落'
                 })
             );
@@ -90,7 +90,7 @@ export class Article extends Data {
                 .button('删除段落', `article-component-delete@${article.id}$${resolver.components.index}`, {disabled: article.data.components.length === 1})
                 .button('上移段落', `article-component-moveup@${article.id}$${resolver.components.index}`, {disabled: resolver.components.index === 0})
                 .button('下移段落', `article-component-movedown@${article.id}$${resolver.components.index}`, {disabled: resolver.components.index === article.data.components.length - 1})
-                .button('编辑段落', `article-component-open-edit@${article.id}$${resolver.components.index}`, {disabled: selectedComponent.type === ComponentType.MediaGallery})
+                .button('编辑段落', `article-component-open-edit@${article.id}$${resolver.components.index}`, {disabled: selectedComponent.type === ComponentType.MediaGallery || selectedComponent.type === ComponentType.Separator})
             })
         } else if (resolver?.components === 'add') {
             const addComponentList: SelectMenuComponentOptionData[] = [10, 12, 14, 9, 99].map(i => ({label: this.componentName({type: i}), value: i.toString()}));
@@ -114,9 +114,9 @@ export class Article extends Data {
 
     static componentName(component: {type: number}) {
         switch (component.type) {
-            case ComponentType.TextDisplay: return '文字段落';
-            case ComponentType.MediaGallery: return '图片段落';
-            case ComponentType.File: return '文件段落';
+            case ComponentType.TextDisplay: return '文字区块';
+            case ComponentType.MediaGallery: return '图片区块';
+            case ComponentType.File: return '文件区块';
             case ComponentType.Separator: return '分割线';
             case ComponentType.Section: return '文字与缩略图区块';
             case 99: return '文字与链接区块';
@@ -132,7 +132,7 @@ export class Article extends Data {
 
     static async getSelectedComponentFromCustomId(customId: string) {
         const match = customId.match(/[a-z-]+@([0-9]+)\$([0-9]+)/);
-        if (!match) throw 'Article component open edit custom id error';
+        if (!match) throw 'Article component custom id error';
         const [_, articleId, index] = match;
         const article = await Article.fetch(articleId);
         const selectedComponent = article.data.components.at(+index);
@@ -155,7 +155,7 @@ addInteractionListener('article-component-delete', async i => {
     if (article.userId !== i.user.id) throw '无权限操作';
     if (article.data.components.length === 1) throw 'Article component delete: last component';
     article.data.components.splice(+index, 1);
-    i.update(Article.editorMessage(article, { components: {index: 0} }).data)
+    await i.update(Article.editorMessage(article, { components: {index: 0} }).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
 })
 
@@ -229,9 +229,16 @@ addInteractionListener('article-component-edit', async i => {
                 button.label = label;
             }
             break;
+        case ComponentType.File:
+            const url = i.fields.getTextInputValue('url');
+            const spoiler = i.fields.getTextInputValue('spoiler');
+            if (!URL.canParse(url)) throw '不是正确的 URL 格式';
+            selectedComponent.file.url = url;
+            selectedComponent.spoiler = spoiler !== '0';
+            break;
 
     }
-    i.message?.edit(Article.editorMessage(article, { components: {index: +index} }).data)
+    await i.message?.edit(Article.editorMessage(article, { components: {index: +index} }).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -275,6 +282,12 @@ addInteractionListener('article-component-add-select', async i => {
             i.update(Article.editorMessage(article, {components: {index: container.data.components.length - 1} }).data)
             await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
             break;
+        case ComponentType.File:
+            modal
+            .short('文件链接', 'url', {required: true})
+            .short('防止剧透', 'spoiler', {required: true, value: '0'})
+            i.showModal(modal.data);
+            break;
     }
 })
 
@@ -316,9 +329,16 @@ addInteractionListener('article-component-add-edit', async i => {
             container.section(section => section.text(content).linkButton(label, url));
             break;
         }
+        case ComponentType.File: {
+            const url = i.fields.getTextInputValue('url');
+            const spoiler = i.fields.getTextInputValue('spoiler');
+            if (!URL.canParse(url)) throw '不是正确的 URL 格式';
+            container.file(url, {spoiler: spoiler !== '0'});
+            break;
+        }
     }
     article.data = container.data;
-    i.message?.edit(Article.editorMessage(article, {components: {index: container.data.components.length - 1} }).data)
+    await i.message?.edit(Article.editorMessage(article, {components: {index: container.data.components.length - 1} }).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -360,7 +380,7 @@ addInteractionListener('article-component-media-add', async i => {
         media: {url},
         spoiler: spoiler !== '0'
     })
-    i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
+    await i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -384,7 +404,7 @@ addInteractionListener('article-component-media-edit', async i => {
         item.media.url = url;
         item.spoiler = spoiler !== '0'
     }
-    i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
+    await i.message?.edit(Article.editorMessage(article, {components: {index: +index} }).data)
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
     i.deferUpdate();
 })
@@ -398,6 +418,26 @@ addInteractionListener('article-component-separator-select', async i => {
     const separator = article.data.components[+index] as SeparatorComponentData;
     if (!separator) throw 'Article component separator select: separactor not found';
     separator.spacing = +spacing;
-    i.update(Article.editorMessage(article, {components: {index: +index} }).data)
+    await i.update(Article.editorMessage(article, {components: {index: +index} }).data)
+    await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
+})
+
+addInteractionListener('article-component-moveup', async i => {
+    if (!i.isButton()) return;
+    const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (+index < 0) throw 'Article component move up: position error';
+    article.data.components.splice(+index, 1);
+    article.data.components.splice(+index - 1, 0, selectedComponent);
+    await i.update(Article.editorMessage(article, {components: {index: +index - 1}}).data)
+    await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
+})
+
+addInteractionListener('article-component-movedown', async i => {
+    if (!i.isButton()) return;
+    const { article, articleId, selectedComponent, index } = await Article.getSelectedComponentFromCustomId(i.customId);
+    if (+index > article.data.components.length) throw 'Article component move down: position error';
+    article.data.components.splice(+index, 1);
+    article.data.components.splice(+index + 1, 0, selectedComponent);
+    await i.update(Article.editorMessage(article, {components: {index: +index + 1}}).data);
     await Article.collection.updateOne({id: articleId, userId: i.user.id}, {$set: {data: article.data}});
 })

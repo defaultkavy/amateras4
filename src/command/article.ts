@@ -44,6 +44,16 @@ export const cmd_article = new Command('article', '文章', true)
     })
 )
 
+.subCommand('rename', '重命名文章标题', subcmd => 
+    articleSelector(subcmd)
+    .string('title', '标题', {required: true})
+    .execute(async (i, options) => {
+        const found = await Article.collection.findOneAndUpdate({id: options.article, userId: i.user.id}, {$set: {title: options.title}});
+        if (!found) throw '文章不存在';
+        return `已重命名文章为：${options.title}`;
+    })
+)
+
 export function articleSelector(subcmd: ExecutableCommand) {
     return subcmd.string('article', '选择文章', {required: true,
         autocomplete: async (focused, _, i) => {
