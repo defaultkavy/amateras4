@@ -1,6 +1,7 @@
 import { Command } from "../module/Bot/Command";
 import { Article } from "../structure/Article";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
+import { Reply } from "../module/Bot/Reply";
 
 export const cmd_article = new Command('article', '文章', true)
 .subCommand('create', '创建文章', subcmd => subcmd
@@ -39,7 +40,7 @@ export const cmd_article = new Command('article', '文章', true)
         if (options.reply === false) {
             if (!i.channel?.isSendable()) throw '无法在当前频道发送讯息';
             const message = await i.channel.send(Article.containerMessage(article).data)
-            return `已发送文章：${message.url}`
+            return new Reply(`已发送文章：${message.url}`);
         } else return Article.containerMessage(article);
     })
 )
