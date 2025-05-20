@@ -46,7 +46,7 @@ export class BotClient extends Data {
             })
         })
         if (!bot_client.isReady()) throw 'BotClient.create(): client is not ready after login';
-        new Log(`Login <${bot_client.user.username}(${bot_client.user.id})>`)
+        new Log(`<${bot_client.user.username}(${bot_client.user.id})> Login`)
         const data: BotClientDB = {
             ...options,
             id: bot_client.user.id,
@@ -77,7 +77,7 @@ export class BotClient extends Data {
                     })
                 })
                 if (!bot_client.isReady()) throw 'BotClient.init(): client is not ready after login';
-                new Log(`Login <${bot_client.user.username}(${bot_client.user.id})>`)
+                new Log(`<${bot_client.user.username}(${bot_client.user.id})> Login`)
             } catch(err) {
                 new ErrLog(err);
                 return;
@@ -97,9 +97,9 @@ export class BotClient extends Data {
         if (debug) return;
         // commands deploy
         if (!config.debug) {
-            new Log('Deploying Global Commands');
+            new Log(`<${this.username}(${this.id})> Deploying Global Commands`);
             await this.cmd_manager.deployGlobal()
-            new Log('Global Commands Deployed');
+            new Log(`<${this.username}(${this.id})> Global Commands Deployed`);
         }
         if (!config.debug) await this.cmd_manager.deployGuilds(guilds.filter(guild => !System.servers.includes(guild.id)));
         this.cmd_manager.add(cmd_sys)
