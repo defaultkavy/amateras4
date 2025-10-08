@@ -46,7 +46,7 @@ export const cmd_list = [
     cmdx_info,
     cmdx_unsend,
     cmdx_quote,
-    cmdx_sync
+    // cmdx_sync
 ]
 
 if (config.dev) {cmd_list.push(cmd_test)}

@@ -1,10 +1,12 @@
-import { Command } from "../module/Bot/Command";
+import { Command, CommandContexts, CommandIntegrationTypes } from "../module/Bot/Command";
 import { Article } from "../structure/Article";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Reply } from "../module/Bot/Reply";
 import { ComponentType } from "discord.js";
 
 export const cmd_article = new Command('article', '文章', true)
+.integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
+.contexts([CommandContexts.GUILD])
 .subCommand('create', '创建文章', subcmd => subcmd
     .string('title', '文章标题', { required: false })
     .execute(async (i, options) => {
