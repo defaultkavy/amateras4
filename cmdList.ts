@@ -21,6 +21,7 @@ import { cmdx_quote } from "./src/context/quote";
 import { cmdx_unsend } from "./src/context/unsend";
 import { cmd_embed } from "./src/command/embed";
 import { cmd_article } from "./src/command/article";
+import { cmdx_sync } from "./src/context/sync";
 
 export const cmd_list = [
     cmd_lobby,
@@ -44,7 +45,8 @@ export const cmd_list = [
     //
     cmdx_info,
     cmdx_unsend,
-    cmdx_quote
+    cmdx_quote,
+    cmdx_sync
 ]
 
 if (config.dev) {cmd_list.push(cmd_test)}

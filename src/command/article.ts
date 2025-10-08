@@ -2,6 +2,7 @@ import { Command } from "../module/Bot/Command";
 import { Article } from "../structure/Article";
 import { ExecutableCommand } from "../module/Bot/ExecutableCommand";
 import { Reply } from "../module/Bot/Reply";
+import { ComponentType } from "discord.js";
 
 export const cmd_article = new Command('article', '文章', true)
 .subCommand('create', '创建文章', subcmd => subcmd
@@ -52,6 +53,21 @@ export const cmd_article = new Command('article', '文章', true)
         const found = await Article.collection.findOneAndUpdate({id: options.article, userId: i.user.id}, {$set: {title: options.title}});
         if (!found) throw '文章不存在';
         return `已重命名文章为：${options.title}`;
+    })
+)
+
+.subCommand('sync', '同步文章', subcmd => 
+    articleSelector(subcmd)
+    .string('message', '讯息ID', {required: true})
+    .execute(async (i, options) => {
+        const message = await i.channel?.messages.fetch(options.message)
+        if (!message) throw '讯息不存在，必须在该讯息所在的频道使用此指令'
+        if (message.interactionMetadata?.user !== i.user) throw '你无法同步此文章';
+        if (message.components[0].type !== ComponentType.Container) throw '该讯息没有包含文章';
+        const article = await Article.fetch(options.article);
+        await i.deferReply();
+        message.edit(Article.containerMessage(article).data)
+        return '已同步'
     })
 )
 

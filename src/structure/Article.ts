@@ -102,7 +102,7 @@ export class Article extends Data {
     }
 
     static containerMessage(article: ArticleDB) {
-        const message = new MessageBuilder().container(article.data)
+        const message = new MessageBuilder().container({id: +article.id, ...article.data})
         Object.assign(message.data, {flags: MessageFlags.IsComponentsV2});
         message.data.content = undefined;
         return message;

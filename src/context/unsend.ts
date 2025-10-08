@@ -5,8 +5,8 @@ import { Reply } from "../module/Bot/Reply";
 export const cmdx_unsend = new MessageMenuCommand('Unsend', true)
     .integrationTypes([CommandIntegrationTypes.GUILD_INSTALL, CommandIntegrationTypes.USER_INSTALL])
     .execute(async i => {
-        if (!i.targetMessage.interaction) throw '该讯息无法回收';
-        if (i.targetMessage.interaction.user !== i.user) throw '你不是该指令的操作者';
+        if (!i.targetMessage.interactionMetadata) throw '该讯息无法回收';
+        if (i.targetMessage.interactionMetadata.user !== i.user) throw '你不是该指令的操作者';
         await i.deferReply({ephemeral: true});
         try {
             await i.targetMessage.delete();
